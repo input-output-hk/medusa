@@ -1,0 +1,21 @@
+{
+  "name": "webgl-gource-express",
+  "version": "1.0.0",
+  "scripts": {
+    "client": "cd client && yarn start",
+    "server": "nodemon server.js",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+  },
+  "dependencies": {
+    "express": "^4.16.2",
+    "firebase-admin": "5.8.1",
+    "moment": "^2.20.1",
+    "node-fetch": "^2.1.1",
+    "nodegit": "^0.20.3",
+    "ws": "^4.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.0",
+    "standard": "^10.0.3"
+  }
+}
