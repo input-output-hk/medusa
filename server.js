@@ -39,7 +39,11 @@ let changedFilePaths = []
 let removedFilePaths = []
 let nodes = {}
 let latestCommit = null
-let dirHierarchyTemp = {}
+let directoryNodes = {} // keep track of all directory nodes for faster lookup
+
+const pp = function (variable) {
+  console.log(JSON.stringify(variable, null, 2))
+}
 
 /**
  * Find total number of commits on a branch
@@ -82,121 +86,38 @@ const getCommitTotal = function () {
 const addNode = function ({
   type,
   filePath,
-  id = null
+  id = null,
+  parentId = null
 } = {}) {
-  if (typeof nodes[filePath] === 'undefined') {
-    nodes[filePath] = {
-      type: type,
-      filePath: filePath,
-      id: nodeCounter
-    }
-
-    if (changedFilePaths.indexOf(filePath) !== -1) {
-      nodes[filePath].updated = true
-    }
-
-    nodeCounter++
-  } else {
-    if (type === 'file') {
-    }
-  }
-}
-
-const mergePathsIntoDirHierarchy = function (prevDir, currDir, depth, filePath) {
-  // path to file
-  let fullPath = filePath.join('/')
-
-  // path to parent directory
-  let dirArray = []
-  for (let index = 0; index < filePath.length - 1; index++) {
-    dirArray.push(filePath[index])
-  }
-  let dirPath = dirArray.join('/')
-
-  // add all directories above if they don't exist
-  let dirString = ''
-  dirArray.forEach((dirPath) => {
-    dirString += dirPath
-
-    addNode({
-      type: 'dir',
-      filePath: dirString
-    })
-
-    dirString += '/'
-  })
-
-  // get parent dir of this directory
-  let parentDirArray = []
-  for (let index = 0; index < filePath.length - 2; index++) {
-    parentDirArray.push(filePath[index])
-  }
-  let parentDirPath = parentDirArray.join('/')
-
-  // add parent dir id if not defined
-  if (
-    typeof nodes[parentDirPath] !== 'undefined' &&
-    typeof nodes[dirPath] !== 'undefined' &&
-    typeof nodes[dirPath].parentId === 'undefined'
-  ) {
-    nodes[dirPath].parentId = nodes[parentDirPath].id
+  if (typeof nodes[filePath] !== 'undefined') {
+    return {}
   }
 
-  if (typeof prevDir['children'] === 'undefined') {
-    prevDir.children = {}
-    addNode({
-      type: 'dir',
-      filePath: dirPath
-    })
+  if (!id) {
+    id = nodeCounter
   }
 
-  // add parent dir id if not defined
-  if (
-    typeof nodes[dirPath] !== 'undefined' &&
-    typeof nodes[fullPath] !== 'undefined' &&
-    typeof nodes[fullPath].parentId === 'undefined'
-  ) {
-    nodes[fullPath].parentId = nodes[dirPath].id
+  nodes[filePath] = {
+    type: type,
+    filePath: filePath,
+    id: id
   }
 
-  if (!prevDir.hasOwnProperty(currDir)) {
-    prevDir.children[currDir] = {}
-    addNode({
-      type: 'file',
-      filePath: fullPath
-    })
+  if (parentId) {
+    nodes[filePath].parentId = parentId
   }
-  return prevDir.children[currDir]
-}
 
-const parseFilePath = function (filePath) {
-  let pathArray = filePath.split('/')
-
-  if (pathArray.length === 1) {
-    // root node
-    if (typeof dirHierarchyTemp['children'] === 'undefined') {
-      dirHierarchyTemp['children'] = {}
-      dirHierarchyTemp.nodeType = 'root'
-      addNode({
-        type: 'root',
-        filePath: '/',
-        id: 0
-      })
-    }
-    dirHierarchyTemp.children[pathArray[0]] = {
-      parent: null,
-      depth: 0,
-      nodeType: 'file'
-    }
-
-    addNode({
-      type: 'file',
-      filePath: filePath
-    })
-
-    return
+  if (changedFilePaths.indexOf(filePath) !== -1) {
+    nodes[filePath].updated = true
   }
-  pathArray.reduce(mergePathsIntoDirHierarchy, dirHierarchyTemp)
+
+  nodeCounter++
+
+  if (type === 'dir') {
+    directoryNodes[filePath] = nodes[filePath]
+  }
+
+  return nodes[filePath]
 }
 
 const updateRoutine = function () {
@@ -240,22 +161,57 @@ const updateRoutine = function () {
                 let commitDateObj = moment(commitDetail.commit.author.date)
 
                 githubCliDotCom.fetchTreeRecursive({sha: commit.sha, owner: GHOwner, repository: GHRepo})
-                .then(tree => {
+                .then(treeData => {
                   // create node structure for graph
                   nodeCounter = 0
-                  dirHierarchyTemp = {}
                   nodes = {}
-                  for (const key in tree) {
-                    if (tree.hasOwnProperty(key)) {
-                      const treeData = tree[key]
-                      for (const treeKey in treeData) {
-                        if (treeData.hasOwnProperty(treeKey)) {
-                          const node = treeData[treeKey]
-                          if (typeof node.path !== 'undefined') {
-                            parseFilePath(node.path)
+                  directoryNodes = {}
+
+                  // add root node
+                  addNode({
+                    type: 'root',
+                    filePath: '/',
+                    id: 0
+                  })
+
+                  for (const key in treeData.tree) {
+                    if (treeData.tree.hasOwnProperty(key)) {
+                      const node = treeData.tree[key]
+
+                      let nodeType = ''
+                      if (node.type === 'blob') {
+                        nodeType = 'file'
+                      }
+                      if (node.type === 'tree') {
+                        nodeType = 'dir'
+                      }
+
+                      let nodeData = {
+                        type: nodeType,
+                        filePath: node.path
+                      }
+
+                      // get parent dir of this node
+                      let parentDirArray = []
+                      let nodePathArray = node.path.split('/')
+                      for (let index = 0; index < nodePathArray.length - 1; index++) {
+                        parentDirArray.push(nodePathArray[index])
+                      }
+                      let parentDirPath = parentDirArray.join('/')
+
+                      // check for parent directory
+                      if (parentDirPath.length > 0) {
+                        for (const dirKey in directoryNodes) {
+                          if (directoryNodes.hasOwnProperty(dirKey)) {
+                            const dirNode = directoryNodes[dirKey]
+                            if (dirKey === parentDirPath) {
+                              nodeData.parentId = dirNode.id
+                            }
                           }
                         }
                       }
+
+                      addNode(nodeData)
                     }
                   }
 
