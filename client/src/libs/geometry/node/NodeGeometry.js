@@ -38,9 +38,7 @@ export default class NodeGeometry {
     return new THREE.Color(color)
   }
 
-  create (nodeData) {
-    let nodeCount = nodeData.length
-
+  create (nodeData, nodeCount) {
     this.textureHelper.setTextureSize(nodeCount)
 
     if (this.geometry) {

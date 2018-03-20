@@ -58,7 +58,7 @@ export default class FDG {
       this.storedPositions
     )
 
-    this.storedPositions = this.storedPositions.slice(0, this.nodeData.length * 4)
+    this.storedPositions = this.storedPositions.slice(0, this.nodeCount * 4)
   }
 
   refresh () {
@@ -66,9 +66,14 @@ export default class FDG {
     this.nodeGeometry.setDecayTime(0.0)
   }
 
-  init (nodeData, edgeData) {
+  init ({
+    nodeData,
+    edgeData,
+    nodeCount
+  } = {}) {
     this.nodeData = nodeData
     this.edgeData = edgeData
+    this.nodeCount = nodeCount
 
     if (this.firstRun) {
       this.initPassThrough()
@@ -116,7 +121,7 @@ export default class FDG {
   }
 
   setTextureDimensions () {
-    this.textureHelper.setTextureSize(this.nodeData.length)
+    this.textureHelper.setTextureSize(this.nodeCount)
     this.textureWidth = this.textureHelper.textureWidth
     this.textureHeight = this.textureHelper.textureHeight
   }
@@ -167,7 +172,7 @@ export default class FDG {
     if (this.edges) {
       this.scene.remove(this.edges)
     }
-    this.edges = this.edgeGeometry.create(this.edgeData.length, this.forceGeometry.attributes.location.array)
+    this.edges = this.edgeGeometry.create(this.nodeCount * 2, this.forceGeometry.attributes.location.array)
     this.scene.add(this.edges)
   }
 
@@ -175,7 +180,7 @@ export default class FDG {
     if (this.nodes) {
       this.scene.remove(this.nodes)
     }
-    this.nodes = this.nodeGeometry.create(this.nodeData)
+    this.nodes = this.nodeGeometry.create(this.nodeData, this.nodeCount)
     this.scene.add(this.nodes)
   }
 
@@ -223,8 +228,8 @@ export default class FDG {
 
     this.forceGeometry = new THREE.BufferGeometry()
 
-    let position = new THREE.BufferAttribute(new Float32Array(this.edgeData.length * 3), 3)
-    let location = new THREE.BufferAttribute(new Float32Array(this.edgeData.length * 4), 4)
+    let position = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
+    let location = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 4), 4)
 
     this.forceGeometry.addAttribute('position', position)
     this.forceGeometry.addAttribute('location', location)
@@ -264,7 +269,7 @@ export default class FDG {
   setEdgeTextureLocations () {
     let locationAttribute = this.forceGeometry.attributes.location.array
 
-    for (let i = 0; i < this.edgeData.length; i += 2) {
+    for (let i = 0; i < (this.nodeCount * 2); i += 2) {
       let startVertexTextureLocation = this.textureHelper.getNodeTextureLocation(this.edgeData[i])
       locationAttribute[i * 4 + 0] = startVertexTextureLocation.x
       locationAttribute[i * 4 + 1] = startVertexTextureLocation.y

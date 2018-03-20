@@ -181,6 +181,8 @@ class App extends Component {
       let edges = JSON.parse(commit.edges)
       let nodes = JSON.parse(commit.nodes)[0]
 
+      let nodeCount = commit.nodeCounter
+
       let sortedNodes = []
       for (const key in nodes) {
         if (nodes.hasOwnProperty(key)) {
@@ -204,18 +206,22 @@ class App extends Component {
 
         if (this.FDG) {
           if (this.FDG.firstRun) {
-            this.FDG.init(sortedNodes, edges)
+            this.FDG.init({
+              nodeData: sortedNodes,
+              edgeData: edges,
+              nodeCount: nodeCount + 1
+            })
             this.FDG.setFirstRun(false)
           } else {
             this.FDG.refresh()
-            this.FDG.init(sortedNodes, edges)
+            this.FDG.init({
+              nodeData: sortedNodes,
+              edgeData: edges,
+              nodeCount: nodeCount + 1
+            })
           }
         }
 
-        if (commit.removedFilePaths.length > 0) {
-          debugger
-          console.log(commit.removedFilePaths)
-        }
 
         // call api again once we've reached last commit in this batch
         if (lastCommit.commitDate === commit.commitDate) {

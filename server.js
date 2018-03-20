@@ -45,6 +45,15 @@ const pp = function (variable) {
   console.log(JSON.stringify(variable, null, 2))
 }
 
+const clearNodeUpdatedFlag = function () {
+  for (const key in nodes) {
+    if (nodes.hasOwnProperty(key)) {
+      const node = nodes[key]
+      node.updated = false
+    }
+  }
+}
+
 /**
  * Find total number of commits on a branch
  */
@@ -93,7 +102,9 @@ const addNode = function ({
     return {}
   }
 
-  if (!id) {
+  nodeCounter++
+
+  if (id === null) {
     id = nodeCounter
   }
 
@@ -110,8 +121,6 @@ const addNode = function ({
   if (changedFilePaths.indexOf(filePath) !== -1) {
     nodes[filePath].updated = true
   }
-
-  nodeCounter++
 
   if (type === 'dir') {
     directoryNodes[filePath] = nodes[filePath]
@@ -145,6 +154,7 @@ const updateRoutine = function () {
                 // get changed files
                 changedFilePaths = []
                 removedFilePaths = []
+
                 commitDetail.files.forEach((file) => {
                   if (
                     file.status === 'modified' ||
@@ -155,18 +165,18 @@ const updateRoutine = function () {
                   if (file.status === 'removed') {
                     removedFilePaths.push(file.filename)
                   }
+                  if (file.status === 'renamed') {
+                    removedFilePaths.push(file.previous_filename)
+                  }
                 })
 
                 // get date as timestamp in MS
                 let commitDateObj = moment(commitDetail.commit.author.date)
 
+                clearNodeUpdatedFlag()
+
                 githubCliDotCom.fetchTreeRecursive({sha: commit.sha, owner: GHOwner, repository: GHRepo})
                 .then(treeData => {
-                  // create node structure for graph
-                  nodeCounter = 0
-                  nodes = {}
-                  directoryNodes = {}
-
                   // add root node
                   addNode({
                     type: 'root',
@@ -201,17 +211,52 @@ const updateRoutine = function () {
 
                       // check for parent directory
                       if (parentDirPath.length > 0) {
-                        for (const dirKey in directoryNodes) {
-                          if (directoryNodes.hasOwnProperty(dirKey)) {
-                            const dirNode = directoryNodes[dirKey]
-                            if (dirKey === parentDirPath) {
-                              nodeData.parentId = dirNode.id
+                        for (const key in nodes) {
+                          if (nodes.hasOwnProperty(key)) {
+                            const node = nodes[key]
+
+                            if (changedFilePaths.indexOf(key) !== -1) {
+                              nodes[key].updated = true
+                            }
+
+                            if (node.type === 'dir') {
+                              if (key === parentDirPath) {
+                                nodeData.parentId = node.id
+                              }
                             }
                           }
                         }
                       }
 
                       addNode(nodeData)
+                    }
+                  }
+
+                  // remove deleted nodes
+                  for (const key in nodes) {
+                    if (nodes.hasOwnProperty(key)) {
+                      const node = nodes[key]
+
+                      if (node.filePath === '/') {
+                        continue
+                      }
+
+                      // check if this node is still in the tree
+                      let found = false
+                      for (const treeKey in treeData.tree) {
+                        if (treeData.tree.hasOwnProperty(treeKey)) {
+                          const treeNode = treeData.tree[treeKey]
+                          if (node.filePath === treeNode.path) {
+                            found = true
+                            break
+                          }
+                        }
+                      }
+
+                      if (found === false) {
+                        console.log('delete', nodes[key])
+                        delete nodes[key]
+                      }
                     }
                   }
 
@@ -239,14 +284,17 @@ const updateRoutine = function () {
                     commitMsg: commitDetail.commit.message,
                     changedFilePaths: changedFilePaths,
                     removedFilePaths: removedFilePaths,
-                    commitIndex: currentCommitIndex
+                    commitIndex: currentCommitIndex,
+                    nodeCounter: nodeCounter
                   })
                 })
               })
             })
           }
         }).then(() => {
-          updateRoutine()
+          if (currentPage > 0) {
+            updateRoutine()
+          }
         })
     })
   })
@@ -269,6 +317,10 @@ const loadLatestCommit = function () {
       snapshot.forEach((doc) => {
         latestCommit = doc.data()
         latestCommit.id = doc.id
+
+        nodes = JSON.parse(latestCommit.nodes)[0]
+        nodeCounter = latestCommit.nodeCounter
+
         resolve()
       })
     })
