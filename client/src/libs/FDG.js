@@ -20,6 +20,7 @@ export default class FDG {
 
     this.initCamera()
 
+    this.started = false
     this.frame = 0
     this.textureHelper = new TextureHelper()
     this.nodeGeometry = new NodeGeometry()
@@ -58,6 +59,11 @@ export default class FDG {
     )
 
     this.storedPositions = this.storedPositions.slice(0, this.nodeData.length * 4)
+  }
+
+  refresh () {
+    this.storePositions()
+    this.nodeGeometry.setDecayTime(0.0)
   }
 
   init (nodeData, edgeData) {

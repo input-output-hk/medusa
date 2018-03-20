@@ -2,13 +2,15 @@ const moment = require('moment')
 const express = require('express')
 const fetch = require('node-fetch')
 
+const config = require('./config')
+
 const app = express()
 const port = process.env.PORT || 5000
 
 // firebase
 const admin = require('firebase-admin')
 
-const serviceAccount = require('./auth/gource-04cfa95aa493.json')
+const serviceAccount = require('./auth/' + config.FBFilename)
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -19,22 +21,24 @@ const firebaseDB = admin.firestore()
 // github API
 const GitHubClient = require('./libs/GitHubClient.js').GitHubClient
 const commits = require('./libs/features/commits')
-const GHRepo = 'cardano-sl'
-const GHBranch = 'develop'
-const GHOwner = 'input-output-hk'
+const tree = require('./libs/features/tree')
+const GHRepo = config.GHRepo
+const GHBranch = config.GHBranch
+const GHOwner = config.GHOwner
 
 let githubCliDotCom = new GitHubClient({
   baseUri: 'https://api.github.com',
   token: process.env.TOKEN_GITHUB_DOT_COM
-}, commits)
+}, commits, tree)
 
 let currentPage = 0 // which page of results are we on
 let currentCommitIndex = 0 // keep track of the index of each commit in the history
 let nodeCounter = 0
 let commitTotal = 0 // total number of commits in this repo
+let changedFilePaths = []
+let removedFilePaths = []
 let nodes = {}
 let latestCommit = null
-let dirHierarchy = {}
 let dirHierarchyTemp = {}
 
 /**
@@ -49,21 +53,23 @@ const getCommitTotal = function () {
         ref(qualifiedName: "${GHBranch}"){
           target{
             ... on Commit{
-            history{
-              totalCount
+              history{
+                totalCount
+              }
             }
           }
         }
       }
-    }
-  }`
+    }`
+
     fetch('https://api.github.com/graphql', {
       method: 'POST',
       body: JSON.stringify({query}),
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
-    }).then(res => res.text())
+    })
+  .then(res => res.text())
   .then((body) => {
     let json = JSON.parse(body)
     commitTotal = json.data.repository.ref.target.history.totalCount
@@ -84,10 +90,14 @@ const addNode = function ({
       filePath: filePath,
       id: nodeCounter
     }
+
+    if (changedFilePaths.indexOf(filePath) !== -1) {
+      nodes[filePath].updated = true
+    }
+
     nodeCounter++
   } else {
     if (type === 'file') {
-      nodes[filePath].updated = true
     }
   }
 }
@@ -189,21 +199,11 @@ const parseFilePath = function (filePath) {
   pathArray.reduce(mergePathsIntoDirHierarchy, dirHierarchyTemp)
 }
 
-const clearNodeUpdatedFlag = function () {
-  for (const key in nodes) {
-    if (nodes.hasOwnProperty(key)) {
-      const node = nodes[key]
-      node.updated = false
-    }
-  }
-}
-
 const updateRoutine = function () {
   getCommitTotal().then(() => {
     // lookup latest commit in db and load latest nodes/edges structure
-    loadNodesEdges().then(() => {
-      // if nothing in db, add new commit
-      if (latestCommit === null) {
+    loadLatestCommit().then(() => {
+      if (latestCommit === null) { // nothing in db
         currentCommitIndex = 0
         currentPage = commitTotal
       } else {
@@ -222,8 +222,8 @@ const updateRoutine = function () {
               // get commit detail
               githubCliDotCom.fetchCommitBySHA({sha: commit.sha, owner: GHOwner, repository: GHRepo}).then(commitDetail => {
                 // get changed files
-                let changedFilePaths = []
-                let removedFilePaths = []
+                changedFilePaths = []
+                removedFilePaths = []
                 commitDetail.files.forEach((file) => {
                   if (
                     file.status === 'modified' ||
@@ -239,48 +239,52 @@ const updateRoutine = function () {
                 // get date as timestamp in MS
                 let commitDateObj = moment(commitDetail.commit.author.date)
 
-                // clear node updated flags
-                clearNodeUpdatedFlag()
+                githubCliDotCom.fetchTreeRecursive({sha: commit.sha, owner: GHOwner, repository: GHRepo})
+                .then(tree => {
+                  // create node structure for graph
+                  nodeCounter = 0
+                  dirHierarchyTemp = {}
+                  nodes = {}
+                  for (const key in tree) {
+                    if (tree.hasOwnProperty(key)) {
+                      const treeData = tree[key]
+                      for (const treeKey in treeData) {
+                        if (treeData.hasOwnProperty(treeKey)) {
+                          const node = treeData[treeKey]
+                          if (typeof node.path !== 'undefined') {
+                            parseFilePath(node.path)
+                          }
+                        }
+                      }
+                    }
+                  }
 
-                dirHierarchy = {}
-                dirHierarchyTemp = {}
-
-                // merge changed files into directory hierarchy
-                dirHierarchyTemp = dirHierarchy
-                changedFilePaths.forEach(parseFilePath)
-                dirHierarchy = dirHierarchyTemp
-
-                // let sortedNodes = []
-                let edges = []
-                for (const key in nodes) {
-                  if (nodes.hasOwnProperty(key)) {
-                    const node = nodes[key]
-                    if (removedFilePaths.indexOf(node.filePath) === -1) {
+                  // create edges structure for graph
+                  let edges = []
+                  for (const key in nodes) {
+                    if (nodes.hasOwnProperty(key)) {
+                      const node = nodes[key]
                       let parentId = typeof node.parentId !== 'undefined' ? node.parentId : 0
                       if (node.id !== parentId) {
                         edges.push(node.id)
                         edges.push(parentId)
                       }
-                    } else {
-                      console.log('delete', nodes[key])
-                      delete nodes[key]
                     }
                   }
-                }
 
-                let docRef = firebaseDB.collection(GHRepo).doc(commitDetail.sha)
-
-                docRef.set({
-                  edges: JSON.stringify(edges),
-                  nodes: JSON.stringify([nodes]),
-                  authorEmail: commitDetail.commit.author.email,
-                  authorName: commitDetail.commit.author.name,
-                  commitDate: commitDateObj.valueOf(),
-                  commitMsg: commitDetail.commit.message,
-                  changedFilePaths: changedFilePaths,
-                  removedFilePaths: removedFilePaths,
-                  commitIndex: currentCommitIndex,
-                  nodeCounter: nodeCounter
+                  // save to db
+                  let docRef = firebaseDB.collection(GHRepo).doc(commitDetail.sha)
+                  docRef.set({
+                    edges: JSON.stringify(edges),
+                    nodes: JSON.stringify([nodes]),
+                    authorEmail: commitDetail.commit.author.email,
+                    authorName: commitDetail.commit.author.name,
+                    commitDate: commitDateObj.valueOf(),
+                    commitMsg: commitDetail.commit.message,
+                    changedFilePaths: changedFilePaths,
+                    removedFilePaths: removedFilePaths,
+                    commitIndex: currentCommitIndex
+                  })
                 })
               })
             })
@@ -298,12 +302,10 @@ app.get('/api/updateDB', (req, res) => {
   res.send({ express: 'Commits updating...' })
 })
 
-const loadNodesEdges = function () {
+const loadLatestCommit = function () {
   return new Promise((resolve, reject) => {
     let docRef = firebaseDB.collection(GHRepo)
-
     let commitData = docRef.orderBy('commitIndex', 'desc').limit(1)
-
     commitData.get().then(snapshot => {
       if (snapshot.empty) {
         resolve()
@@ -311,8 +313,6 @@ const loadNodesEdges = function () {
       snapshot.forEach((doc) => {
         latestCommit = doc.data()
         latestCommit.id = doc.id
-        nodeCounter = latestCommit.nodeCounter + 1
-        nodes = JSON.parse(latestCommit.nodes)[0]
         resolve()
       })
     })

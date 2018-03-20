@@ -18,14 +18,14 @@ class App extends Component {
     super()
 
     this.initFireBase()
-
     this.OrbitControls = OrbitContructor(THREE)
 
-    this.FDG = null
-    this.FDGRunCount = 0
-    this.delayAmount = 300
+    this.FDG = null // Force Directed Graph class
+    this.delayAmount = Config.FDG.delayAmount // how long to wait between graph updates
+
     let latestTime = 0
 
+    // get date from URL
     let urlParams = new URLSearchParams(window.location.search)
     if (urlParams.has('date')) {
       latestTime = moment(urlParams.get('date')).valueOf()
@@ -33,16 +33,9 @@ class App extends Component {
 
     this.state = {
       play: false,
-      response: [],
       currentDate: null,
-      loadedCommits: [],
-      // latestTime: 1514764800 * 1000,
-      latestTime: latestTime,
-      dirHierarchy: {},
-      graphData: {
-        nodes: [],
-        edges: []
-      }
+      currentCommitHash: null,
+      latestTime: latestTime
     }
 
     console.log(this.state)
@@ -85,7 +78,7 @@ class App extends Component {
   }
 
   renderFrame () {
-    if (this.renderFDG) {
+    if (this.FDG) {
       this.FDG.update()
     }
 
@@ -175,7 +168,9 @@ class App extends Component {
 
     let commitData = []
     snapshot.forEach((doc) => {
-      commitData.push(doc.data())
+      let docData = doc.data()
+      docData.sha = doc.id
+      commitData.push(docData)
     })
 
     let lastCommit = commitData[commitData.length - 1]
@@ -194,39 +189,37 @@ class App extends Component {
             id: node.id,
             type: node.type,
             filePath: node.filePath,
-            updated: node.updated,
-            parentId: node.parentId
+            updated: node.updated
+            // parentId: node.parentId
           }
         }
       }
 
       setTimeout(function () {
         let changedState = {}
-        changedState.latestTime = lastCommit.commitDate + 1
-        changedState.currentDate = moment.unix(commit.commitDate / 1000).format('MM/DD/YYYY')
+        changedState.latestTime = commit.commitDate + 1
+        changedState.currentDate = moment.unix(commit.commitDate / 1000).format('MM/DD/YYYY HH:mm:ss')
+        changedState.currentCommitHash = commit.sha
         this.setState(changedState)
 
-        if (this.FDG !== null) {
-          this.renderFDG = true
-          if (this.FDGRunCount > 0) {
-            if (this.state.play) {
-              this.FDG.storePositions()
-              this.FDG.setFirstRun(false)
-              this.FDG.init(sortedNodes, edges)
-              this.FDG.nodeGeometry.setDecayTime(0.0)
-            }
+        if (this.FDG) {
+          if (this.FDG.firstRun) {
+            this.FDG.init(sortedNodes, edges)
+            this.FDG.setFirstRun(false)
           } else {
+            this.FDG.refresh()
             this.FDG.init(sortedNodes, edges)
           }
         }
 
-        this.FDGRunCount++
+        if (commit.removedFilePaths.length > 0) {
+          debugger
+          console.log(commit.removedFilePaths)
+        }
 
         // call api again once we've reached last commit in this batch
         if (lastCommit.commitDate === commit.commitDate) {
-          if (this.state.play) {
-            this.callApi()
-          }
+          this.callApi()
         }
       }.bind(this), delay)
       delay += this.delayAmount
@@ -240,7 +233,10 @@ class App extends Component {
           <button className='play' onClick={() => { this.setState({play: true}) }}>Play</button>
           <button className='play' onClick={() => { this.setState({play: false}) }}>Pause</button>
         </div>
-        <div className='currentDate'>{this.state.currentDate}</div>
+        <div className='info'>
+          <div className='currentDate'>Commit Date: {this.state.currentDate}</div>
+          <div className='currentCommitHash'>Commit Hash: {this.state.currentCommitHash}</div>
+        </div>
         <canvas id='stage' />
       </div>
     )

@@ -11,6 +11,9 @@ const Config = {
     storageBucket: 'gource-774ad.appspot.com',
     messagingSenderId: '290917146601'
   },
+  FDG: {
+    delayAmount: 300
+  },
   scene: {
     bgColor: 0x121327,
     fogDensity: 0.00030,
