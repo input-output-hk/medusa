@@ -146,6 +146,11 @@ const updateRoutine = function () {
         .then(commits => {
           if (commits.length > 0) {
             commits.forEach((commit) => {
+              if (latestCommit && latestCommit.id === commit.sha) {
+                console.log('No new commits to add')
+                return
+              }
+
               // add commit to db
               console.log('Adding commit ' + commit.sha)
 
@@ -236,26 +241,34 @@ const updateRoutine = function () {
                   for (const key in nodes) {
                     if (nodes.hasOwnProperty(key)) {
                       const node = nodes[key]
-
-                      if (node.filePath === '/') {
-                        continue
+                      if (removedFilePaths.indexOf(node.filePath) !== -1) {
+                        console.log('delete file', nodes[key])
+                        delete nodes[key]
                       }
+                    }
+                  }
 
-                      // check if this node is still in the tree
-                      let found = false
-                      for (const treeKey in treeData.tree) {
-                        if (treeData.tree.hasOwnProperty(treeKey)) {
-                          const treeNode = treeData.tree[treeKey]
-                          if (node.filePath === treeNode.path) {
-                            found = true
-                            break
+                  // remove empty directories
+                  for (const key in nodes) {
+                    if (nodes.hasOwnProperty(key)) {
+                      const dirNode = nodes[key]
+                      if (dirNode.type === 'dir') {
+                        let parentId = dirNode.id
+
+                        // check if any file nodes have this dir as a parent directory
+                        let foundParentId = false
+                        for (const fileKey in nodes) {
+                          if (nodes.hasOwnProperty(fileKey)) {
+                            if (nodes[fileKey].parentId === parentId) {
+                              foundParentId = true
+                              break
+                            }
                           }
                         }
-                      }
-
-                      if (found === false) {
-                        console.log('delete', nodes[key])
-                        delete nodes[key]
+                        if (!foundParentId) {
+                          console.log('delete dir', nodes[key])
+                          delete nodes[key]
+                        }
                       }
                     }
                   }

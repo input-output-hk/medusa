@@ -178,26 +178,27 @@ class App extends Component {
     let delay = this.delayAmount
 
     commitData.forEach((commit) => {
-      let edges = JSON.parse(commit.edges)
-      let nodes = JSON.parse(commit.nodes)[0]
+      setTimeout(function () {
+        let edges = JSON.parse(commit.edges)
+        let nodes = JSON.parse(commit.nodes)[0]
 
-      let nodeCount = commit.nodeCounter
-
-      let sortedNodes = []
-      for (const key in nodes) {
-        if (nodes.hasOwnProperty(key)) {
-          const node = nodes[key]
-          sortedNodes[node.id] = {
-            id: node.id,
-            type: node.type,
-            filePath: node.filePath,
-            updated: node.updated
-            // parentId: node.parentId
+        let sortedNodes = []
+        for (const key in nodes) {
+          if (nodes.hasOwnProperty(key)) {
+            const node = nodes[key]
+            sortedNodes[node.id] = {
+              id: node.id,
+              type: node.type,
+              filePath: node.filePath,
+              updated: node.updated
+              // parentId: node.parentId
+            }
           }
         }
-      }
 
-      setTimeout(function () {
+        // debugger
+        let nodeCount = commit.nodeCounter
+
         let changedState = {}
         changedState.latestTime = commit.commitDate + 1
         changedState.currentDate = moment.unix(commit.commitDate / 1000).format('MM/DD/YYYY HH:mm:ss')
@@ -221,7 +222,6 @@ class App extends Component {
             })
           }
         }
-
 
         // call api again once we've reached last commit in this batch
         if (lastCommit.commitDate === commit.commitDate) {

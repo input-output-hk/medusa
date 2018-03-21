@@ -9,7 +9,7 @@ import VertexShader from './shaders/node.vert'
 export default class NodeGeometry {
   constructor () {
     this.textureHelper = new TextureHelper()
-    this.sprite = new THREE.TextureLoader().load('textures/dot.png')
+    this.sprite = new THREE.TextureLoader().load('textures/matcap.png')
     this.nodeColorPalette = [
       '#168ec0',
       '#54bfed',
