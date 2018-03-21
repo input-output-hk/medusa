@@ -26,7 +26,6 @@ export default class FDG {
     this.nodeGeometry = new NodeGeometry()
     this.edgeGeometry = new EdgeGeometry()
     this.firstRun = true
-    this.pingPong = true
     this.textureWidth = 0
     this.textureHeight = 0
     this.enabled = false

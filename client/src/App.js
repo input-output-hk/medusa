@@ -38,7 +38,7 @@ class App extends Component {
       latestTime: latestTime
     }
 
-    console.log(this.state)
+    this.docRef = this.firebaseDB.collection(Config.git.repo)
   }
 
   initFireBase () {
@@ -161,8 +161,7 @@ class App extends Component {
    * Get commit data
    */
   async callApi () {
-    let docRef = this.firebaseDB.collection(Config.git.repo)
-    let commits = docRef.orderBy('commitDate', 'asc').where('commitDate', '>=', this.state.latestTime).limit(100)
+    let commits = this.docRef.orderBy('commitDate', 'asc').where('commitDate', '>=', this.state.latestTime).limit(200)
 
     const snapshot = await commits.get()
 
@@ -191,12 +190,10 @@ class App extends Component {
               type: node.type,
               filePath: node.filePath,
               updated: node.updated
-              // parentId: node.parentId
             }
           }
         }
 
-        // debugger
         let nodeCount = commit.nodeCounter
 
         let changedState = {}
