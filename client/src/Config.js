@@ -1,3 +1,9 @@
+import * as THREE from 'three'
+
+import Detector from './libs/Detector'
+
+const detector = new Detector()
+
 const Config = {
   git: {
     owner: 'input-output-hk',
@@ -21,7 +27,8 @@ const Config = {
   },
   camera: {
     fov: 45
-  }
+  },
+  floatType: detector.isIOS ? THREE.HalfFloatType : THREE.FloatType
 }
 
 export default Config

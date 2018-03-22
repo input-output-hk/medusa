@@ -38,22 +38,17 @@ export default class NodeGeometry {
     return new THREE.Color(color)
   }
 
-  create (nodeData, nodeCount) {
-    this.textureHelper.setTextureSize(nodeCount)
-
-    if (this.geometry) {
-      this.geometry.dispose()
-    }
-
-    this.geometry = new THREE.BufferGeometry()
-
-    let positionArray = new Float32Array(nodeCount * 3)
-    let colorArray = new Float32Array(nodeCount * 4)
-
+  setTextureLocations (nodeData, nodeCount, positionArray, colorArray) {
     for (let i = 0; i < nodeCount; i++) {
       const node = nodeData[i]
 
       if (!node) {
+        positionArray[i * 3] = null
+        positionArray[i * 3 + 1] = null
+        colorArray[i * 4] = null
+        colorArray[i * 4 + 1] = null
+        colorArray[i * 4 + 2] = null
+        colorArray[i * 4 + 3] = null
         continue
       }
 
@@ -79,6 +74,21 @@ export default class NodeGeometry {
       colorArray[i * 4 + 2] = color.b
       colorArray[i * 4 + 3] = node.updated ? 1.0 : 0.0
     }
+  }
+
+  create (nodeData, nodeCount) {
+    this.textureHelper.setTextureSize(nodeCount)
+
+    if (this.geometry) {
+      this.geometry.dispose()
+    }
+
+    this.geometry = new THREE.BufferGeometry()
+
+    let positionArray = new Float32Array(nodeCount * 3)
+    let colorArray = new Float32Array(nodeCount * 4)
+
+    this.setTextureLocations(nodeData, nodeCount, positionArray, colorArray)
 
     let position = new THREE.BufferAttribute(positionArray, 3)
     let color = new THREE.BufferAttribute(colorArray, 4)

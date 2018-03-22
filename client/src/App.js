@@ -25,10 +25,12 @@ class App extends Component {
 
     let latestTime = 0
 
-    // get date from URL
-    let urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.has('date')) {
-      latestTime = moment(urlParams.get('date')).valueOf()
+    if (typeof URLSearchParams !== 'undefined') {
+      // get date from URL
+      let urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('date')) {
+        latestTime = moment(urlParams.get('date')).valueOf()
+      }
     }
 
     this.state = {
@@ -142,6 +144,7 @@ class App extends Component {
       antialias: Config.scene.antialias,
       canvas: document.getElementById('stage'),
       autoClear: true
+      // precision: 'mediump'
     })
   }
 
@@ -161,22 +164,17 @@ class App extends Component {
    * Get commit data
    */
   async callApi () {
-    let commits = this.docRef.orderBy('commitDate', 'asc').where('commitDate', '>=', this.state.latestTime).limit(200)
+    let commits = this.docRef.orderBy('commitDate', 'asc').where('commitDate', '>=', this.state.latestTime).limit(20)
 
     const snapshot = await commits.get()
 
-    let commitData = []
-    snapshot.forEach((doc) => {
-      let docData = doc.data()
-      docData.sha = doc.id
-      commitData.push(docData)
-    })
-
-    let lastCommit = commitData[commitData.length - 1]
+    let lastCommit = snapshot.docs[snapshot.size - 1].data()
 
     let delay = this.delayAmount
 
-    commitData.forEach((commit) => {
+    snapshot.forEach((doc) => {
+      let commit = doc.data()
+      commit.sha = doc.id
       setTimeout(function () {
         let edges = JSON.parse(commit.edges)
         let nodes = JSON.parse(commit.nodes)[0]

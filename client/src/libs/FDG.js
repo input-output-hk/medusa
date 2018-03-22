@@ -10,6 +10,8 @@ import PositionFrag from '../shaders/position.frag'
 import PassThroughVert from '../shaders/passThrough.vert'
 import PassThroughFrag from '../shaders/passThrough.frag'
 
+import Config from '../Config'
+
 /**
  * GPGPU Force Directed Graph Simulation
  */
@@ -61,7 +63,6 @@ export default class FDG {
   }
 
   refresh () {
-    this.storePositions()
     this.nodeGeometry.setDecayTime(0.0)
   }
 
@@ -72,7 +73,7 @@ export default class FDG {
   } = {}) {
     this.nodeData = nodeData
     this.edgeData = edgeData
-    this.nodeCount = nodeCount
+    this.nodeCount = 4096
 
     if (this.firstRun) {
       this.initPassThrough()
@@ -87,7 +88,7 @@ export default class FDG {
         minFilter: THREE.NearestFilter,
         magFilter: THREE.NearestFilter,
         format: THREE.RGBAFormat,
-        type: THREE.FloatType,
+        type: Config.floatType,
         depthWrite: false,
         depthBuffer: false,
         stencilBuffer: false
@@ -95,17 +96,17 @@ export default class FDG {
 
       this.positionRenderTarget2 = this.positionRenderTarget1.clone()
       this.forceRenderTarget = this.positionRenderTarget1.clone()
-    } else {
-      this.positionRenderTarget1.setSize(this.textureWidth, this.textureHeight)
-      this.positionRenderTarget2.setSize(this.textureWidth, this.textureHeight)
-      this.forceRenderTarget.setSize(this.textureWidth, this.textureHeight)
+
+      this.outputPositionRenderTarget = this.positionRenderTarget1
     }
 
-    this.passThroughTexture(
-      this.textureHelper.createPositionTexture({storedPositions: this.storedPositions}),
-      this.positionRenderTarget1
-    )
-    this.passThroughTexture(this.positionRenderTarget1.texture, this.positionRenderTarget2)
+    if (this.firstRun) {
+      this.passThroughTexture(
+        this.textureHelper.createPositionTexture({storedPositions: this.storedPositions}),
+        this.positionRenderTarget1
+      )
+      this.passThroughTexture(this.positionRenderTarget1.texture, this.positionRenderTarget2)
+    }
 
     this.initForces()
     this.initPositions()
@@ -167,20 +168,29 @@ export default class FDG {
 
   initEdges () {
     this.setEdgeTextureLocations()
-
-    if (this.edges) {
-      this.scene.remove(this.edges)
+    if (this.firstRun) {
+      this.edges = this.edgeGeometry.create(this.nodeCount * 2, this.forceGeometry.attributes.location.array)
+      this.scene.add(this.edges)
+    } else {
+      this.edges.geometry.attributes.position.needsUpdate = true
+      this.edges.geometry.attributes.color.needsUpdate = true
     }
-    this.edges = this.edgeGeometry.create(this.nodeCount * 2, this.forceGeometry.attributes.location.array)
-    this.scene.add(this.edges)
   }
 
   initNodes () {
-    if (this.nodes) {
-      this.scene.remove(this.nodes)
+    if (this.firstRun) {
+      this.nodes = this.nodeGeometry.create(this.nodeData, this.nodeCount)
+      this.scene.add(this.nodes)
+    } else {
+      this.nodeGeometry.setTextureLocations(
+        this.nodeData, this.nodeCount,
+        this.nodes.geometry.attributes.position.array,
+        this.nodes.geometry.attributes.color.array,
+        true
+      )
+      this.nodes.geometry.attributes.position.needsUpdate = true
+      this.nodes.geometry.attributes.color.needsUpdate = true
     }
-    this.nodes = this.nodeGeometry.create(this.nodeData, this.nodeCount)
-    this.scene.add(this.nodes)
   }
 
   passThroughTexture (input, output) {
@@ -213,27 +223,18 @@ export default class FDG {
 
       this.positionMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), this.positionMaterial)
       this.positionScene.add(this.positionMesh)
-    } else {
-      this.positionMaterial.defines.textureWidth = this.textureWidth.toFixed(2)
-      this.positionMaterial.defines.textureHeight = this.textureHeight.toFixed(2)
-      this.positionMaterial.needsUpdate = true
     }
   }
 
   initForces () {
-    if (this.forceGeometry) {
-      this.forceGeometry.dispose()
-    }
+    if (this.firstRun) {
+      this.forceGeometry = new THREE.BufferGeometry()
+      let position = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
+      let location = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 4), 4)
 
-    this.forceGeometry = new THREE.BufferGeometry()
+      this.forceGeometry.addAttribute('position', position)
+      this.forceGeometry.addAttribute('location', location)
 
-    let position = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
-    let location = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 4), 4)
-
-    this.forceGeometry.addAttribute('position', position)
-    this.forceGeometry.addAttribute('location', location)
-
-    if (!this.forceMaterial) {
       this.forceMaterial = new THREE.ShaderMaterial({
         uniforms: {
           pull: {
@@ -253,12 +254,12 @@ export default class FDG {
         fragmentShader: FDGFrag
       })
       this.forceScene = new THREE.Scene()
+      this.forceMesh = new THREE.Points(this.forceGeometry, this.forceMaterial)
+      this.forceScene.add(this.forceMesh)
     } else {
-      this.forceScene.remove(this.forceMesh)
+      this.forceGeometry.attributes.position.needsUpdate = true
+      this.forceGeometry.attributes.location.needsUpdate = true
     }
-
-    this.forceMesh = new THREE.Points(this.forceGeometry, this.forceMaterial)
-    this.forceScene.add(this.forceMesh)
   }
 
   /**

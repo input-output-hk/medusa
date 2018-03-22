@@ -5,7 +5,7 @@ attribute vec4 color;
 varying vec4 vColor;
 varying float vDecay;
 
-const float scale = 2000.0;
+const float scale = 5000.0;
 
 void main() {
     vColor = color;

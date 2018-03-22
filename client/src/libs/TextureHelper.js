@@ -1,6 +1,10 @@
 import * as THREE from 'three'
 
 export default class TextureHelper {
+  constructor () {
+    this.positionTexture = null
+  }
+
   setNodeCount (nodeCount) {
     this.nodeCount = nodeCount
   }
@@ -47,17 +51,21 @@ export default class TextureHelper {
       }
     }
 
-    let texture = new THREE.DataTexture(
-      textureArray,
-      this.textureWidth,
-      this.textureHeight,
-      THREE.RGBAFormat,
-      THREE.FloatType
-    )
-    texture.minFilter = THREE.NearestFilter
-    texture.magFilter = THREE.NearestFilter
-    texture.needsUpdate = true
+    if (!this.positionTexture) {
+      this.positionTexture = new THREE.DataTexture(
+        textureArray,
+        this.textureWidth,
+        this.textureHeight,
+        THREE.RGBAFormat,
+        THREE.FloatType
+      )
+      this.positionTexture.minFilter = THREE.NearestFilter
+      this.positionTexture.magFilter = THREE.NearestFilter
+      this.positionTexture.generateMipmaps = false
+      this.positionTexture.flipY = false
+      this.positionTexture.needsUpdate = true
+    }
 
-    return texture
+    return this.positionTexture
   }
 }
