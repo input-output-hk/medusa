@@ -72,7 +72,7 @@ export default class NodeGeometry {
       colorArray[i * 4] = color.r
       colorArray[i * 4 + 1] = color.g
       colorArray[i * 4 + 2] = color.b
-      colorArray[i * 4 + 3] = node.updated ? 1.0 : 0.0
+      colorArray[i * 4 + 3] = node.u ? 1.0 : 0.0
     }
   }
 
@@ -95,6 +95,13 @@ export default class NodeGeometry {
 
     this.geometry.addAttribute('position', position)
     this.geometry.addAttribute('color', color)
+
+    let idArray = new Float32Array(nodeCount)
+    for (let index = 0; index < idArray.length; index++) {
+      idArray[index] = index
+    }
+    let id = new THREE.BufferAttribute(idArray, 1)
+    this.geometry.addAttribute('id', id)
 
     if (!this.material) {
       this.material = new THREE.ShaderMaterial({

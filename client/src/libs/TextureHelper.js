@@ -42,7 +42,7 @@ export default class TextureHelper {
       textureArray[i * 4 + 0] = Math.random() * 100 - 50
       textureArray[i * 4 + 1] = Math.random() * 100 - 50
       textureArray[i * 4 + 2] = Math.random() * 100 - 50
-      textureArray[i * 4 + 3] = 1
+      textureArray[i * 4 + 3] = i
     }
 
     if (storedPositions.length) {
