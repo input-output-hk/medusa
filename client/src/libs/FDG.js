@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import TextureHelper from './TextureHelper'
 import NodeGeometry from './geometry/node/NodeGeometry'
 import EdgeGeometry from './geometry/edge/EdgeGeometry'
+import TextGeometry from './geometry/text/TextGeometry'
 
 import FDGVert from '../shaders/fdg.vert'
 import FDGFrag from '../shaders/fdg.frag'
@@ -19,14 +20,11 @@ export default class FDG {
   constructor (renderer, scene) {
     this.renderer = renderer
     this.scene = scene
-
-    this.initCamera()
-
-    this.started = false
     this.frame = 0
     this.textureHelper = new TextureHelper()
     this.nodeGeometry = new NodeGeometry()
     this.edgeGeometry = new EdgeGeometry()
+    this.textGeometry = new TextGeometry()
     this.firstRun = true
     this.textureWidth = 0
     this.textureHeight = 0
@@ -37,6 +35,8 @@ export default class FDG {
     this.edges = null
     this.forceMaterial = null
     this.forceGeometry = null
+
+    this.initCamera()
   }
 
   initCamera () {
@@ -112,6 +112,7 @@ export default class FDG {
     this.initPositions()
     this.initEdges()
     this.initNodes()
+    this.initText()
 
     this.setEnabled(true)
   }
@@ -161,6 +162,8 @@ export default class FDG {
       this.nodes.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
       this.edges.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
 
+      this.text.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+
       // update nodes
       this.nodeGeometry.update()
     }
@@ -183,13 +186,34 @@ export default class FDG {
       this.scene.add(this.nodes)
     } else {
       this.nodeGeometry.setTextureLocations(
-        this.nodeData, this.nodeCount,
+        this.nodeData,
+        this.nodeCount,
         this.nodes.geometry.attributes.position.array,
-        this.nodes.geometry.attributes.color.array,
-        true
+        this.nodes.geometry.attributes.color.array
       )
       this.nodes.geometry.attributes.position.needsUpdate = true
       this.nodes.geometry.attributes.color.needsUpdate = true
+    }
+  }
+
+  initText () {
+    if (this.firstRun) {
+      this.text = this.textGeometry.create(this.nodeData, this.nodeCount)
+      this.scene.add(this.text)
+    } else {
+      this.textGeometry.setAttributes(
+        this.nodeData,
+        this.text.geometry.attributes.position.array,
+        this.text.geometry.attributes.labelPositions.array,
+        this.text.geometry.attributes.uv.array,
+        this.text.geometry.attributes.textCoord.array,
+        this.text.geometry.attributes.textureLocation.array
+      )
+      this.text.geometry.attributes.position.needsUpdate = true
+      this.text.geometry.attributes.labelPositions.needsUpdate = true
+      this.text.geometry.attributes.uv.needsUpdate = true
+      this.text.geometry.attributes.textCoord.needsUpdate = true
+      this.text.geometry.attributes.textureLocation.needsUpdate = true
     }
   }
 

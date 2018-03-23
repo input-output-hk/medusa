@@ -67,7 +67,7 @@ class App extends Component {
     // controls
     this.controls = new this.OrbitControls(this.camera, this.renderer.domElement)
     this.controls.minDistance = 0
-    this.controls.maxDistance = 1350000
+    this.controls.maxDistance = 1000000
   }
 
   initFDG () {
@@ -103,7 +103,7 @@ class App extends Component {
    */
   initCamera () {
     // initial position of camera in the scene
-    this.defaultCameraPos = new THREE.Vector3(0.0, 0.0, 1000.0)
+    this.defaultCameraPos = new THREE.Vector3(0.0, 0.0, 500.0)
     // xy bounds of the ambient camera movement
     this.cameraDriftLimitMax = {
       x: 100.0,
@@ -164,7 +164,7 @@ class App extends Component {
    * Get commit data
    */
   async callApi () {
-    let commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(20)
+    let commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
 
     const snapshot = await commits.get()
 
@@ -182,7 +182,6 @@ class App extends Component {
       setTimeout(function () {
         let edges = JSON.parse(commit.edges)
         let nodes = JSON.parse(commit.nodes)[0]
-
 
         let nodeCount = commit.count
 
