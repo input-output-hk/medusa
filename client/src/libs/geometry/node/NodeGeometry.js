@@ -43,12 +43,12 @@ export default class NodeGeometry {
       const node = nodeData[i]
 
       if (!node) {
-        positionArray[i * 3] = null
-        positionArray[i * 3 + 1] = null
-        colorArray[i * 4] = null
-        colorArray[i * 4 + 1] = null
-        colorArray[i * 4 + 2] = null
-        colorArray[i * 4 + 3] = null
+        positionArray[i * 3] = 0
+        positionArray[i * 3 + 1] = 0
+        colorArray[i * 4] = 0
+        colorArray[i * 4 + 1] = 0
+        colorArray[i * 4 + 2] = 0
+        colorArray[i * 4 + 3] = 0
         continue
       }
 
@@ -59,13 +59,13 @@ export default class NodeGeometry {
 
       // colors
       let color
-      if (node.type === 'root') {
+      if (node.t === 'r') {
         color = this.rootColor
-      } else if (node.type === 'dir') {
+      } else if (node.t === 'd') {
         color = this.dirColor
       } else {
         // get file extension
-        let extension = node.filePath.split('.').pop()
+        let extension = node.p.split('.').pop()
         color = this.generateColor(extension)
       }
 

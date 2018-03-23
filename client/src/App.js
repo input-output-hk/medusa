@@ -164,9 +164,13 @@ class App extends Component {
    * Get commit data
    */
   async callApi () {
-    let commits = this.docRef.orderBy('commitDate', 'asc').where('commitDate', '>=', this.state.latestTime).limit(20)
+    let commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(20)
 
     const snapshot = await commits.get()
+
+    if (snapshot.docs.length === 0) {
+      return
+    }
 
     let lastCommit = snapshot.docs[snapshot.size - 1].data()
 
@@ -179,31 +183,19 @@ class App extends Component {
         let edges = JSON.parse(commit.edges)
         let nodes = JSON.parse(commit.nodes)[0]
 
-        let sortedNodes = []
-        for (const key in nodes) {
-          if (nodes.hasOwnProperty(key)) {
-            const node = nodes[key]
-            sortedNodes[node.id] = {
-              id: node.id,
-              type: node.type,
-              filePath: node.filePath,
-              updated: node.updated
-            }
-          }
-        }
 
-        let nodeCount = commit.nodeCounter
+        let nodeCount = commit.count
 
         let changedState = {}
-        changedState.latestTime = commit.commitDate + 1
-        changedState.currentDate = moment.unix(commit.commitDate / 1000).format('MM/DD/YYYY HH:mm:ss')
+        changedState.latestTime = commit.date + 1
+        changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
         changedState.currentCommitHash = commit.sha
         this.setState(changedState)
 
         if (this.FDG) {
           if (this.FDG.firstRun) {
             this.FDG.init({
-              nodeData: sortedNodes,
+              nodeData: nodes,
               edgeData: edges,
               nodeCount: nodeCount + 1
             })
@@ -211,7 +203,7 @@ class App extends Component {
           } else {
             this.FDG.refresh()
             this.FDG.init({
-              nodeData: sortedNodes,
+              nodeData: nodes,
               edgeData: edges,
               nodeCount: nodeCount + 1
             })
@@ -219,7 +211,7 @@ class App extends Component {
         }
 
         // call api again once we've reached last commit in this batch
-        if (lastCommit.commitDate === commit.commitDate) {
+        if (lastCommit.date === commit.date) {
           this.callApi()
         }
       }.bind(this), delay)

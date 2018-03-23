@@ -35,8 +35,9 @@ let currentPage = 0 // which page of results are we on
 let currentCommitIndex = 0 // keep track of the index of each commit in the history
 let nodeCounter = 0
 let commitTotal = 0 // total number of commits in this repo
-let changedFilePaths = []
-let removedFilePaths = []
+let addedPaths = []
+let changedPaths = []
+let removedPaths = []
 let nodes = {}
 let latestCommit = null
 let directoryNodes = {} // keep track of all directory nodes for faster lookup
@@ -46,10 +47,9 @@ const pp = function (variable) {
 }
 
 const clearNodeUpdatedFlag = function () {
-  for (const key in nodes) {
-    if (nodes.hasOwnProperty(key)) {
-      const node = nodes[key]
-      node.updated = false
+  for (const id in nodes) {
+    if (nodes.hasOwnProperty(id)) {
+      delete nodes[id].u
     }
   }
 }
@@ -92,14 +92,25 @@ const getCommitTotal = function () {
   })
 }
 
+/**
+ * t: type (d/f/r)
+ * pid: parentid
+ * p: path
+ * u: updated flag
+ */
 const addNode = function ({
   type,
-  filePath,
+  path,
   id = null,
   parentId = null
 } = {}) {
-  if (typeof nodes[filePath] !== 'undefined') {
-    return {}
+  // check if this node exists
+  for (const id in nodes) {
+    if (nodes.hasOwnProperty(id)) {
+      if (nodes[id].p === path) {
+        return
+      }
+    }
   }
 
   nodeCounter++
@@ -108,25 +119,28 @@ const addNode = function ({
     id = nodeCounter
   }
 
-  nodes[filePath] = {
-    type: type,
-    filePath: filePath,
-    id: id
+  nodes[id] = {
+    t: type,
+    p: path
   }
 
-  if (parentId) {
-    nodes[filePath].parentId = parentId
+  if (parentId !== null) {
+    nodes[id].pid = parentId
   }
 
-  if (changedFilePaths.indexOf(filePath) !== -1) {
-    nodes[filePath].updated = true
+  if (changedPaths.indexOf(path) !== -1) {
+    nodes[id].u = 1
   }
 
-  if (type === 'dir') {
-    directoryNodes[filePath] = nodes[filePath]
+  if (addedPaths.indexOf(path) !== -1) {
+    nodes[id].u = 1
   }
 
-  return nodes[filePath]
+  if (type === 'd') {
+    directoryNodes[id] = nodes[id]
+  }
+
+  return nodes[id]
 }
 
 const updateRoutine = function () {
@@ -137,17 +151,20 @@ const updateRoutine = function () {
         currentCommitIndex = 0
         currentPage = commitTotal
       } else {
-        currentCommitIndex = latestCommit.commitIndex + 1
+        currentCommitIndex = latestCommit.index + 1
         currentPage = Math.abs(currentCommitIndex - commitTotal)
       }
+
+      let recurse = true
 
       // fetch next commit
       githubCliDotCom.fetchAllCommits({owner: GHOwner, repository: GHRepo, perPage: 1, page: currentPage})
         .then(commits => {
           if (commits.length > 0) {
             commits.forEach((commit) => {
-              if (latestCommit && latestCommit.id === commit.sha) {
+              if (latestCommit && latestCommit.sha === commit.sha) {
                 console.log('No new commits to add')
+                recurse = false
                 return
               }
 
@@ -156,22 +173,22 @@ const updateRoutine = function () {
 
               // get commit detail
               githubCliDotCom.fetchCommitBySHA({sha: commit.sha, owner: GHOwner, repository: GHRepo}).then(commitDetail => {
-                // get changed files
-                changedFilePaths = []
-                removedFilePaths = []
+                addedPaths = []
+                changedPaths = []
+                removedPaths = []
 
                 commitDetail.files.forEach((file) => {
-                  if (
-                    file.status === 'modified' ||
-                    file.status === 'added'
-                  ) {
-                    changedFilePaths.push(file.filename)
+                  if (file.status === 'added') {
+                    addedPaths.push(file.filename)
+                  }
+                  if (file.status === 'modified') {
+                    changedPaths.push(file.filename)
                   }
                   if (file.status === 'removed') {
-                    removedFilePaths.push(file.filename)
+                    removedPaths.push(file.filename)
                   }
                   if (file.status === 'renamed') {
-                    removedFilePaths.push(file.previous_filename)
+                    removedPaths.push(file.previous_filename)
                   }
                 })
 
@@ -184,31 +201,31 @@ const updateRoutine = function () {
                 .then(treeData => {
                   // add root node
                   addNode({
-                    type: 'root',
-                    filePath: '/',
+                    type: 'r',
+                    path: '/',
                     id: 0
                   })
 
                   for (const key in treeData.tree) {
                     if (treeData.tree.hasOwnProperty(key)) {
-                      const node = treeData.tree[key]
+                      const treeNode = treeData.tree[key]
 
                       let nodeType = ''
-                      if (node.type === 'blob') {
-                        nodeType = 'file'
+                      if (treeNode.type === 'blob') {
+                        nodeType = 'f'
                       }
-                      if (node.type === 'tree') {
-                        nodeType = 'dir'
+                      if (treeNode.type === 'tree') {
+                        nodeType = 'd'
                       }
 
                       let nodeData = {
                         type: nodeType,
-                        filePath: node.path
+                        path: treeNode.path
                       }
 
                       // get parent dir of this node
                       let parentDirArray = []
-                      let nodePathArray = node.path.split('/')
+                      let nodePathArray = treeNode.path.split('/')
                       for (let index = 0; index < nodePathArray.length - 1; index++) {
                         parentDirArray.push(nodePathArray[index])
                       }
@@ -216,17 +233,18 @@ const updateRoutine = function () {
 
                       // check for parent directory
                       if (parentDirPath.length > 0) {
-                        for (const key in nodes) {
-                          if (nodes.hasOwnProperty(key)) {
-                            const node = nodes[key]
-
-                            if (changedFilePaths.indexOf(key) !== -1) {
-                              nodes[key].updated = true
+                        for (const id in nodes) {
+                          if (nodes.hasOwnProperty(id)) {
+                            let node = nodes[id]
+                            if (changedPaths.indexOf(node.p) !== -1) {
+                              node.u = true
                             }
-
-                            if (node.type === 'dir') {
-                              if (key === parentDirPath) {
-                                nodeData.parentId = node.id
+                            if (addedPaths.indexOf(node.p) !== -1) {
+                              node.u = true
+                            }
+                            if (node.t === 'd') {
+                              if (node.p === parentDirPath) {
+                                nodeData.parentId = id
                               }
                             }
                           }
@@ -238,36 +256,36 @@ const updateRoutine = function () {
                   }
 
                   // remove deleted nodes
-                  for (const key in nodes) {
-                    if (nodes.hasOwnProperty(key)) {
-                      const node = nodes[key]
-                      if (removedFilePaths.indexOf(node.filePath) !== -1) {
-                        console.log('delete file', nodes[key])
-                        delete nodes[key]
+                  for (const id in nodes) {
+                    if (nodes.hasOwnProperty(id)) {
+                      const node = nodes[id]
+                      if (removedPaths.indexOf(node.p) !== -1) {
+                        console.log('delete file', nodes[id])
+                        delete nodes[id]
                       }
                     }
                   }
 
                   // remove empty directories
-                  for (const key in nodes) {
-                    if (nodes.hasOwnProperty(key)) {
-                      const dirNode = nodes[key]
-                      if (dirNode.type === 'dir') {
-                        let parentId = dirNode.id
+                  for (const id in nodes) {
+                    if (nodes.hasOwnProperty(id)) {
+                      const dirNode = nodes[id]
+                      if (dirNode.t === 'd') {
+                        let parentId = id
 
                         // check if any file nodes have this dir as a parent directory
                         let foundParentId = false
-                        for (const fileKey in nodes) {
-                          if (nodes.hasOwnProperty(fileKey)) {
-                            if (nodes[fileKey].parentId === parentId) {
+                        for (const fileId in nodes) {
+                          if (nodes.hasOwnProperty(fileId)) {
+                            if (nodes[fileId].pid === parentId) {
                               foundParentId = true
                               break
                             }
                           }
                         }
                         if (!foundParentId) {
-                          console.log('delete dir', nodes[key])
-                          delete nodes[key]
+                          console.log('delete dir', nodes[id])
+                          delete nodes[id]
                         }
                       }
                     }
@@ -275,12 +293,14 @@ const updateRoutine = function () {
 
                   // create edges structure for graph
                   let edges = []
-                  for (const key in nodes) {
-                    if (nodes.hasOwnProperty(key)) {
-                      const node = nodes[key]
-                      let parentId = typeof node.parentId !== 'undefined' ? node.parentId : 0
-                      if (node.id !== parentId) {
-                        edges.push(node.id)
+                  for (const id in nodes) {
+                    if (nodes.hasOwnProperty(id)) {
+                      const node = nodes[id]
+                      const idInt = parseInt(id)
+                      const parentId = typeof node.pid !== 'undefined' ? parseInt(node.pid) : 0
+
+                      if (idInt !== parentId) {
+                        edges.push(idInt)
                         edges.push(parentId)
                       }
                     }
@@ -291,21 +311,20 @@ const updateRoutine = function () {
                   docRef.set({
                     edges: JSON.stringify(edges),
                     nodes: JSON.stringify([nodes]),
-                    authorEmail: commitDetail.commit.author.email,
-                    authorName: commitDetail.commit.author.name,
-                    commitDate: commitDateObj.valueOf(),
-                    commitMsg: commitDetail.commit.message,
-                    changedFilePaths: changedFilePaths,
-                    removedFilePaths: removedFilePaths,
-                    commitIndex: currentCommitIndex,
-                    nodeCounter: nodeCounter
+                    email: commitDetail.commit.author.email,
+                    author: commitDetail.commit.author.name,
+                    date: commitDateObj.valueOf(),
+                    msg: commitDetail.commit.message,
+                    changes: JSON.stringify({ a: addedPaths.length, c: changedPaths.length, r: removedPaths.length }),
+                    index: currentCommitIndex,
+                    count: nodeCounter
                   })
                 })
               })
             })
           }
         }).then(() => {
-          if (currentPage > 0) {
+          if (currentPage > 0 && recurse) {
             updateRoutine()
           }
         })
@@ -322,18 +341,16 @@ app.get('/api/updateDB', (req, res) => {
 const loadLatestCommit = function () {
   return new Promise((resolve, reject) => {
     let docRef = firebaseDB.collection(GHRepo)
-    let commitData = docRef.orderBy('commitIndex', 'desc').limit(1)
+    let commitData = docRef.orderBy('index', 'desc').limit(1)
     commitData.get().then(snapshot => {
       if (snapshot.empty) {
         resolve()
       }
       snapshot.forEach((doc) => {
         latestCommit = doc.data()
-        latestCommit.id = doc.id
-
+        latestCommit.sha = doc.id
         nodes = JSON.parse(latestCommit.nodes)[0]
-        nodeCounter = latestCommit.nodeCounter
-
+        nodeCounter = latestCommit.count
         resolve()
       })
     })
