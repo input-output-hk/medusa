@@ -172,50 +172,65 @@ class App extends Component {
       return
     }
 
-    let lastCommit = snapshot.docs[snapshot.size - 1].data()
+    let snapshots = []
+    snapshot.forEach(el =>
+      snapshots.push(el)
+    )
 
-    let delay = this.delayAmount
+    async function asyncForEach (array, callback) {
+      for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array)
+      }
+    }
 
-    snapshot.forEach((doc) => {
-      let commit = doc.data()
-      commit.sha = doc.id
-      setTimeout(function () {
-        let edges = JSON.parse(commit.edges)
-        let nodes = JSON.parse(commit.nodes)[0]
+    let that = this
 
-        let nodeCount = commit.count
+    let updateGraph = async function (doc) {
+      return new Promise((resolve, reject) => {
+        let commit = doc.data()
+        commit.sha = doc.id
+        setTimeout(function () {
+          let edges = JSON.parse(commit.edges)
+          let nodes = JSON.parse(commit.nodes)[0]
 
-        let changedState = {}
-        changedState.latestTime = commit.date + 1
-        changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
-        changedState.currentCommitHash = commit.sha
-        this.setState(changedState)
+          let nodeCount = commit.count
 
-        if (this.FDG) {
-          if (this.FDG.firstRun) {
-            this.FDG.init({
-              nodeData: nodes,
-              edgeData: edges,
-              nodeCount: nodeCount + 1
-            })
-            this.FDG.setFirstRun(false)
-          } else {
-            this.FDG.refresh()
-            this.FDG.init({
-              nodeData: nodes,
-              edgeData: edges,
-              nodeCount: nodeCount + 1
-            })
+          let changedState = {}
+          changedState.latestTime = commit.date + 1
+          changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
+          changedState.currentCommitHash = commit.sha
+          that.setState(changedState)
+
+          if (that.FDG) {
+            if (that.FDG.firstRun) {
+              that.FDG.init({
+                nodeData: nodes,
+                edgeData: edges,
+                nodeCount: nodeCount + 1
+              })
+              that.FDG.setFirstRun(false)
+            } else {
+              that.FDG.refresh()
+              that.FDG.init({
+                nodeData: nodes,
+                edgeData: edges,
+                nodeCount: nodeCount + 1
+              })
+            }
           }
-        }
 
-        // call api again once we've reached last commit in this batch
-        if (lastCommit.date === commit.date) {
-          this.callApi()
-        }
-      }.bind(this), delay)
-      delay += this.delayAmount
-    })
+          resolve()
+        }, that.delayAmount)
+      })
+    }
+
+    const addCommits = async () => {
+      await asyncForEach(snapshots, async (snapshot) => {
+        await updateGraph(snapshot)
+      })
+      this.callApi()
+    }
+    addCommits()
   }
 
   render () {
