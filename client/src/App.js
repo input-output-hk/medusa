@@ -164,7 +164,7 @@ class App extends Component {
    * Get commit data
    */
   async callApi () {
-    let commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
+    let commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(20)
 
     const snapshot = await commits.get()
 

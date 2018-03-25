@@ -203,17 +203,15 @@ export default class FDG {
     } else {
       this.textGeometry.setAttributes(
         this.nodeData,
-        this.text.geometry.attributes.position.array,
         this.text.geometry.attributes.labelPositions.array,
-        this.text.geometry.attributes.uv.array,
         this.text.geometry.attributes.textCoord.array,
-        this.text.geometry.attributes.textureLocation.array
+        this.text.geometry.attributes.textureLocation.array,
+        this.text.geometry.attributes.scale.array
       )
-      this.text.geometry.attributes.position.needsUpdate = true
       this.text.geometry.attributes.labelPositions.needsUpdate = true
-      this.text.geometry.attributes.uv.needsUpdate = true
       this.text.geometry.attributes.textCoord.needsUpdate = true
       this.text.geometry.attributes.textureLocation.needsUpdate = true
+      this.text.geometry.attributes.scale.needsUpdate = true
     }
   }
 
