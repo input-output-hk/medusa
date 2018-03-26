@@ -7,6 +7,5 @@ void main(){
   float x = vTextCoord.x + vUv.x * vTextCoord.z;
   float y = vTextCoord.y + (1. - vUv.y) * vTextCoord.w;
   vec4 color = texture2D(fontTexture, vec2(x,y));
-  float opacity = .8;
   gl_FragColor = color;
 }

@@ -15,5 +15,7 @@ void main(){
     vec4 meshPosition = modelViewMatrix * vec4(currentPosition, 1.) + vec4(position.xy, 0., 0.) * vec4(scale.xy, 0., 0.);
     meshPosition.x += labelPositions.x;
     meshPosition.y += labelPositions.y * 0.5;
+    meshPosition.x += 1.1;
+    meshPosition.y -= .21;
     gl_Position = projectionMatrix * meshPosition;
 }

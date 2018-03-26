@@ -9,7 +9,8 @@ import VertexShader from './shaders/node.vert'
 export default class NodeGeometry {
   constructor () {
     this.textureHelper = new TextureHelper()
-    this.sprite = new THREE.TextureLoader().load('textures/matcap.png')
+    this.sprite = new THREE.TextureLoader().load('textures/dot.png')
+    this.uSprite = new THREE.TextureLoader().load('textures/dot-concentric.png')
     this.nodeColorPalette = [
       '#168ec0',
       '#54bfed',
@@ -43,8 +44,8 @@ export default class NodeGeometry {
       const node = nodeData[i]
 
       if (!node) {
-        positionArray[i * 3] = 0
-        positionArray[i * 3 + 1] = 0
+        positionArray[i * 3] = 99999
+        positionArray[i * 3 + 1] = 99999
         colorArray[i * 4] = 0
         colorArray[i * 4 + 1] = 0
         colorArray[i * 4 + 2] = 0
@@ -110,6 +111,10 @@ export default class NodeGeometry {
             type: 't',
             value: this.sprite
           },
+          uMap: {
+            type: 't',
+            value: this.uSprite
+          },
           decayTime: {
             type: 'f',
             value: null
@@ -117,6 +122,10 @@ export default class NodeGeometry {
           positionTexture: {
             type: 't',
             value: null
+          },
+          scale: {
+            type: 'f',
+            value: 1000
           }
         },
         transparent: true,

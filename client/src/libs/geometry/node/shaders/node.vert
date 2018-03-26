@@ -1,13 +1,11 @@
 uniform sampler2D positionTexture;
 uniform float decayTime;
-
+uniform float scale;
 attribute float id;
-
 attribute vec4 color;
+
 varying vec4 vColor;
 varying float vDecay;
-
-const float scale = 5000.0;
 
 void main() {
     vColor = color;

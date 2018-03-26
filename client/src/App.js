@@ -103,7 +103,7 @@ class App extends Component {
    */
   initCamera () {
     // initial position of camera in the scene
-    this.defaultCameraPos = new THREE.Vector3(0.0, 0.0, 500.0)
+    this.defaultCameraPos = new THREE.Vector3(0.0, 0.0, 100.0)
     // xy bounds of the ambient camera movement
     this.cameraDriftLimitMax = {
       x: 100.0,
