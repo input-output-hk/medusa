@@ -36,6 +36,10 @@ export default class TextGeometry {
         let fileNameArray = node.p.split('/')
         let fileName = fileNameArray[fileNameArray.length - 1]
 
+        if (node.p === '/') {
+          fileName = '/'
+        }
+
         for (let charIndex = 0; charIndex < fileName.length; charIndex++) {
           const char = fileName[charIndex]
 

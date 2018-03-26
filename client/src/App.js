@@ -236,10 +236,6 @@ class App extends Component {
   render () {
     return (
       <div className='App'>
-        <div className='controls'>
-          <button className='play' onClick={() => { this.setState({play: true}) }}>Play</button>
-          <button className='play' onClick={() => { this.setState({play: false}) }}>Pause</button>
-        </div>
         <div className='info'>
           <div className='currentDate'>Commit Date: {this.state.currentDate}</div>
           <div className='currentCommitHash'>Commit Hash: {this.state.currentCommitHash}</div>

@@ -11,19 +11,7 @@ export default class NodeGeometry {
     this.textureHelper = new TextureHelper()
     this.sprite = new THREE.TextureLoader().load('textures/dot.png')
     this.uSprite = new THREE.TextureLoader().load('textures/dot-concentric.png')
-    this.nodeColorPalette = [
-      '#168ec0',
-      '#54bfed',
-      '#8dd9f9',
-      '#1746a0',
-      '#4372c4',
-      '#6f9cef',
-      '#623bd6',
-      '#8d6dec',
-      '#b9a4f3'
-    ]
-    this.rootColor = new THREE.Color('#eb2256')
-    this.dirColor = new THREE.Color('#e37b96')
+    this.baseColor = new THREE.Color('#eb2256')
     this.decayTime = 0.0
     this.material = null
     this.geometry = null
@@ -58,22 +46,16 @@ export default class NodeGeometry {
       positionArray[i * 3] = textureLocation.x
       positionArray[i * 3 + 1] = textureLocation.y
 
-      // colors
-      let color
-      if (node.t === 'r') {
-        color = this.rootColor
-      } else if (node.t === 'd') {
-        color = this.dirColor
-      } else {
-        // get file extension
-        let extension = node.p.split('.').pop()
-        color = this.generateColor(extension)
-      }
+      colorArray[i * 4] = this.baseColor.r
+      colorArray[i * 4 + 1] = this.baseColor.g
+      colorArray[i * 4 + 2] = this.baseColor.b
 
-      colorArray[i * 4] = color.r
-      colorArray[i * 4 + 1] = color.g
-      colorArray[i * 4 + 2] = color.b
-      colorArray[i * 4 + 3] = node.u ? 1.0 : 0.0
+      // store time since last update in alpha channel
+      if (node.u) {
+        colorArray[i * 4 + 3] = 0.0
+      } else {
+        colorArray[i * 4 + 3] += 0.01
+      }
     }
   }
 
@@ -125,7 +107,7 @@ export default class NodeGeometry {
           },
           scale: {
             type: 'f',
-            value: 1000
+            value: 2000
           }
         },
         transparent: true,

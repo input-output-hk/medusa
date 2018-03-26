@@ -7,6 +7,7 @@ attribute vec2 scale;
 
 varying vec2 vUv;
 varying vec4 vTextCoord;
+varying vec4 vColor;
 
 void main(){
     vUv = uv;
@@ -17,5 +18,9 @@ void main(){
     meshPosition.y += labelPositions.y * 0.5;
     meshPosition.x += 1.1;
     meshPosition.y -= .21;
+
+    vColor = vec4(1.);
+    vColor.a = 1500. / dot(meshPosition.xyz, meshPosition.xyz);
+
     gl_Position = projectionMatrix * meshPosition;
 }
