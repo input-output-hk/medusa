@@ -158,7 +158,7 @@ const updateRoutine = function () {
       let recurse = true
 
       // fetch next commit
-      githubCliDotCom.fetchAllCommits({owner: GHOwner, repository: GHRepo, perPage: 1, page: currentPage})
+      githubCliDotCom.fetchAllCommits({owner: GHOwner, repository: GHRepo, perPage: 1, page: currentPage, branch: GHBranch})
         .then(commits => {
           if (commits.length > 0) {
             commits.forEach((commit) => {

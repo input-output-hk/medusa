@@ -32,8 +32,8 @@ function fetchCommitBySHA ({sha, owner, repository}) {
     })
 }
 
-function fetchAllCommits ({owner, repository, perPage = 20, page = 1}) {
-  return this.getData({path: `/repos/${owner}/${repository}/commits?per_page=${perPage}&page=${page}`})
+function fetchAllCommits ({owner, repository, perPage = 20, page = 1, branch = 'master'}) {
+  return this.getData({path: `/repos/${owner}/${repository}/commits?per_page=${perPage}&page=${page}&sha=${branch}`})
     .then(response => {
       return response.data
     })

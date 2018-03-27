@@ -174,6 +174,9 @@ class App extends Component {
     const snapshot = await commits.get()
 
     if (snapshot.docs.length === 0) {
+      setTimeout(() => {
+        this.callApi()
+      }, 5000)
       return
     }
 
@@ -194,7 +197,7 @@ class App extends Component {
       return new Promise((resolve, reject) => {
         let commit = doc.data()
         commit.sha = doc.id
-        setTimeout(function () {
+        setTimeout(() => {
           let edges = JSON.parse(commit.edges)
           let nodes = JSON.parse(commit.nodes)[0]
 

@@ -21,6 +21,7 @@ canvas#stage {
   color: #eee;
   padding: 1em;
   z-index: 1;
+  font-size: 10px;
 }
 
 .controls {
