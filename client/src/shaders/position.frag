@@ -10,21 +10,28 @@ void main() {
 
   vec3 newPos = vec3(0.);
 
-  if (currentPosition.w != 0.0) {
+  if (currentPosition.w != 0.0) { // 0 = root node
 
     // repel this particle away from other particles
     vec3 repelForce = vec3(0.);
     for (float y = height * 0.5; y < 1.0; y += height) {
         for (float x = width * 0.5; x < 1.0; x += width) {
           vec4 otherPosition = texture2D(positionTexture, vec2(x, y));
-          vec3 diff = currentPosition.xyz - otherPosition.xyz;
-          float lengthSq = dot(diff, diff);
-          repelForce += diff / (lengthSq * lengthSq + 1.);
+          if (otherPosition.w == 2.) { // 2 = active node
+            vec3 diff = currentPosition.xyz - otherPosition.xyz;
+            float lengthSq = dot(diff, diff);
+            repelForce += diff / (lengthSq * lengthSq + 1.);
+          }
         }
     }
     vec3 edgeForce = texture2D(forcesTexture, vUv).xyz;
     newPos = currentPosition.xyz + edgeForce + repelForce * 100.;
   }
 
-  gl_FragColor = vec4(newPos.xyz, currentPosition.w);
+  if (currentPosition.w != 0.0) {
+    gl_FragColor = vec4(newPos.xyz, 2.);
+  } else {
+    gl_FragColor = vec4(newPos.xyz, 0.);
+  }
+
 }

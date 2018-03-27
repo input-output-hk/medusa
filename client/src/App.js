@@ -37,6 +37,11 @@ class App extends Component {
       play: false,
       currentDate: null,
       currentCommitHash: null,
+      currentAuthor: null,
+      currentMsg: null,
+      currentAdded: null,
+      currentChanged: null,
+      currentRemoved: null,
       latestTime: latestTime
     }
 
@@ -196,9 +201,15 @@ class App extends Component {
           let nodeCount = commit.count
 
           let changedState = {}
+          let changes = JSON.parse(commit.changes)
           changedState.latestTime = commit.date + 1
           changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
           changedState.currentCommitHash = commit.sha
+          changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
+          changedState.currentMsg = commit.msg
+          changedState.currentAdded = changes.a
+          changedState.currentChanged = changes.c
+          changedState.currentRemoved = changes.r
           that.setState(changedState)
 
           if (that.FDG) {
@@ -237,6 +248,11 @@ class App extends Component {
     return (
       <div className='App'>
         <div className='info'>
+          <div className='currentAdded'>Files Added: {this.state.currentAdded}</div>
+          <div className='currentChanged'>Files Changed: {this.state.currentChanged}</div>
+          <div className='currentRemoved'>Files Removed: {this.state.currentRemoved}</div>
+          <div className='currentAuthor'>Author: {this.state.currentAuthor}</div>
+          <div className='currentMsg'>Message: {this.state.currentMsg}</div>
           <div className='currentDate'>Commit Date: {this.state.currentDate}</div>
           <div className='currentCommitHash'>Commit Hash: {this.state.currentCommitHash}</div>
         </div>

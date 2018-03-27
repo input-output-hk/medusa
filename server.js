@@ -306,11 +306,30 @@ const updateRoutine = function () {
                     }
                   }
 
+                  let nodesArr = []
+                  for (const key in nodes) {
+                    if (nodes.hasOwnProperty(key)) {
+                      nodes[key].id = parseInt(key)
+                      nodesArr.push(
+                        nodes[key]
+                      )
+                    }
+                  }
+
+                  let edgesArr = []
+                  edges.forEach(edge => {
+                    nodesArr.forEach((node, i) => {
+                      if (node.id === edge) {
+                        edgesArr.push(i)
+                      }
+                    })
+                  })
+
                   // save to db
                   let docRef = firebaseDB.collection(GHRepo).doc(commitDetail.sha)
                   docRef.set({
-                    edges: JSON.stringify(edges),
-                    nodes: JSON.stringify([nodes]),
+                    edges: JSON.stringify(edgesArr),
+                    nodes: JSON.stringify([nodesArr]),
                     email: commitDetail.commit.author.email,
                     author: commitDetail.commit.author.name,
                     date: commitDateObj.valueOf(),
@@ -349,7 +368,13 @@ const loadLatestCommit = function () {
       snapshot.forEach((doc) => {
         latestCommit = doc.data()
         latestCommit.sha = doc.id
-        nodes = JSON.parse(latestCommit.nodes)[0]
+        let nodeData = JSON.parse(latestCommit.nodes)[0]
+
+        nodes = {}
+        nodeData.forEach((node) => {
+          nodes[node.id] = node
+        })
+
         nodeCounter = latestCommit.count
         resolve()
       })

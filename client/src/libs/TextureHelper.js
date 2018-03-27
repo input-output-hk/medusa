@@ -42,7 +42,7 @@ export default class TextureHelper {
       textureArray[i * 4 + 0] = Math.random() * 100 - 50
       textureArray[i * 4 + 1] = Math.random() * 100 - 50
       textureArray[i * 4 + 2] = Math.random() * 100 - 50
-      textureArray[i * 4 + 3] = i
+      textureArray[i * 4 + 3] = i === 0 ? 0 : 1 // 0 = root node, 1 = inactive node, 2 = active node
     }
 
     if (storedPositions.length) {

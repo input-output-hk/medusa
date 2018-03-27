@@ -29,6 +29,10 @@ export default class TextGeometry {
   ) {
     let iter = 0
 
+    for (let index = 0; index < textCoordsArray.length; index++) {
+      textCoordsArray[index] = 0.0
+    }
+
     for (const nodeId in nodeData) {
       if (nodeData.hasOwnProperty(nodeId)) {
         const node = nodeData[nodeId]
@@ -82,10 +86,10 @@ export default class TextGeometry {
 
     this.geometry = new THREE.InstancedBufferGeometry().copy(new THREE.PlaneBufferGeometry(1, 1))
 
-    let scaleArray = new Float32Array(nodeCount)
-    let labelPositionsArray = new Float32Array(nodeCount)
-    let textCoordsArray = new Float32Array(nodeCount * 2)
-    let textureLocationArray = new Float32Array(nodeCount)
+    let scaleArray = new Float32Array(nodeCount * 10)
+    let labelPositionsArray = new Float32Array(nodeCount * 10)
+    let textCoordsArray = new Float32Array(nodeCount * 2 * 10)
+    let textureLocationArray = new Float32Array(nodeCount * 10)
 
     this.setAttributes(
       nodeData,
