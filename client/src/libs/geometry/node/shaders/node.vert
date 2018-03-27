@@ -8,6 +8,7 @@ attribute vec4 color;
 varying vec4 vColor;
 varying float vDecay;
 varying float vActive;
+varying float vDist;
 
 void main() {
     vColor = color;
@@ -41,7 +42,9 @@ void main() {
         float decayScale = scale;
         decayScale += vDecay * 1500.0;
 
-        gl_PointSize = decayScale / length(mvPosition.xyz);
+        vDist = decayScale / length(mvPosition.xyz);
+
+        gl_PointSize = vDist;
         gl_Position = projectionMatrix * mvPosition;
     }
 }

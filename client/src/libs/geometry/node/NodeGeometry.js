@@ -17,16 +17,6 @@ export default class NodeGeometry {
     this.geometry = null
   }
 
-  generateColor (extension) {
-    let total = 0
-    for (let index = 0; index < extension.length; index++) {
-      total += extension[index].charCodeAt(0)
-    }
-    let colorIndex = total % this.nodeColorPalette.length
-    let color = this.nodeColorPalette[colorIndex]
-    return new THREE.Color(color)
-  }
-
   setTextureLocations (nodeData, nodeCount, positionArray, colorArray) {
     for (let i = 0; i < nodeCount; i++) {
       const node = nodeData[i]

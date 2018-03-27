@@ -172,11 +172,13 @@ export default class FDG {
   initEdges () {
     this.setEdgeTextureLocations()
     if (this.firstRun) {
-      this.edges = this.edgeGeometry.create(this.nodeCount * 2, this.forceGeometry.attributes.location.array)
+      this.edges = this.edgeGeometry.create(this.nodeCount * 2, this.forceGeometry.attributes.location.array, this.nodeData, this.nodeCount, this.edgeData)
       this.scene.add(this.edges)
     } else {
+      this.edgeGeometry.setUpdated(this.nodeData, this.nodeCount, this.edges.geometry.attributes.updated.array, this.edgeData)
       this.edges.geometry.attributes.position.needsUpdate = true
-      this.edges.geometry.attributes.color.needsUpdate = true
+      this.edges.geometry.attributes.texLocation.needsUpdate = true
+      this.edges.geometry.attributes.updated.needsUpdate = true
     }
   }
 

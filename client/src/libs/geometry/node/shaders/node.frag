@@ -5,6 +5,7 @@ uniform float decayTime;
 varying float vDecay;
 varying vec4 vColor;
 varying float vActive;
+varying float vDist;
 
 void main() {
 
@@ -21,12 +22,15 @@ void main() {
     sprite.rgb *= vColor.rgb;
 
     if (vColor.a > 1.) {
-      sprite.rgb = mix(vec3(.09, .274, .627), vec3(1., 1., 1.), vColor.a - 1.);
+      sprite.rgb = mix(vec3(.09, .274, .627), vec3(.8, .8, .8), vColor.a - 1.);
     } else {
       sprite.rgb = mix(vColor.rgb, vec3(.09, .274, .627), vColor.a);
     }
 
     sprite.rg += vDecay * 0.5;
+
+    sprite.a *= min(sprite.a, (vDist * vDist * 0.025));
+
     gl_FragColor = vec4(sprite.rgb, sprite.a);
   }
 }
