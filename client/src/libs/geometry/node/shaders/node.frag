@@ -22,7 +22,8 @@ void main() {
     sprite.rgb *= vColor.rgb;
 
     if (vColor.a > 1.) {
-      sprite.rgb = mix(vec3(.09, .274, .627), vec3(.8, .8, .8), vColor.a - 1.);
+      float amount = min(1., vColor.a - 1.);
+      sprite.rgb = mix(vec3(.09, .274, .627), vec3(.8, .8, .8), amount);
     } else {
       sprite.rgb = mix(vColor.rgb, vec3(.09, .274, .627), vColor.a);
     }

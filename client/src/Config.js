@@ -18,7 +18,7 @@ const Config = {
     messagingSenderId: '290917146601'
   },
   FDG: {
-    delayAmount: 300
+    delayAmount: 500 // time in between new commits being added to the graph
   },
   scene: {
     bgColor: 0x121327,
@@ -26,7 +26,7 @@ const Config = {
     antialias: true
   },
   camera: {
-    fov: 45
+    fov: 60
   },
   floatType: detector.isIOS ? THREE.HalfFloatType : THREE.FloatType
 }
