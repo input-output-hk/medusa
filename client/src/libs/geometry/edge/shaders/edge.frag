@@ -12,7 +12,7 @@ void main(){
     color = mix(vec3(0.921, 0.133, 0.337), vec3(.09, .274, .627), vUpdated);
   }
 
- // float a = vDist;
+  float a = vDist;
 
-  gl_FragColor = vec4(color, .35);
+  gl_FragColor = vec4(color, a);
 }

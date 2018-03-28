@@ -30,7 +30,7 @@ void main() {
 
     sprite.rg += vDecay * 0.5;
 
-    sprite.a *= min(sprite.a, (vDist * vDist * 0.025));
+    sprite.a *= min(sprite.a, (vDist * vDist * 0.002));
 
     gl_FragColor = vec4(sprite.rgb, sprite.a);
   }

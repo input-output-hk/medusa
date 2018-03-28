@@ -13,8 +13,8 @@ export default class TextGeometry {
   constructor () {
     this.textureHelper = new TextureHelper()
     this.font = UbuntuMono('textures/UbuntuMono.png')
-    this.fontSize = 5
-    this.kerning = 0.5
+    this.fontSize = 25
+    this.kerning = 2.5
     this.textureSize = 1024 // size of the font texture (aspect 1:1)
     this.material = null
     this.geometry = null
@@ -86,10 +86,10 @@ export default class TextGeometry {
 
     this.geometry = new THREE.InstancedBufferGeometry().copy(new THREE.PlaneBufferGeometry(1, 1))
 
-    let scaleArray = new Float32Array(nodeCount * 10)
-    let labelPositionsArray = new Float32Array(nodeCount * 10)
-    let textCoordsArray = new Float32Array(nodeCount * 2 * 10)
-    let textureLocationArray = new Float32Array(nodeCount * 10)
+    let scaleArray = new Float32Array(nodeCount * 20)
+    let labelPositionsArray = new Float32Array(nodeCount * 20)
+    let textCoordsArray = new Float32Array(nodeCount * 2 * 20)
+    let textureLocationArray = new Float32Array(nodeCount * 20)
 
     this.setAttributes(
       nodeData,

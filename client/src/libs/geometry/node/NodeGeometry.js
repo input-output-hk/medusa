@@ -97,7 +97,7 @@ export default class NodeGeometry {
           },
           scale: {
             type: 'f',
-            value: 6000
+            value: 30000
           }
         },
         transparent: true,

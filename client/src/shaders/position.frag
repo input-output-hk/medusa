@@ -19,8 +19,8 @@ void main() {
           vec4 otherPosition = texture2D(positionTexture, vec2(x, y));
           if (otherPosition.w == 2.) { // 2 = active node
             vec3 diff = currentPosition.xyz - otherPosition.xyz;
-            float lengthSq = dot(diff, diff);
-            repelForce += diff / (lengthSq * lengthSq + 1.);
+            float magnitude = length(diff);
+            repelForce += diff / (magnitude * magnitude * magnitude + 1.);
           }
         }
     }

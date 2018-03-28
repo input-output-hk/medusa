@@ -108,7 +108,7 @@ class App extends Component {
    */
   initCamera () {
     // initial position of camera in the scene
-    this.defaultCameraPos = new THREE.Vector3(0.0, 0.0, 100.0)
+    this.defaultCameraPos = new THREE.Vector3(0.0, 0.0, 1000.0)
     // xy bounds of the ambient camera movement
     this.cameraDriftLimitMax = {
       x: 100.0,
@@ -169,7 +169,7 @@ class App extends Component {
    * Get commit data
    */
   async callApi () {
-    let commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(20)
+    let commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
 
     const snapshot = await commits.get()
 

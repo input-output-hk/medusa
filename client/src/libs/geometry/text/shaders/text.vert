@@ -16,11 +16,11 @@ void main(){
     vec4 meshPosition = modelViewMatrix * vec4(currentPosition, 1.) + vec4(position.xy, 0., 0.) * vec4(scale.xy, 0., 0.);
     meshPosition.x += labelPositions.x;
     meshPosition.y += labelPositions.y * 0.5;
-    meshPosition.x += 1.3;
-    meshPosition.y -= .21;
+    meshPosition.x += 6.0;
+    meshPosition.y -= 1.6;
 
     vColor = vec4(1.);
-    vColor.a = 2500. / dot(meshPosition.xyz, meshPosition.xyz);
+    vColor.a = 60000. / dot(meshPosition.xyz, meshPosition.xyz);
 
     gl_Position = projectionMatrix * meshPosition;
 }
