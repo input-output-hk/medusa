@@ -7,7 +7,8 @@ const detector = new Detector()
 const Config = {
   git: {
     owner: 'input-output-hk',
-    repo: 'cardano-sl'
+    repo: 'cardano-sl',
+    commitHash: null // hash of commit to load
   },
   fireBase: {
     apiKey: 'AIzaSyA9_GvRguuv5zZLdV0-bVnVfA0FEGWy4gA',
@@ -18,7 +19,10 @@ const Config = {
     messagingSenderId: '290917146601'
   },
   FDG: {
-    delayAmount: 500 // time in between new commits being added to the graph
+    movementQuality: 1, // 1 == high, 0 == low
+    delayAmount: 500, // time in between new commits being added to the graph
+    sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
+    sphereRadius: 700 // radius of sphere if in sphere projection mode
   },
   scene: {
     bgColor: 0x121327,
@@ -26,7 +30,8 @@ const Config = {
     antialias: true
   },
   camera: {
-    fov: 60
+    fov: 60,
+    initPos: {x: 0, y: 0, z: 1000}
   },
   floatType: detector.isIOS ? THREE.HalfFloatType : THREE.FloatType
 }

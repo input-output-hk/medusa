@@ -1,4 +1,8 @@
 varying vec2 vUv;
+
+uniform float sphereProject;
+uniform float sphereRadius;
+
 uniform sampler2D positionTexture;
 uniform sampler2D forcesTexture;
 
@@ -20,16 +24,25 @@ void main() {
           if (otherPosition.w == 2.) { // 2 = active node
             vec3 diff = currentPosition.xyz - otherPosition.xyz;
             float magnitude = length(diff);
-            repelForce += diff / (magnitude * magnitude * magnitude + 1.);
+            if (magnitude < 500.0)  {
+              repelForce += diff / (magnitude * magnitude * magnitude + 1.);
+            }
           }
         }
     }
     vec3 edgeForce = texture2D(forcesTexture, vUv).xyz;
-    newPos = currentPosition.xyz + edgeForce + repelForce * 100.;
-  }
 
-  if (currentPosition.w != 0.0) {
-    gl_FragColor = vec4(newPos.xyz, 2.);
+    vec3 force = edgeForce + repelForce * 100.;
+
+    newPos = currentPosition.xyz + force;
+
+    vec3 finalPos = mix(currentPosition.xyz, newPos, 0.5);
+    if (sphereProject == 1.0) {
+      finalPos = normalize(finalPos) * sphereRadius;
+    }
+
+    gl_FragColor = vec4(finalPos, 2.);
+
   } else {
     gl_FragColor = vec4(newPos.xyz, 0.);
   }

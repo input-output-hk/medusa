@@ -35,6 +35,7 @@ export default class FDG {
     this.edges = null
     this.forceMaterial = null
     this.forceGeometry = null
+    this.newNodes = []
 
     this.initCamera()
   }
@@ -131,38 +132,51 @@ export default class FDG {
     this.firstRun = firstRun
   }
 
+  calculatePositions () {
+    this.frame++
+
+    this.positionMaterial.uniforms.sphereProject.value = Config.FDG.sphereProject
+    this.positionMaterial.uniforms.sphereRadius.value = Config.FDG.sphereRadius
+
+    // update forces
+    let inputForceRenderTarget = this.positionRenderTarget1
+    if (this.frame % 2 === 0) {
+      inputForceRenderTarget = this.positionRenderTarget2
+    }
+    this.forceMaterial.uniforms.positionTexture.value = inputForceRenderTarget.texture
+    this.forceMaterial.uniforms.pull.value = 1
+    this.renderer.render(this.forceScene, this.quadCamera, this.forceRenderTarget, false)
+    this.renderer.autoClear = false
+    this.forceMaterial.uniforms.pull.value = 0
+    this.renderer.render(this.forceScene, this.quadCamera, this.forceRenderTarget, false)
+    this.renderer.autoClear = true
+
+    // update positions
+    let inputPositionRenderTarget = this.positionRenderTarget1
+    this.outputPositionRenderTarget = this.positionRenderTarget2
+    if (this.frame % 2 === 0) {
+      inputPositionRenderTarget = this.positionRenderTarget2
+      this.outputPositionRenderTarget = this.positionRenderTarget1
+    }
+    this.positionMaterial.uniforms.positionTexture.value = inputPositionRenderTarget.texture
+    this.positionMaterial.uniforms.forcesTexture.value = this.forceRenderTarget.texture
+    this.renderer.render(this.positionScene, this.quadCamera, this.outputPositionRenderTarget)
+
+    this.nodes.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+    this.edges.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+
+    this.text.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+  }
+
   update () {
     if (this.enabled) {
-      this.frame++
-
-      // update forces
-      let inputForceRenderTarget = this.positionRenderTarget1
-      if (this.frame % 2 === 0) {
-        inputForceRenderTarget = this.positionRenderTarget2
+      if (Config.FDG.movementQuality === 1) {
+        for (let index = 0; index < 4; index++) {
+          this.calculatePositions()
+        }
+      } else {
+        this.calculatePositions()
       }
-      this.forceMaterial.uniforms.positionTexture.value = inputForceRenderTarget.texture
-      this.forceMaterial.uniforms.pull.value = 1
-      this.renderer.render(this.forceScene, this.quadCamera, this.forceRenderTarget, false)
-      this.renderer.autoClear = false
-      this.forceMaterial.uniforms.pull.value = 0
-      this.renderer.render(this.forceScene, this.quadCamera, this.forceRenderTarget, false)
-      this.renderer.autoClear = true
-
-      // update positions
-      let inputPositionRenderTarget = this.positionRenderTarget1
-      this.outputPositionRenderTarget = this.positionRenderTarget2
-      if (this.frame % 2 === 0) {
-        inputPositionRenderTarget = this.positionRenderTarget2
-        this.outputPositionRenderTarget = this.positionRenderTarget1
-      }
-      this.positionMaterial.uniforms.positionTexture.value = inputPositionRenderTarget.texture
-      this.positionMaterial.uniforms.forcesTexture.value = this.forceRenderTarget.texture
-      this.renderer.render(this.positionScene, this.quadCamera, this.outputPositionRenderTarget)
-
-      this.nodes.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
-      this.edges.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
-
-      this.text.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
 
       // update nodes
       this.nodeGeometry.update()
@@ -233,6 +247,14 @@ export default class FDG {
           forcesTexture: {
             type: 't',
             value: null
+          },
+          sphereProject: {
+            type: 'f',
+            value: 0.0
+          },
+          sphereRadius: {
+            type: 'f',
+            value: 0.0
           }
         },
         defines: {

@@ -39,9 +39,9 @@ export default class TextureHelper {
   } = {}) {
     let textureArray = new Float32Array(this.textureWidth * this.textureHeight * 4)
     for (let i = 0; i < this.nodeCount; i++) {
-      textureArray[i * 4 + 0] = Math.random() * 2000 - 1000
-      textureArray[i * 4 + 1] = Math.random() * 2000 - 1000
-      textureArray[i * 4 + 2] = Math.random() * 2000 - 1000
+      textureArray[i * 4 + 0] = Math.random() * 1000 - 500
+      textureArray[i * 4 + 1] = Math.random() * 1000 - 500
+      textureArray[i * 4 + 2] = Math.random() * 1000 - 500
       textureArray[i * 4 + 3] = i === 0 ? 0 : 1 // 0 = root node, 1 = inactive node, 2 = active node
     }
 

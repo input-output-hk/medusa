@@ -7,7 +7,7 @@ void main(){
 
   if (vUpdated > 1.) {
     float amount = min(1., vUpdated - 1.);
-    color = mix(vec3(.09, .274, .627), vec3(.8, .8, .8), amount);
+    color = mix(vec3(.09, .274, .627), vec3(.7, .7, .7), amount);
   } else {
     color = mix(vec3(0.921, 0.133, 0.337), vec3(.09, .274, .627), vUpdated);
   }

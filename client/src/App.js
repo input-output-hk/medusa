@@ -33,10 +33,13 @@ class App extends Component {
       }
     }
 
+    this.commitsToProcess = []
+
     this.state = {
       play: false,
       currentDate: null,
-      currentCommitHash: null,
+      currentCommitHash: '',
+      spherize: Config.FDG.sphereProject,
       currentAuthor: null,
       currentMsg: null,
       currentAdded: null,
@@ -44,6 +47,8 @@ class App extends Component {
       currentRemoved: null,
       latestTime: latestTime
     }
+
+    this.loadCommitHash = Config.git.commitHash
 
     this.docRef = this.firebaseDB.collection(Config.git.repo)
   }
@@ -108,7 +113,7 @@ class App extends Component {
    */
   initCamera () {
     // initial position of camera in the scene
-    this.defaultCameraPos = new THREE.Vector3(0.0, 0.0, 1000.0)
+    this.defaultCameraPos = Config.camera.initPos
     // xy bounds of the ambient camera movement
     this.cameraDriftLimitMax = {
       x: 100.0,
@@ -169,11 +174,19 @@ class App extends Component {
    * Get commit data
    */
   async callApi () {
-    let commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
+    let commits
+    let singleCommit = false
+    if (this.loadCommitHash !== null) {
+      commits = this.docRef.doc(this.loadCommitHash)
+      this.loadCommitHash = null
+      singleCommit = true
+    } else {
+      commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
+    }
 
     const snapshot = await commits.get()
 
-    if (snapshot.docs.length === 0) {
+    if (snapshot.docs && snapshot.docs.length === 0) {
       setTimeout(() => {
         this.callApi()
       }, 5000)
@@ -181,9 +194,17 @@ class App extends Component {
     }
 
     let snapshots = []
-    snapshot.forEach(el =>
-      snapshots.push(el)
-    )
+    this.commitsToProcess = []
+
+    if (singleCommit) {
+      snapshots.push(snapshot)
+      this.commitsToProcess.push(snapshot.id)
+    } else {
+      snapshot.forEach(snapshot => {
+        snapshots.push(snapshot)
+        this.commitsToProcess.push(snapshot.id)
+      })
+    }
 
     async function asyncForEach (array, callback) {
       for (let index = 0; index < array.length; index++) {
@@ -197,6 +218,11 @@ class App extends Component {
       return new Promise((resolve, reject) => {
         let commit = doc.data()
         commit.sha = doc.id
+
+        if (that.commitsToProcess.indexOf(doc.id) === -1) {
+          resolve()
+        }
+
         setTimeout(() => {
           let edges = JSON.parse(commit.edges)
           let nodes = JSON.parse(commit.nodes)[0]
@@ -233,7 +259,9 @@ class App extends Component {
             }
           }
 
-          resolve()
+          if (that.state.play) {
+            resolve()
+          }
         }, that.delayAmount)
       })
     }
@@ -247,6 +275,30 @@ class App extends Component {
     addCommits()
   }
 
+  toggleSpherize () {
+    Config.FDG.sphereProject = !this.state.spherize
+    this.setState({spherize: Config.FDG.sphereProject})
+  }
+
+  togglePlay () {
+    let play = !this.state.play
+    this.setState({play: play})
+
+    if (play) {
+      this.callApi()
+    }
+  }
+
+  loadCommit () {
+    let commit = this.commitInput.value.trim()
+    if (commit) {
+      this.loadCommitHash = commit
+      this.commitsToProcess = [commit]
+      this.setState({play: false})
+      this.callApi()
+    }
+  }
+
   render () {
     return (
       <div className='App'>
@@ -258,6 +310,34 @@ class App extends Component {
           <div className='currentMsg'>Message: {this.state.currentMsg}</div>
           <div className='currentDate'>Commit Date: {this.state.currentDate}</div>
           <div className='currentCommitHash'>Commit Hash: {this.state.currentCommitHash}</div>
+          <label>
+            Play:
+            <input
+              name='play'
+              type='checkbox'
+              checked={this.state.play}
+              onChange={this.togglePlay.bind(this)} />
+          </label>
+          <br />
+          <label>
+            Commit:
+            <input
+              ref={input => {
+                this.commitInput = input
+              }}
+              name='commitInput'
+              type='text' />
+            <button onClick={this.loadCommit.bind(this)}>Go</button>
+          </label>
+          <br />
+          <label>
+            Sphere Projection:
+            <input
+              name='spherize'
+              type='checkbox'
+              checked={this.state.spherize}
+              onChange={this.toggleSpherize.bind(this)} />
+          </label>
         </div>
         <canvas id='stage' />
       </div>

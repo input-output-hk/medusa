@@ -23,14 +23,14 @@ void main() {
 
     if (vColor.a > 1.) {
       float amount = min(1., vColor.a - 1.);
-      sprite.rgb = mix(vec3(.09, .274, .627), vec3(.8, .8, .8), amount);
+      sprite.rgb = mix(vec3(.09, .274, .627), vec3(.7, .7, .7), amount);
     } else {
       sprite.rgb = mix(vColor.rgb, vec3(.09, .274, .627), vColor.a);
     }
 
     sprite.rg += vDecay * 0.5;
 
-    sprite.a *= min(sprite.a, (vDist * vDist * 0.002));
+    sprite.a *= min(sprite.a, (vDist * vDist * 0.005));
 
     gl_FragColor = vec4(sprite.rgb, sprite.a);
   }

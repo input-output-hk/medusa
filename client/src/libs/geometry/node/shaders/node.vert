@@ -39,7 +39,7 @@ void main() {
         }
         
         float decayScale = scale;
-        decayScale += vDecay * 3000.0;
+        decayScale += (vDecay * 10000.0);
 
         vDist = decayScale / length(mvPosition.xyz);
 
