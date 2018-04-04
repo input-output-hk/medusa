@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import * as THREE from 'three'
 import OrbitContructor from 'three-orbit-controls'
+import deepAssign from 'deep-assign'
+
 import Config from './Config'
 import FDG from './libs/FDG'
 
@@ -16,7 +18,8 @@ require('firebase/firestore')
 class App extends Component {
   constructor (props) {
     super(props)
-    this.config = Object.assign(Config, this.props.config)
+
+    this.config = deepAssign(Config, this.props.config)
 
     this.initFireBase()
     this.OrbitControls = OrbitContructor(THREE)
@@ -359,7 +362,7 @@ class App extends Component {
     return (
       <div className='App'>
         {this.ui()}
-        <canvas id='stage' />
+        <canvas id={Config.scene.canvasID} />
       </div>
     )
   }
