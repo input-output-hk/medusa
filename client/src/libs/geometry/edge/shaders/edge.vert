@@ -21,7 +21,7 @@ void main() {
   vec4 mvPosition = modelViewMatrix * currentPosition;
 
   vDist = 700000.0 / dot(mvPosition.xyz, mvPosition.xyz);
-  vDist = min(.70, vDist);
+  vDist = min(.50, vDist);
 
   gl_Position = projectionMatrix * mvPosition;
 }

@@ -171,13 +171,7 @@ export default class FDG {
 
   update () {
     if (this.enabled) {
-      if (this.config.FDG.movementQuality === 1) {
-        for (let index = 0; index < 4; index++) {
-          this.calculatePositions()
-        }
-      } else {
-        this.calculatePositions()
-      }
+      this.calculatePositions()
 
       // update nodes
       this.nodeGeometry.update()
