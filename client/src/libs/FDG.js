@@ -73,7 +73,7 @@ export default class FDG {
   } = {}) {
     this.nodeData = nodeData
     this.edgeData = edgeData
-    this.nodeCount = 4096
+    this.nodeCount = nodeCount
 
     if (this.firstRun) {
       this.initPassThrough()

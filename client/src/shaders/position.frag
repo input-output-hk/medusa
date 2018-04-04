@@ -14,20 +14,20 @@ void main() {
 
   vec3 newPos = vec3(0.);
 
-  if (currentPosition.w != 0.0) { // 0 = root node
+  if (currentPosition.w == 2.0) {
+
+    gl_FragColor = vec4(vec3(0.), 2.);
+
+  } else {
 
     // repel this particle away from other particles
     vec3 repelForce = vec3(0.);
-    for (float y = height * 0.5; y < 1.0; y += height) {
-        for (float x = width * 0.5; x < 1.0; x += width) {
+    for (float y = height * 0.9; y < 1.0; y += height) {
+        for (float x = width * 0.9; x < 1.0; x += width) {
           vec4 otherPosition = texture2D(positionTexture, vec2(x, y));
-          if (otherPosition.w == 2.) { // 2 = active node
-            vec3 diff = currentPosition.xyz - otherPosition.xyz;
-            float magnitude = length(diff);
-            if (magnitude < 500.0)  {
-              repelForce += diff / (magnitude * magnitude * magnitude + 1.);
-            }
-          }
+          vec3 diff = currentPosition.xyz - otherPosition.xyz;
+          float magnitude = length(diff);
+          repelForce += (diff / (magnitude * magnitude * magnitude + 1.)) * otherPosition.w;
         }
     }
     vec3 edgeForce = texture2D(forcesTexture, vUv).xyz;
@@ -41,10 +41,8 @@ void main() {
       finalPos = normalize(finalPos) * sphereRadius;
     }
 
-    gl_FragColor = vec4(finalPos, 2.);
+    gl_FragColor = vec4(finalPos, 1.);
 
-  } else {
-    gl_FragColor = vec4(newPos.xyz, 0.);
   }
 
 }

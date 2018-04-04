@@ -20,7 +20,7 @@ void main(){
     meshPosition.y -= 1.6;
 
     vColor = vec4(1.);
-    vColor.a = 60000. / dot(meshPosition.xyz, meshPosition.xyz);
+    vColor.a = 30000. / dot(meshPosition.xyz, meshPosition.xyz);
 
     gl_Position = projectionMatrix * meshPosition;
 }

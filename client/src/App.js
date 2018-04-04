@@ -246,8 +246,6 @@ class App extends Component {
           let edges = JSON.parse(commit.edges)
           let nodes = JSON.parse(commit.nodes)[0]
 
-          let nodeCount = commit.count
-
           let changedState = {}
           let changes = JSON.parse(commit.changes)
           changedState.latestTime = commit.date + 1
@@ -265,7 +263,7 @@ class App extends Component {
               that.FDG.init({
                 nodeData: nodes,
                 edgeData: edges,
-                nodeCount: nodeCount + 1
+                nodeCount: 2048
               })
               that.FDG.setFirstRun(false)
             } else {
@@ -273,7 +271,7 @@ class App extends Component {
               that.FDG.init({
                 nodeData: nodes,
                 edgeData: edges,
-                nodeCount: nodeCount + 1
+                nodeCount: 2048
               })
             }
           }

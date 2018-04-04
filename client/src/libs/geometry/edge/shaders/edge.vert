@@ -9,8 +9,8 @@ varying float vUpdated;
 void main() {
   vec4 currentPosition = vec4(texture2D(positionTexture, texLocation.xy));
 
-  // node index stored in w component (0.0 is root)
-  if (currentPosition.w == 0.0) {
+  // node index stored in w component (2.0 is root)
+  if (currentPosition.w == 2.0) {
     currentPosition.xyz = vec3(0.);
   }
 
