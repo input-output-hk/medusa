@@ -7,7 +7,8 @@ import FragmentShader from './shaders/node.frag'
 import VertexShader from './shaders/node.vert'
 
 export default class NodeGeometry {
-  constructor () {
+  constructor (config) {
+    this.config = config
     this.textureHelper = new TextureHelper()
     this.sprite = new THREE.TextureLoader().load('textures/dot.png')
     this.uSprite = new THREE.TextureLoader().load('textures/dot-concentric.png')
@@ -44,7 +45,7 @@ export default class NodeGeometry {
       if (node.u) {
         colorArray[i * 4 + 3] = 0.0
       } else {
-        colorArray[i * 4 + 3] += 0.01
+        colorArray[i * 4 + 3] += this.config.FDG.colorCooldownSpeed
       }
     }
   }

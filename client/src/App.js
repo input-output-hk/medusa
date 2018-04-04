@@ -14,8 +14,9 @@ const firebase = require('firebase')
 require('firebase/firestore')
 
 class App extends Component {
-  constructor () {
-    super()
+  constructor (props) {
+    super(props)
+    this.config = Object.assign(Config, this.props.config)
 
     this.initFireBase()
     this.OrbitControls = OrbitContructor(THREE)
@@ -24,19 +25,22 @@ class App extends Component {
     this.delayAmount = Config.FDG.delayAmount // how long to wait between graph updates
 
     let latestTime = 0
-
     if (typeof URLSearchParams !== 'undefined') {
       // get date from URL
       let urlParams = new URLSearchParams(window.location.search)
       if (urlParams.has('date')) {
         latestTime = moment(urlParams.get('date')).valueOf()
+      } else {
+        if (Config.git.commitDate) {
+          latestTime = moment(Config.git.commitDate).valueOf()
+        }
       }
     }
 
     this.commitsToProcess = []
 
     this.state = {
-      play: false,
+      play: Config.FDG.autoPlay,
       currentDate: null,
       currentCommitHash: '',
       spherize: Config.FDG.sphereProject,
@@ -49,13 +53,12 @@ class App extends Component {
     }
 
     this.loadCommitHash = Config.git.commitHash
-
-    this.docRef = this.firebaseDB.collection(Config.git.repo)
   }
 
   initFireBase () {
     firebase.initializeApp(Config.fireBase)
     this.firebaseDB = firebase.firestore()
+    this.docRef = this.firebaseDB.collection(Config.git.repo)
   }
 
   componentDidMount () {
@@ -74,14 +77,18 @@ class App extends Component {
   }
 
   initControls () {
-    // controls
     this.controls = new this.OrbitControls(this.camera, this.renderer.domElement)
-    this.controls.minDistance = 0
-    this.controls.maxDistance = 1000000
+    this.controls.minDistance = 200
+    this.controls.maxDistance = 10000
+    this.controls.enablePan = false
+    this.controls.autoRotate = Config.scene.autoRotate
+    this.controls.autoRotateSpeed = Config.scene.autoRotateSpeed
+    this.controls.zoomSpeed = 0.7
+    this.controls.rotateSpeed = 0.5
   }
 
   initFDG () {
-    this.FDG = new FDG(this.renderer, this.scene)
+    this.FDG = new FDG(this.renderer, this.scene, this.config)
   }
 
   animate () {
@@ -94,6 +101,8 @@ class App extends Component {
       this.FDG.update()
     }
 
+    this.controls.update()
+
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -104,7 +113,6 @@ class App extends Component {
 
   initScene () {
     this.scene = new THREE.Scene()
-    this.scene.fog = new THREE.FogExp2(Config.scene.bgColor, Config.scene.fogDensity)
     this.scene.background = new THREE.Color(Config.scene.bgColor)
   }
 
@@ -152,7 +160,7 @@ class App extends Component {
   initRenderer () {
     this.renderer = new THREE.WebGLRenderer({
       antialias: Config.scene.antialias,
-      canvas: document.getElementById('stage'),
+      canvas: document.getElementById(Config.scene.canvasID),
       autoClear: true
       // precision: 'mediump'
     })
@@ -181,7 +189,11 @@ class App extends Component {
       this.loadCommitHash = null
       singleCommit = true
     } else {
-      commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
+      if (Config.git.loadLatest && !this.state.latestTime) {
+        commits = this.docRef.orderBy('date', 'desc').limit(1)
+      } else {
+        commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
+      }
     }
 
     const snapshot = await commits.get()
@@ -299,9 +311,9 @@ class App extends Component {
     }
   }
 
-  render () {
-    return (
-      <div className='App'>
+  ui () {
+    if (Config.display.showUI) {
+      return (
         <div className='info'>
           <div className='currentAdded'>Files Added: {this.state.currentAdded}</div>
           <div className='currentChanged'>Files Changed: {this.state.currentChanged}</div>
@@ -311,34 +323,42 @@ class App extends Component {
           <div className='currentDate'>Commit Date: {this.state.currentDate}</div>
           <div className='currentCommitHash'>Commit Hash: {this.state.currentCommitHash}</div>
           <label>
-            Play:
-            <input
-              name='play'
-              type='checkbox'
-              checked={this.state.play}
-              onChange={this.togglePlay.bind(this)} />
+        Play:
+        <input
+          name='play'
+          type='checkbox'
+          checked={this.state.play}
+          onChange={this.togglePlay.bind(this)} />
           </label>
           <br />
           <label>
-            Commit:
-            <input
-              ref={input => {
-                this.commitInput = input
-              }}
-              name='commitInput'
-              type='text' />
+        Commit:
+        <input
+          ref={input => {
+            this.commitInput = input
+          }}
+          name='commitInput'
+          type='text' />
             <button onClick={this.loadCommit.bind(this)}>Go</button>
           </label>
           <br />
           <label>
-            Sphere Projection:
-            <input
-              name='spherize'
-              type='checkbox'
-              checked={this.state.spherize}
-              onChange={this.toggleSpherize.bind(this)} />
+        Sphere Projection:
+        <input
+          name='spherize'
+          type='checkbox'
+          checked={this.state.spherize}
+          onChange={this.toggleSpherize.bind(this)} />
           </label>
         </div>
+      )
+    }
+  }
+
+  render () {
+    return (
+      <div className='App'>
+        {this.ui()}
         <canvas id='stage' />
       </div>
     )

@@ -4,5 +4,9 @@ import './index.css'
 import App from './App'
 import registerServiceWorker from './registerServiceWorker'
 
-ReactDOM.render(<App />, document.getElementById('root'))
-registerServiceWorker()
+const init = function (config) {
+  ReactDOM.render(<App config={config} />, document.getElementById('gource-root'))
+  registerServiceWorker()
+}
+
+export {init}

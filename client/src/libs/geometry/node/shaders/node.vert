@@ -34,12 +34,12 @@ void main() {
         vec4 mvPosition = modelViewMatrix * vec4(currentPosition, 1.);
 
         if (vColor.a == 0.) {
-            vDecay = 1. - (decayTime * 0.07);
+            vDecay = 1. - (decayTime * 0.05);
             vDecay = max(0.0, vDecay);
         }
         
         float decayScale = scale;
-        decayScale += (vDecay * 10000.0);
+        decayScale -= (vDecay * 10000.0);
 
         vDist = decayScale / length(mvPosition.xyz);
 

@@ -11,19 +11,18 @@ import PositionFrag from '../shaders/position.frag'
 import PassThroughVert from '../shaders/passThrough.vert'
 import PassThroughFrag from '../shaders/passThrough.frag'
 
-import Config from '../Config'
-
 /**
  * GPGPU Force Directed Graph Simulation
  */
 export default class FDG {
-  constructor (renderer, scene) {
+  constructor (renderer, scene, config) {
     this.renderer = renderer
     this.scene = scene
+    this.config = config
     this.frame = 0
     this.textureHelper = new TextureHelper()
-    this.nodeGeometry = new NodeGeometry()
-    this.edgeGeometry = new EdgeGeometry()
+    this.nodeGeometry = new NodeGeometry(this.config)
+    this.edgeGeometry = new EdgeGeometry(this.config)
     this.textGeometry = new TextGeometry()
     this.firstRun = true
     this.textureWidth = 0
@@ -89,7 +88,7 @@ export default class FDG {
         minFilter: THREE.NearestFilter,
         magFilter: THREE.NearestFilter,
         format: THREE.RGBAFormat,
-        type: Config.floatType,
+        type: this.config.floatType,
         depthWrite: false,
         depthBuffer: false,
         stencilBuffer: false
@@ -135,8 +134,8 @@ export default class FDG {
   calculatePositions () {
     this.frame++
 
-    this.positionMaterial.uniforms.sphereProject.value = Config.FDG.sphereProject
-    this.positionMaterial.uniforms.sphereRadius.value = Config.FDG.sphereRadius
+    this.positionMaterial.uniforms.sphereProject.value = this.config.FDG.sphereProject
+    this.positionMaterial.uniforms.sphereRadius.value = this.config.FDG.sphereRadius
 
     // update forces
     let inputForceRenderTarget = this.positionRenderTarget1
@@ -165,12 +164,14 @@ export default class FDG {
     this.nodes.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
     this.edges.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
 
-    this.text.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+    if (this.config.FDG.showFilePaths) {
+      this.text.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+    }
   }
 
   update () {
     if (this.enabled) {
-      if (Config.FDG.movementQuality === 1) {
+      if (this.config.FDG.movementQuality === 1) {
         for (let index = 0; index < 4; index++) {
           this.calculatePositions()
         }
@@ -213,6 +214,10 @@ export default class FDG {
   }
 
   initText () {
+    if (!this.config.FDG.showFilePaths) {
+      return
+    }
+
     if (this.firstRun) {
       this.text = this.textGeometry.create(this.nodeData, this.nodeCount)
       this.scene.add(this.text)

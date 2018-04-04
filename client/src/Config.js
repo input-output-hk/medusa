@@ -7,8 +7,13 @@ const detector = new Detector()
 const Config = {
   git: {
     owner: 'input-output-hk',
-    repo: 'cardano-sl',
-    commitHash: null // hash of commit to load
+    repo: 'symphony',
+    commitHash: null, // hash of commit to load
+    commitDate: null, // date to load
+    loadLatest: true // load latest commit in db
+  },
+  display: {
+    showUI: false
   },
   fireBase: {
     apiKey: 'AIzaSyA9_GvRguuv5zZLdV0-bVnVfA0FEGWy4gA',
@@ -19,19 +24,24 @@ const Config = {
     messagingSenderId: '290917146601'
   },
   FDG: {
+    autoPlay: true,
     movementQuality: 1, // 1 == high, 0 == low
     delayAmount: 500, // time in between new commits being added to the graph
     sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
-    sphereRadius: 700 // radius of sphere if in sphere projection mode
+    sphereRadius: 700, // radius of sphere if in sphere projection mode
+    showFilePaths: true, // display filepath overlay on nodes
+    colorCooldownSpeed: 0.05 // speed at which node colors cycle
   },
   scene: {
     bgColor: 0x121327,
-    fogDensity: 0.00030,
-    antialias: true
+    antialias: true,
+    canvasID: 'stage', // ID of wegbl canvas element
+    autoRotate: true, // auto rotate camera around target
+    autoRotateSpeed: 0.3 // speed of auto rotation
   },
   camera: {
     fov: 60,
-    initPos: {x: 0, y: 0, z: 1000}
+    initPos: {x: 0, y: 0, z: 800}
   },
   floatType: detector.isIOS ? THREE.HalfFloatType : THREE.FloatType
 }

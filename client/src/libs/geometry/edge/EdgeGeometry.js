@@ -5,7 +5,8 @@ import FragmentShader from './shaders/edge.frag'
 import VertexShader from './shaders/edge.vert'
 
 export default class EdgeGeometry {
-  constructor () {
+  constructor (config) {
+    this.config = config
     this.material = null
     this.geometry = null
     this.baseColor = new THREE.Color('#eb2256')
@@ -27,7 +28,7 @@ export default class EdgeGeometry {
         uArray[i * 2 + 0] = 0.0
       } else {
         if (uArray[i * 2 + 0] < 2.0) {
-          uArray[i * 2 + 0] += 0.01
+          uArray[i * 2 + 0] += this.config.FDG.colorCooldownSpeed
         }
       }
 
@@ -35,7 +36,7 @@ export default class EdgeGeometry {
         uArray[i * 2 + 1] = 0.0
       } else {
         if (uArray[i * 2 + 1] < 2.0) {
-          uArray[i * 2 + 1] += 0.01
+          uArray[i * 2 + 1] += this.config.FDG.colorCooldownSpeed
         }
       }
     }
