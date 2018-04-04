@@ -187,9 +187,9 @@ class App extends Component {
   async callApi () {
     let commits
     let singleCommit = false
-    if (this.loadCommitHash !== null) {
+    if (this.loadCommitHash !== '') {
       commits = this.docRef.doc(this.loadCommitHash)
-      this.loadCommitHash = null
+      this.loadCommitHash = ''
       singleCommit = true
     } else {
       if (Config.git.loadLatest && !this.state.latestTime) {
@@ -231,6 +231,10 @@ class App extends Component {
 
     let updateGraph = async function (doc) {
       return new Promise((resolve, reject) => {
+        if (!doc.exists) {
+          console.log('Error: Commit ' + doc.id + ' does not exist in repo')
+          resolve()
+        }
         let commit = doc.data()
         commit.sha = doc.id
 

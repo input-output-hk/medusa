@@ -8,8 +8,8 @@ const Config = {
   git: {
     owner: 'input-output-hk',
     repo: 'symphony',
-    commitHash: null, // hash of commit to load
-    commitDate: null, // date to load
+    commitHash: '', // hash of commit to load
+    commitDate: '', // date to load
     loadLatest: true // load latest commit in db
   },
   display: {
