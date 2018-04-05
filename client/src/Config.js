@@ -53,6 +53,9 @@ const Config = {
     autoRotate: true, // auto rotate camera around target
     autoRotateSpeed: 0.3 // speed of auto rotation
   },
+  post: {
+    vignette: true
+  },
   camera: {
     fov: 60,
     initPos: {x: 0, y: 0, z: 800}

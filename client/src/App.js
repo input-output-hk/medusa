@@ -3,6 +3,10 @@ import * as THREE from 'three'
 import OrbitContructor from 'three-orbit-controls'
 import deepAssign from 'deep-assign'
 
+// Post
+import { EffectComposer, ShaderPass, RenderPass } from './libs/post/EffectComposer'
+import Vignette from './libs/post/Vignette'
+
 import Config from './Config'
 import FDG from './libs/FDG'
 
@@ -72,10 +76,26 @@ class App extends Component {
     this.initScene()
     this.initCamera()
     this.initRenderer()
+    this.initPost()
     this.initControls()
     this.initFDG()
     this.addEvents()
     this.animate()
+  }
+
+  initPost () {
+    this.composer = new EffectComposer(this.renderer)
+    this.renderPass = new RenderPass(this.scene, this.camera)
+    this.composer.addPass(this.renderPass)
+
+    if (Config.post.vignette) {
+      this.vignettePass = new ShaderPass(Vignette)
+      this.vignettePass.material.uniforms.bgColor.value = new THREE.Color(Config.scene.bgColor)
+      this.vignettePass.renderToScreen = true
+      this.composer.addPass(this.vignettePass)
+    } else {
+      this.renderPass.renderToScreen = true
+    }
   }
 
   initControls () {
@@ -105,7 +125,7 @@ class App extends Component {
 
     this.controls.update()
 
-    this.renderer.render(this.scene, this.camera)
+    this.composer.render()
   }
 
   addEvents () {
@@ -166,6 +186,8 @@ class App extends Component {
       autoClear: true,
       precision: 'mediump'
     })
+
+    this.composer = new EffectComposer(this.renderer)
   }
 
   /**
@@ -178,6 +200,8 @@ class App extends Component {
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(this.width, this.height, false)
+
+    this.composer.setSize(this.width, this.height)
   }
 
   /**
