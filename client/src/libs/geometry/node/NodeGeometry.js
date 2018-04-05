@@ -12,10 +12,14 @@ export default class NodeGeometry {
     this.textureHelper = new TextureHelper()
     this.sprite = new THREE.TextureLoader().load('textures/dot.png')
     this.uSprite = new THREE.TextureLoader().load('textures/dot-concentric.png')
-    this.baseColor = new THREE.Color('#eb2256')
     this.decayTime = 0.0
     this.material = null
     this.geometry = null
+
+    for (let index = 0; index < this.config.FDG.colorPalette.length; index++) {
+      this.config.FDG.colorPalette[index] = new THREE.Color(this.config.FDG.colorPalette[index])
+    }
+    this.baseColor = this.config.FDG.colorPalette[0]
   }
 
   setTextureLocations (nodeData, nodeCount, positionArray, colorArray) {
@@ -37,11 +41,52 @@ export default class NodeGeometry {
       positionArray[i * 3] = textureLocation.x
       positionArray[i * 3 + 1] = textureLocation.y
 
-      colorArray[i * 4] = this.baseColor.r
-      colorArray[i * 4 + 1] = this.baseColor.g
-      colorArray[i * 4 + 2] = this.baseColor.b
+      if (this.config.FDG.cycleColors) {
+        colorArray[i * 4] = this.baseColor.r
+        colorArray[i * 4 + 1] = this.baseColor.g
+        colorArray[i * 4 + 2] = this.baseColor.b
+      } else {
+        // get color for parent directory
+        if (node.p === '/') {
+          colorArray[i * 4] = this.baseColor.r
+          colorArray[i * 4 + 1] = this.baseColor.g
+          colorArray[i * 4 + 2] = this.baseColor.b
+          colorArray[i * 4 + 3] = 1
+          continue
+        }
 
-      // store time since last update in alpha channel
+        let dirArray = node.p.split('/')
+
+        if (node.t === 'f' && dirArray.length === 1) {
+          colorArray[i * 4] = this.baseColor.r
+          colorArray[i * 4 + 1] = this.baseColor.g
+          colorArray[i * 4 + 2] = this.baseColor.b
+          colorArray[i * 4 + 3] = 1
+          continue
+        }
+
+        let dir
+        if (node.t === 'd') {
+          dir = dirArray[dirArray.length - 1]
+        } else {
+          dir = dirArray[dirArray.length - 2]
+        }
+
+        let dirNumber = 0
+        for (let charIndex = 0; charIndex < dir.length; charIndex++) {
+          dirNumber += dir[charIndex].charCodeAt(0)
+        }
+
+        let dirIdentifier = dirNumber % (this.config.FDG.colorPalette.length - 1)
+
+        let nodeColor = this.config.FDG.colorPalette[dirIdentifier]
+
+        colorArray[i * 4 + 0] = nodeColor.r
+        colorArray[i * 4 + 1] = nodeColor.g
+        colorArray[i * 4 + 2] = nodeColor.b
+      }
+
+        // store time since last update in alpha channel
       if (node.u) {
         colorArray[i * 4 + 3] = 0.0
       } else {
@@ -80,6 +125,10 @@ export default class NodeGeometry {
     if (!this.material) {
       this.material = new THREE.ShaderMaterial({
         uniforms: {
+          cycleColors: {
+            type: 'f',
+            value: this.config.cycleColors ? 1.0 : 0.0
+          },
           map: {
             type: 't',
             value: this.sprite

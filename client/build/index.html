@@ -8,7 +8,7 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <title>WebGL Gource</title>
-  <link href="/static/css/gource.main.cf94ece6.css" rel="stylesheet"></head>
+  <link href="./static/css/gource.main.cf94ece6.css" rel="stylesheet"></head>
   <body>
     <noscript>
       You need to enable JavaScript to run this app.
@@ -32,18 +32,28 @@
             sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
             sphereRadius: 700, // radius of sphere if in sphere projection mode
             showFilePaths: true, // display filepath overlay on nodes
-            colorCooldownSpeed: 0.05 // speed at which node colors cycle
+            colorCooldownSpeed: 0.05, // speed at which node colors cycle
+            cycleColors: false, // cycle colors based on file edit time from red to blue to white
+            colorPalette: [ // colors to use if cycleColors is switched off (colors cannot contain)
+              '#eb2256',
+              '#f69ab3',
+              '#1746a0',
+              '#6f9cef',
+              '#652b91',
+              '#0e5c8d',
+              '#1fc1c3'
+            ]
           },
           scene: {
             bgColor: 0x121327,
             antialias: false,
             canvasID: 'gource-stage', // ID of webgl canvas element
-            autoRotate: true, // auto rotate camera around target
+            autoRotate: false, // auto rotate camera around target
             autoRotateSpeed: 0.2 // speed of auto rotation
           },
           camera: {
-            fov: 60,
-            initPos: {x: 0, y: 0, z: 800}
+            fov: 45,
+            initPos: {x: 0, y: 0, z: 600}
           }
         }
 
@@ -51,5 +61,5 @@
           gource.init(config)
         }
       </script>
-  <script type="text/javascript" src="/static/js/gource.main.2e291bb8.js"></script></body>
+  <script type="text/javascript" src="./static/js/gource.main.ec65259e.js"></script></body>
 </html>

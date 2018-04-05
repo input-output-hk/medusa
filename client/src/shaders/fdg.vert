@@ -4,8 +4,6 @@ attribute vec4 location;
 
 varying vec3 vForce;
 
-const float edgeForce = 0.01;
-
 void main() {
   vec3 pos1 = texture2D(positionTexture, location.rg).xyz;
   vec3 pos2 = texture2D(positionTexture, location.ba).xyz;
@@ -15,13 +13,13 @@ void main() {
   // pull
   if (pull == 1) {
     vec3 dist = (pos2 - pos1);
-    vForce = dist * edgeForce;
+    vForce = dist * 0.01;
     gl_Position = vec4(location.r * 2. - 1., location.g * 2. - 1., 0., 1.);
 
   // push
   } else {
     vec3 dist = (pos1 - pos2);
-    vForce = dist * edgeForce;
+    vForce = dist * 0.005;
     gl_Position = vec4(location.b * 2. - 1., location.a * 2. - 1., 0., 1.);
   }
 }

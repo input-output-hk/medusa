@@ -1,7 +1,8 @@
 uniform sampler2D positionTexture;
+uniform float cycleColors;
+
 attribute float updated;
 attribute vec2 texLocation;
-attribute float nodeColor;
 
 varying float vDist;
 varying float vUpdated;
@@ -21,7 +22,7 @@ void main() {
   vec4 mvPosition = modelViewMatrix * currentPosition;
 
   vDist = 700000.0 / dot(mvPosition.xyz, mvPosition.xyz);
-  vDist = min(.50, vDist);
+  vDist = min(.15, vDist);
 
   gl_Position = projectionMatrix * mvPosition;
 }

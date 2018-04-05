@@ -9,7 +9,6 @@ export default class EdgeGeometry {
     this.config = config
     this.material = null
     this.geometry = null
-    this.baseColor = new THREE.Color('#eb2256')
   }
 
   setUpdated (nodeData, nodeCount, uArray, edgeData) {
@@ -63,6 +62,10 @@ export default class EdgeGeometry {
     if (!this.material) {
       this.material = new THREE.ShaderMaterial({
         uniforms: {
+          cycleColors: {
+            type: 'f',
+            value: this.config.cycleColors ? 1.0 : 0.0
+          },
           positionTexture: {
             type: 't',
             value: null

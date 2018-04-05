@@ -164,8 +164,8 @@ class App extends Component {
     this.renderer = new THREE.WebGLRenderer({
       antialias: Config.scene.antialias,
       canvas: document.getElementById(Config.scene.canvasID),
-      autoClear: true
-      // precision: 'mediump'
+      autoClear: true,
+      precision: 'mediump'
     })
   }
 
@@ -263,7 +263,7 @@ class App extends Component {
               that.FDG.init({
                 nodeData: nodes,
                 edgeData: edges,
-                nodeCount: 2048
+                nodeCount: Config.FDG.nodeCount
               })
               that.FDG.setFirstRun(false)
             } else {
@@ -271,7 +271,7 @@ class App extends Component {
               that.FDG.init({
                 nodeData: nodes,
                 edgeData: edges,
-                nodeCount: 2048
+                nodeCount: Config.FDG.nodeCount
               })
             }
           }

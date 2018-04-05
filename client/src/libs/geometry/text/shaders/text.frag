@@ -6,7 +6,7 @@ varying vec4 vColor;
 
 void main(){
 
-  if (vColor.a < 0.2) {
+  if (vColor.a < 0.1) {
     discard;
   }
 

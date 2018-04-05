@@ -7,7 +7,7 @@ const detector = new Detector()
 const Config = {
   git: {
     owner: 'input-output-hk',
-    repo: 'symphony',
+    repo: 'cardano-sl',
     commitHash: '', // hash of commit to load
     commitDate: '', // date to load
     loadLatest: true // load latest commit in db
@@ -24,12 +24,24 @@ const Config = {
     messagingSenderId: '290917146601'
   },
   FDG: {
+    nodeCount: 4096, // max number of nodes the scene can contain
     autoPlay: true,
     delayAmount: 500, // time in between new commits being added to the graph
     sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
     sphereRadius: 700, // radius of sphere if in sphere projection mode
     showFilePaths: true, // display filepath overlay on nodes
-    colorCooldownSpeed: 0.05 // speed at which node colors cycle
+    colorCooldownSpeed: 0.05, // speed at which node colors cycle
+    filePathCharLimit: 20, // speed at which node colors cycle
+    cycleColors: false, // cycle colors based on file edit time from red to blue to white
+    colorPalette: [ // colors to use if cycleColors is switched off
+      '#eb2256',
+      '#f69ab3',
+      '#1746a0',
+      '#6f9cef',
+      '#652b91',
+      '#0e5c8d',
+      '#1fc1c3'
+    ]
   },
   scene: {
     bgColor: 0x121327,

@@ -10,11 +10,12 @@ import VertexShader from './shaders/text.vert'
 import UbuntuMono from './fonts/UbuntuMono'
 
 export default class TextGeometry {
-  constructor () {
+  constructor (config) {
+    this.config = config
     this.textureHelper = new TextureHelper()
     this.font = UbuntuMono('textures/UbuntuMono.png')
-    this.fontSize = 25
-    this.kerning = 2.5
+    this.fontSize = 15
+    this.kerning = 1.5
     this.textureSize = 1024 // size of the font texture (aspect 1:1)
     this.material = null
     this.geometry = null
@@ -42,6 +43,10 @@ export default class TextGeometry {
 
         if (node.p === '/') {
           fileName = '/'
+        }
+
+        if (fileName.length > this.config.FDG.filePathCharLimit) {
+          fileName = fileName.substr(0, this.config.FDG.filePathCharLimit) + '..'
         }
 
         for (let charIndex = 0; charIndex < fileName.length; charIndex++) {

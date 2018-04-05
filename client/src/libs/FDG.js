@@ -23,7 +23,7 @@ export default class FDG {
     this.textureHelper = new TextureHelper()
     this.nodeGeometry = new NodeGeometry(this.config)
     this.edgeGeometry = new EdgeGeometry(this.config)
-    this.textGeometry = new TextGeometry()
+    this.textGeometry = new TextGeometry(this.config)
     this.firstRun = true
     this.textureWidth = 0
     this.textureHeight = 0

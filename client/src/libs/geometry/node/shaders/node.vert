@@ -1,6 +1,7 @@
 uniform sampler2D positionTexture;
 uniform float decayTime;
 uniform float scale;
+uniform float cycleColors;
 
 attribute float id;
 attribute vec4 color;
