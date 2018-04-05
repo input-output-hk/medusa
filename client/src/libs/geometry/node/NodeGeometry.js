@@ -10,8 +10,8 @@ export default class NodeGeometry {
   constructor (config) {
     this.config = config
     this.textureHelper = new TextureHelper()
-    this.sprite = new THREE.TextureLoader().load('textures/dot.png')
-    this.uSprite = new THREE.TextureLoader().load('textures/dot-concentric.png')
+    this.sprite = new THREE.TextureLoader().load(this.config.FDG.nodeSpritePath)
+    this.uSprite = new THREE.TextureLoader().load(this.config.FDG.nodeUpdatedSpritePath)
     this.decayTime = 0.0
     this.material = null
     this.geometry = null

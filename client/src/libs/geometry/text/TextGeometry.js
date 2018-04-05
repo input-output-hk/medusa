@@ -13,7 +13,7 @@ export default class TextGeometry {
   constructor (config) {
     this.config = config
     this.textureHelper = new TextureHelper()
-    this.font = UbuntuMono('textures/UbuntuMono.png')
+    this.font = UbuntuMono(this.config.FDG.fontTexturePath)
     this.fontSize = 15
     this.kerning = 1.5
     this.textureSize = 1024 // size of the font texture (aspect 1:1)

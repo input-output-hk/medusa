@@ -24,6 +24,9 @@ const Config = {
     messagingSenderId: '290917146601'
   },
   FDG: {
+    nodeSpritePath: 'textures/dot.png', // path to node texture
+    nodeUpdatedSpritePath: 'textures/dot-concentric.png', // path to node updated state texture
+    fontTexturePath: 'textures/UbuntuMono.png', // path to font texture
     nodeCount: 4096, // max number of nodes the scene can contain
     autoPlay: true,
     delayAmount: 500, // time in between new commits being added to the graph
@@ -34,13 +37,13 @@ const Config = {
     filePathCharLimit: 20, // speed at which node colors cycle
     cycleColors: false, // cycle colors based on file edit time from red to blue to white
     colorPalette: [ // colors to use if cycleColors is switched off
-      '#eb2256',
+      /* '#eb2256',
       '#f69ab3',
       '#1746a0',
       '#6f9cef',
       '#652b91',
       '#0e5c8d',
-      '#1fc1c3'
+      '#1fc1c3' */
     ]
   },
   scene: {
