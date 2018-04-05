@@ -7,7 +7,6 @@ import Config from './Config'
 import FDG from './libs/FDG'
 
 // CSS
-import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 
 const moment = require('moment')
