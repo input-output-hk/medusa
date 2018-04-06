@@ -106,7 +106,9 @@ class App extends Component {
     this.controls.autoRotate = Config.scene.autoRotate
     this.controls.autoRotateSpeed = Config.scene.autoRotateSpeed
     this.controls.zoomSpeed = 0.7
-    this.controls.rotateSpeed = 0.5
+    this.controls.rotateSpeed = 0.07
+    this.controls.enableDamping = true
+    this.controls.dampingFactor = 0.04
   }
 
   initFDG () {
