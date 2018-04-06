@@ -39,8 +39,7 @@ void main() {
             vDecay = max(0.0, vDecay);
         }
         
-        float decayScale = scale;
-        decayScale -= (vDecay * 10000.0);
+        float decayScale = scale - (vDecay * 7000.0);
 
         vDist = decayScale / length(mvPosition.xyz);
 

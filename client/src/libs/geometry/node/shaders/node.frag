@@ -31,9 +31,9 @@ void main() {
       sprite.rgb = vColor.rgb;
     }
 
-    sprite.rg += vDecay * 0.5;
+    sprite.rgb += vDecay * 0.6;
 
-    sprite.a *= min(sprite.a, (vDist * vDist * 0.005));
+    sprite.a = min(sprite.a, (vDist * 0.5));
 
     gl_FragColor = vec4(sprite.rgb, sprite.a);
   }
