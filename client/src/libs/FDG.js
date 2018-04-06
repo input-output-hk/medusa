@@ -5,8 +5,9 @@ import NodeGeometry from './geometry/node/NodeGeometry'
 import EdgeGeometry from './geometry/edge/EdgeGeometry'
 import TextGeometry from './geometry/text/TextGeometry'
 
-import FDGVert from '../shaders/fdg.vert'
-import FDGFrag from '../shaders/fdg.frag'
+import PullVert from '../shaders/pull.vert'
+import PushVert from '../shaders/push.vert'
+import ForceFrag from '../shaders/force.frag'
 import PositionFrag from '../shaders/position.frag'
 import PassThroughVert from '../shaders/passThrough.vert'
 import PassThroughFrag from '../shaders/passThrough.frag'
@@ -33,7 +34,8 @@ export default class FDG {
     this.nodes = null
     this.edges = null
     this.forceMaterial = null
-    this.forceGeometry = null
+    this.pullGeometry = null
+    this.pushGeometry = null
     this.newNodes = []
 
     this.initCamera()
@@ -95,7 +97,8 @@ export default class FDG {
       })
 
       this.positionRenderTarget2 = this.positionRenderTarget1.clone()
-      this.forceRenderTarget = this.positionRenderTarget1.clone()
+      this.pullRenderTarget = this.positionRenderTarget1.clone()
+      this.pushRenderTarget = this.positionRenderTarget1.clone()
 
       this.outputPositionRenderTarget = this.positionRenderTarget1
     }
@@ -142,13 +145,9 @@ export default class FDG {
     if (this.frame % 2 === 0) {
       inputForceRenderTarget = this.positionRenderTarget2
     }
-    this.forceMaterial.uniforms.positionTexture.value = inputForceRenderTarget.texture
-    this.forceMaterial.uniforms.pull.value = 1
-    this.renderer.render(this.forceScene, this.quadCamera, this.forceRenderTarget, false)
-    this.renderer.autoClear = false
-    this.forceMaterial.uniforms.pull.value = 0
-    this.renderer.render(this.forceScene, this.quadCamera, this.forceRenderTarget, false)
-    this.renderer.autoClear = true
+
+    this.pullMaterial.uniforms.positionTexture.value = inputForceRenderTarget.texture
+    this.pushMaterial.uniforms.positionTexture.value = inputForceRenderTarget.texture
 
     // update positions
     let inputPositionRenderTarget = this.positionRenderTarget1
@@ -158,7 +157,16 @@ export default class FDG {
       this.outputPositionRenderTarget = this.positionRenderTarget1
     }
     this.positionMaterial.uniforms.positionTexture.value = inputPositionRenderTarget.texture
-    this.positionMaterial.uniforms.forcesTexture.value = this.forceRenderTarget.texture
+
+    // pull
+    this.renderer.render(this.pullScene, this.quadCamera, this.pullRenderTarget, false)
+    this.positionMaterial.uniforms.pullTexture.value = this.pullRenderTarget.texture
+
+    // push
+    this.renderer.render(this.pushScene, this.quadCamera, this.pushRenderTarget, false)
+    this.positionMaterial.uniforms.pushTexture.value = this.pushRenderTarget.texture
+
+    // position
     this.renderer.render(this.positionScene, this.quadCamera, this.outputPositionRenderTarget)
 
     this.nodes.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
@@ -178,10 +186,14 @@ export default class FDG {
     }
   }
 
+  resize () {
+    this.nodeGeometry.resize()
+  }
+
   initEdges () {
-    this.setEdgeTextureLocations()
+    this.setForceTextureLocations()
     if (this.firstRun) {
-      this.edges = this.edgeGeometry.create(this.nodeCount * 2, this.forceGeometry.attributes.location.array, this.nodeData, this.nodeCount, this.edgeData)
+      this.edges = this.edgeGeometry.create(this.nodeCount * 2, this.pullGeometry.attributes.texLocation.array, this.nodeData, this.nodeCount, this.edgeData)
       this.scene.add(this.edges)
     } else {
       this.edgeGeometry.setUpdated(this.nodeData, this.nodeCount, this.edges.geometry.attributes.updated.array, this.edgeData)
@@ -243,7 +255,11 @@ export default class FDG {
             type: 't',
             value: null
           },
-          forcesTexture: {
+          pullTexture: {
+            type: 't',
+            value: null
+          },
+          pushTexture: {
             type: 't',
             value: null
           },
@@ -273,19 +289,16 @@ export default class FDG {
 
   initForces () {
     if (this.firstRun) {
-      this.forceGeometry = new THREE.BufferGeometry()
-      let position = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
-      let location = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 4), 4)
+      // pull
+      this.pullGeometry = new THREE.BufferGeometry()
+      let pullPosition = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
+      let texLocation = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 4), 4)
 
-      this.forceGeometry.addAttribute('position', position)
-      this.forceGeometry.addAttribute('location', location)
+      this.pullGeometry.addAttribute('position', pullPosition)
+      this.pullGeometry.addAttribute('texLocation', texLocation)
 
-      this.forceMaterial = new THREE.ShaderMaterial({
+      this.pullMaterial = new THREE.ShaderMaterial({
         uniforms: {
-          pull: {
-            type: 'i',
-            value: 1
-          },
           positionTexture: {
             type: 't',
             value: null
@@ -295,33 +308,73 @@ export default class FDG {
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         depthTest: false,
-        vertexShader: FDGVert,
-        fragmentShader: FDGFrag
+        vertexShader: PullVert,
+        fragmentShader: ForceFrag
       })
-      this.forceScene = new THREE.Scene()
-      this.forceMesh = new THREE.Points(this.forceGeometry, this.forceMaterial)
-      this.forceScene.add(this.forceMesh)
-    } else {
-      this.forceGeometry.attributes.position.needsUpdate = true
-      this.forceGeometry.attributes.location.needsUpdate = true
+      this.pullScene = new THREE.Scene()
+      this.pullMesh = new THREE.Points(this.pullGeometry, this.pullMaterial)
+      this.pullScene.add(this.pullMesh)
+
+      // push
+      this.pushGeometry = new THREE.BufferGeometry()
+      let pushPosition = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
+
+      this.pushGeometry.addAttribute('position', pushPosition)
+      this.pushGeometry.addAttribute('texLocation', texLocation)
+
+      this.pushMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          positionTexture: {
+            type: 't',
+            value: null
+          }
+        },
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        depthTest: false,
+        vertexShader: PushVert,
+        fragmentShader: ForceFrag
+      })
+      this.pushScene = new THREE.Scene()
+      this.pushMesh = new THREE.Points(this.pushGeometry, this.pushMaterial)
+      this.pushScene.add(this.pushMesh)
     }
+
+    this.pullGeometry.attributes.position.needsUpdate = true
+    this.pullGeometry.attributes.texLocation.needsUpdate = true
+    this.pushGeometry.attributes.position.needsUpdate = true
+    this.pushGeometry.attributes.texLocation.needsUpdate = true
   }
 
   /**
    * Get coords of nodes in position texture and set in attribute of
-   * forceGeometry so we can look these up in the shader
+   * push and pull geometry so we can look these up in the shader
    */
-  setEdgeTextureLocations () {
-    let locationAttribute = this.forceGeometry.attributes.location.array
+  setForceTextureLocations () {
+    let texLocationAttribute = this.pullGeometry.attributes.texLocation.array
+    for (let i = 0; i < this.nodeCount * 2 * 4; i += 2) {
+      let startVertexTextureLocation = {
+        x: 0,
+        y: 0
+      }
+      let endVertexTextureLocation = {
+        x: 0,
+        y: 0
+      }
 
-    for (let i = 0; i < (this.nodeCount * 2); i += 2) {
-      let startVertexTextureLocation = this.textureHelper.getNodeTextureLocation(this.edgeData[i])
-      locationAttribute[i * 4 + 0] = startVertexTextureLocation.x
-      locationAttribute[i * 4 + 1] = startVertexTextureLocation.y
+      if (typeof this.edgeData[i] !== 'undefined') {
+        startVertexTextureLocation = this.textureHelper.getNodeTextureLocation(this.edgeData[i])
+      }
+      if (typeof this.edgeData[i + 1] !== 'undefined') {
+        endVertexTextureLocation = this.textureHelper.getNodeTextureLocation(this.edgeData[i + 1])
+      }
 
-      let endVertexTextureLocation = this.textureHelper.getNodeTextureLocation(this.edgeData[i + 1])
-      locationAttribute[i * 4 + 2] = endVertexTextureLocation.x
-      locationAttribute[i * 4 + 3] = endVertexTextureLocation.y
+      texLocationAttribute[i * 4 + 0] = startVertexTextureLocation.x
+      texLocationAttribute[i * 4 + 1] = startVertexTextureLocation.y
+
+      texLocationAttribute[i * 4 + 2] = endVertexTextureLocation.x
+      texLocationAttribute[i * 4 + 3] = endVertexTextureLocation.y
     }
   }
 

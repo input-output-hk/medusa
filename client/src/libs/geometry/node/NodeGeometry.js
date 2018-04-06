@@ -15,6 +15,7 @@ export default class NodeGeometry {
     this.decayTime = 0.0
     this.material = null
     this.geometry = null
+    this.baseScale = 15000
 
     for (let index = 0; index < this.config.FDG.colorPalette.length; index++) {
       this.config.FDG.colorPalette[index] = new THREE.Color(this.config.FDG.colorPalette[index])
@@ -147,7 +148,7 @@ export default class NodeGeometry {
           },
           scale: {
             type: 'f',
-            value: 15000
+            value: this.baseScale
           }
         },
         transparent: true,
@@ -159,6 +160,8 @@ export default class NodeGeometry {
       })
     }
 
+    this.resize()
+
     this.nodes = new THREE.Points(this.geometry, this.material)
     return this.nodes
   }
@@ -167,7 +170,13 @@ export default class NodeGeometry {
     this.decayTime = time
   }
 
-  update () {
+  resize () {
+    if (this.material) {
+      this.material.uniforms.scale.value = this.baseScale * (Math.min(this.config.scene.width, this.config.scene.height) * 0.001)
+    }
+  }
+
+  update (width, height) {
     this.decayTime++
     this.material.uniforms.decayTime.value = this.decayTime
   }

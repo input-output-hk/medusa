@@ -4,7 +4,8 @@ uniform float sphereProject;
 uniform float sphereRadius;
 
 uniform sampler2D positionTexture;
-uniform sampler2D forcesTexture;
+uniform sampler2D pullTexture;
+uniform sampler2D pushTexture;
 
 const float width = 1. / textureWidth;
 const float height = 1. / textureHeight;
@@ -30,7 +31,10 @@ void main() {
           repelForce += (diff / (magnitude * magnitude * magnitude + 1.)) * otherPosition.w;
         }
     }
-    vec3 edgeForce = texture2D(forcesTexture, vUv).xyz;
+    vec3 pullForce = texture2D(pullTexture, vUv).xyz;
+    vec3 pushForce = texture2D(pushTexture, vUv).xyz;
+
+    vec3 edgeForce = (pullForce + pushForce);
 
     vec3 force = edgeForce + repelForce * 100.;
 

@@ -47,6 +47,9 @@ const Config = {
     ]
   },
   scene: {
+    fullScreen: false,
+    width: 800,
+    height: 600,
     bgColor: 0x121327,
     antialias: false,
     canvasID: 'stage', // ID of wegbl canvas element

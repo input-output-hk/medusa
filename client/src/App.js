@@ -184,9 +184,7 @@ class App extends Component {
   initRenderer () {
     this.renderer = new THREE.WebGLRenderer({
       antialias: Config.scene.antialias,
-      canvas: document.getElementById(Config.scene.canvasID),
-      autoClear: true,
-      precision: 'mediump'
+      canvas: document.getElementById(Config.scene.canvasID)
     })
 
     this.composer = new EffectComposer(this.renderer)
@@ -196,14 +194,24 @@ class App extends Component {
    * Window resize
    */
   resize () {
-    this.width = window.innerWidth
-    this.height = window.innerHeight
+    if (Config.scene.fullScreen) {
+      this.width = window.innerWidth
+      this.height = window.innerHeight
+    } else {
+      this.width = Config.scene.width
+      this.height = Config.scene.height
+    }
+
+    Config.scene.width = this.width
+    Config.scene.height = this.height
 
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(this.width, this.height, false)
 
     this.composer.setSize(this.width, this.height)
+
+    this.FDG.resize()
   }
 
   /**
@@ -389,7 +397,7 @@ class App extends Component {
     return (
       <div className='App'>
         {this.ui()}
-        <canvas id={Config.scene.canvasID} />
+        <canvas width={Config.scene.width} height={Config.scene.height} id={Config.scene.canvasID} />
       </div>
     )
   }

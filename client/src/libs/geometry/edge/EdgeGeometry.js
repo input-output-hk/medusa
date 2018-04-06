@@ -12,6 +12,10 @@ export default class EdgeGeometry {
   }
 
   setUpdated (nodeData, nodeCount, uArray, edgeData) {
+    if (!this.config.FDG.cycleColors) {
+      return
+    }
+
     for (let i = 0; i < (nodeCount * 2); i += 2) {
       let node1 = nodeData[edgeData[i]]
       let node2 = nodeData[edgeData[i + 1]]
@@ -50,14 +54,14 @@ export default class EdgeGeometry {
 
     let updatedArray = new Float32Array(edgeCount * 2)
     this.setUpdated(nodeData, nodeCount, updatedArray, edgeData)
+    let updated = new THREE.BufferAttribute(updatedArray, 1)
+    this.geometry.addAttribute('updated', updated)
+
+    let texLocation = new THREE.BufferAttribute(forceArray, 2)
+    this.geometry.addAttribute('texLocation', texLocation)
 
     let position = new THREE.BufferAttribute(new Float32Array((edgeCount * 2) * 3), 3)
-    let texLocation = new THREE.BufferAttribute(forceArray, 2)
-    let updated = new THREE.BufferAttribute(updatedArray, 1)
-
     this.geometry.addAttribute('position', position)
-    this.geometry.addAttribute('texLocation', texLocation)
-    this.geometry.addAttribute('updated', updated)
 
     if (!this.material) {
       this.material = new THREE.ShaderMaterial({
