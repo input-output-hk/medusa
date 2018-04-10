@@ -79,6 +79,12 @@ class App extends Component {
     this.setState({
       latestTime: date
     })
+    if (!this.state.play) {
+      this.callApi()
+    } else {
+      this.setPlay(false)
+      this.callApi()
+    }
   }
 
   /**
