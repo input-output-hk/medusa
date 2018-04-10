@@ -383,11 +383,11 @@ const updateRoutine = function () {
                   }
 
                   // sort array alphabetically so the order matches on the front and back end
-                  nodesArr.sort(function (a, b) {
+                  /* nodesArr.sort(function (a, b) {
                     let pathA = a.p.toUpperCase()
                     let pathB = b.p.toUpperCase()
                     return (pathA < pathB) ? -1 : (pathA > pathB) ? 1 : 0
-                  })
+                  }) */
 
                   // create array of edges
                   let edgesArr = []

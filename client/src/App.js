@@ -363,15 +363,15 @@ class App extends Component {
               if (nodeChanges.a.hasOwnProperty(key)) {
                 const node = nodeChanges.a[key]
                 node.u = 1.0
-                that.nodes.push(node)
+                that.nodes[key] = node
               }
             }
 
-            that.nodes.sort(function (a, b) {
+            /* that.nodes.sort(function (a, b) {
               let pathA = a.p.toUpperCase()
               let pathB = b.p.toUpperCase()
               return (pathA < pathB) ? -1 : (pathA > pathB) ? 1 : 0
-            })
+            }) */
           }
 
           let changedState = {}
