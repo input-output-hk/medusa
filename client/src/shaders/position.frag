@@ -23,8 +23,8 @@ void main() {
 
     // repel this particle away from other particles
     vec3 repelForce = vec3(0.);
-    for (float y = height * 0.9; y < 1.0; y += height) {
-        for (float x = width * 0.9; x < 1.0; x += width) {
+    for (float y = height * 0.5; y < 1.0; y += height) {
+        for (float x = width * 0.5; x < 1.0; x += width) {
           vec4 otherPosition = texture2D(positionTexture, vec2(x, y));
           vec3 diff = currentPosition.xyz - otherPosition.xyz;
           float magnitude = length(diff);

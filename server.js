@@ -25,6 +25,7 @@ const tree = require('./libs/features/tree')
 const GHRepo = config.GHRepo
 const GHBranch = config.GHBranch
 const GHOwner = config.GHOwner
+const GHFileLimit = 300
 
 let githubCliDotCom = new GitHubClient({
   baseUri: 'https://api.github.com',
@@ -40,7 +41,7 @@ let changedPaths = []
 let removedPaths = []
 let nodes = {}
 let latestCommit = null
-let directoryNodes = {} // keep track of all directory nodes for faster lookup
+let previousNodeData = {}
 
 const pp = function (variable) {
   console.log(JSON.stringify(variable, null, 2))
@@ -136,10 +137,6 @@ const addNode = function ({
     nodes[id].u = 1
   }
 
-  if (type === 'd') {
-    directoryNodes[id] = nodes[id]
-  }
-
   return nodes[id]
 }
 
@@ -180,6 +177,17 @@ const updateRoutine = function () {
                 commitDetail.files.forEach((file) => {
                   if (file.status === 'added') {
                     addedPaths.push(file.filename)
+
+                    // add parent directories
+                    let nodePathArray = file.filename.split('/')
+                    let pathString = ''
+                    for (let index = 0; index < nodePathArray.length; index++) {
+                      let dirSplit = (index === 0) ? '' : '/'
+                      pathString = pathString + dirSplit + nodePathArray[index]
+                      if (addedPaths.indexOf(pathString) === -1) {
+                        addedPaths.push(pathString)
+                      }
+                    }
                   }
                   if (file.status === 'modified') {
                     changedPaths.push(file.filename)
@@ -189,6 +197,18 @@ const updateRoutine = function () {
                   }
                   if (file.status === 'renamed') {
                     removedPaths.push(file.previous_filename)
+                    addedPaths.push(file.filename)
+
+                    // add parent directories
+                    let nodePathArray = file.filename.split('/')
+                    let pathString = ''
+                    for (let index = 0; index < nodePathArray.length; index++) {
+                      let dirSplit = (index === 0) ? '' : '/'
+                      pathString = pathString + dirSplit + nodePathArray[index]
+                      if (addedPaths.indexOf(pathString) === -1) {
+                        addedPaths.push(pathString)
+                      }
+                    }
                   }
                 })
 
@@ -199,6 +219,11 @@ const updateRoutine = function () {
 
                 githubCliDotCom.fetchTreeRecursive({sha: commit.sha, owner: GHOwner, repository: GHRepo})
                 .then(treeData => {
+                  // clear node if we are over the github file limit
+                  if (commitDetail.files.length === GHFileLimit) {
+                    nodes = {}
+                  }
+
                   // add root node
                   addNode({
                     type: 'r',
@@ -256,36 +281,77 @@ const updateRoutine = function () {
                   }
 
                   // remove deleted nodes
-                  for (const id in nodes) {
-                    if (nodes.hasOwnProperty(id)) {
-                      const node = nodes[id]
-                      if (removedPaths.indexOf(node.p) !== -1) {
-                        console.log('delete file', nodes[id])
-                        delete nodes[id]
+
+                  // the github api only shows up to 300 files, if we are over this amount
+                  // fall back to reading the directory contents (we don't use this method
+                  // each time) as a branch may have been created with a completely different
+                  // folder structure and the previous folder structure is carried from the
+                  // previous commit - this is unusual, but if it is the case, it is most likely
+                  // an experimental branch which doesn't contain many files
+                  if (commitDetail.files.length === GHFileLimit) {
+                    // compare previous directory structure to current
+
+                    // check for removed nodes
+                    let removedPaths = []
+                    for (const key in previousNodeData) {
+                      if (previousNodeData.hasOwnProperty(key)) {
+                        const prevNode = previousNodeData[key]
+                        let foundNode = false
+                        for (const id in nodes) {
+                          if (nodes.hasOwnProperty(id)) {
+                            const node = nodes[id]
+                            if (prevNode.p === node.p) {
+                              foundNode = true
+                            }
+                          }
+                        }
+                        if (foundNode === false) {
+                          removedPaths.push(prevNode.p)
+                        }
                       }
                     }
                   }
 
-                  // remove empty directories
+                  // run through removedPaths array and delete
                   for (const id in nodes) {
                     if (nodes.hasOwnProperty(id)) {
-                      const dirNode = nodes[id]
-                      if (dirNode.t === 'd') {
-                        let parentId = id
+                      const node = nodes[id]
+                      let nodePathArray = node.p.split('/')
+                      if (removedPaths.indexOf(node.p) !== -1) {
+                        console.log('delete node', nodes[id])
+                        delete nodes[id]
 
-                        // check if any file nodes have this dir as a parent directory
-                        let foundParentId = false
-                        for (const fileId in nodes) {
-                          if (nodes.hasOwnProperty(fileId)) {
-                            if (nodes[fileId].pid === parentId) {
-                              foundParentId = true
-                              break
+                        // remove parent directories
+                        let length = JSON.parse(JSON.stringify(nodePathArray.length))
+
+                        for (let index = length; index > 0; index--) {
+                          nodePathArray.pop()
+                          let checkDirPath = nodePathArray.join('/')
+
+                          // find node by path
+                          for (const nodeId in nodes) {
+                            if (nodes.hasOwnProperty(nodeId)) {
+                              if (nodes[nodeId].p === checkDirPath) {
+                                let checkDir = nodes[nodeId]
+
+                                // do any nodes have this dir as a parent?
+                                let foundParent = false
+                                for (const pNodeId in nodes) {
+                                  if (nodes.hasOwnProperty(pNodeId)) {
+                                    if (nodes[pNodeId].pid == checkDir.id) {
+                                      foundParent = true
+                                    }
+                                  }
+                                }
+
+                                if (!foundParent) {
+                                  console.log('delete dir', checkDir.p)
+                                  removedPaths.push(checkDir.p)
+                                  delete nodes[checkDir.id]
+                                }
+                              }
                             }
                           }
-                        }
-                        if (!foundParentId) {
-                          console.log('delete dir', nodes[id])
-                          delete nodes[id]
                         }
                       }
                     }
@@ -316,6 +382,14 @@ const updateRoutine = function () {
                     }
                   }
 
+                  // sort array alphabetically so the order matches on the front and back end
+                  nodesArr.sort(function (a, b) {
+                    let pathA = a.p.toUpperCase()
+                    let pathB = b.p.toUpperCase()
+                    return (pathA < pathB) ? -1 : (pathA > pathB) ? 1 : 0
+                  })
+
+                  // create array of edges
                   let edgesArr = []
                   edges.forEach(edge => {
                     nodesArr.forEach((node, i) => {
@@ -325,9 +399,44 @@ const updateRoutine = function () {
                     })
                   })
 
-                  // save to db
-                  let docRef = firebaseDB.collection(GHRepo).doc(commitDetail.sha)
-                  docRef.set({
+                  // check for added nodes
+                  let addedNodes = {}
+                  nodesArr.forEach((node, index) => {
+                    let foundNode = false
+                    for (const key in previousNodeData) {
+                      if (previousNodeData.hasOwnProperty(key)) {
+                        const prevNode = previousNodeData[key]
+                        if (prevNode.p === node.p) {
+                          foundNode = true
+                        }
+                      }
+                    }
+                    if (foundNode === false) {
+                      addedNodes[index] = node
+                    }
+                  })
+
+                  // check for removed nodes
+                  let removedNodes = []
+                  for (const key in previousNodeData) {
+                    if (previousNodeData.hasOwnProperty(key)) {
+                      const prevNode = previousNodeData[key]
+                      let foundNode = false
+                      for (const id in nodes) {
+                        if (nodes.hasOwnProperty(id)) {
+                          const node = nodes[id]
+                          if (prevNode.p === node.p) {
+                            foundNode = true
+                          }
+                        }
+                      }
+                      if (foundNode === false) {
+                        removedNodes.push(prevNode.p)
+                      }
+                    }
+                  }
+
+                  let saveData = {
                     edges: JSON.stringify(edgesArr),
                     nodes: JSON.stringify([nodesArr]),
                     email: commitDetail.commit.author.email,
@@ -337,14 +446,49 @@ const updateRoutine = function () {
                     changes: JSON.stringify({ a: addedPaths.length, c: changedPaths.length, r: removedPaths.length }),
                     index: currentCommitIndex,
                     count: nodeCounter
+                  }
+
+                  // save to db
+                  let docRef = firebaseDB.collection(GHRepo).doc(commitDetail.sha)
+                  docRef.get().then((snapshot) => {
+                    if (snapshot.exists) {
+                      console.log(snapshot.id + ' already exists, skipping...')
+                      return
+                    }
+
+                    if (!latestCommit) {
+                      docRef.set(saveData).then(() => {
+                        if (currentPage > 0 && recurse) {
+                          updateRoutine()
+                        }
+                      })
+                    } else {
+                      docRef.set(saveData)
+                    }
+
+                    if (latestCommit) {
+                      let docRefChanges = firebaseDB.collection(GHRepo + '_changes').doc(commitDetail.sha)
+
+                      let changeData = {
+                        edges: JSON.stringify(edgesArr),
+                        changes: JSON.stringify({ a: addedNodes, c: changedPaths, r: removedNodes }),
+                        email: commitDetail.commit.author.email,
+                        author: commitDetail.commit.author.name,
+                        date: commitDateObj.valueOf(),
+                        msg: commitDetail.commit.message,
+                        index: currentCommitIndex
+                      }
+
+                      docRefChanges.set(changeData).then(() => {
+                        if (currentPage > 0 && recurse) {
+                          updateRoutine()
+                        }
+                      })
+                    }
                   })
                 })
               })
             })
-          }
-        }).then(() => {
-          if (currentPage > 0 && recurse) {
-            updateRoutine()
           }
         })
     })
@@ -371,8 +515,10 @@ const loadLatestCommit = function () {
         let nodeData = JSON.parse(latestCommit.nodes)[0]
 
         nodes = {}
+        previousNodeData = {}
         nodeData.forEach((node) => {
           nodes[node.id] = node
+          previousNodeData[node.id] = node
         })
 
         nodeCounter = latestCommit.count

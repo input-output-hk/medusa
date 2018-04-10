@@ -44,6 +44,8 @@ class App extends Component {
     }
 
     this.commitsToProcess = []
+    this.fetchFullCommit = true
+    this.nodes = {}
 
     this.state = {
       play: Config.FDG.autoPlay,
@@ -220,6 +222,15 @@ class App extends Component {
   async callApi () {
     let commits
     let singleCommit = false
+
+    // only get changed data in play mode
+    this.fetchFullCommit = !this.state.play
+
+    // only retrieve changed data from db
+    if (!this.fetchFullCommit) {
+      this.docRef = this.firebaseDB.collection(Config.git.repo + '_changes')
+    }
+
     if (this.loadCommitHash !== '') {
       commits = this.docRef.doc(this.loadCommitHash)
       this.loadCommitHash = ''
@@ -277,7 +288,50 @@ class App extends Component {
 
         setTimeout(() => {
           let edges = JSON.parse(commit.edges)
-          let nodes = JSON.parse(commit.nodes)[0]
+
+          if (that.fetchFullCommit) {
+            that.nodes = JSON.parse(commit.nodes)[0]
+          } else {
+            let nodeChanges = JSON.parse(commit.changes)
+            nodeChanges.r.forEach((path) => {
+              for (const key in that.nodes) {
+                if (that.nodes.hasOwnProperty(key)) {
+                  const node = that.nodes[key]
+                  if (node.p === path) {
+                    delete that.nodes[key]
+                  }
+                }
+              }
+            })
+
+            for (const id in that.nodes) {
+              if (that.nodes.hasOwnProperty(id)) {
+                if (nodeChanges.c.indexOf(that.nodes[id].p) !== -1) {
+                  that.nodes[id].u = 1.0
+                } else {
+                  delete that.nodes[id].u
+                }
+              }
+            }
+
+            that.nodes = Object.keys(that.nodes).map(function (key) {
+              return that.nodes[key]
+            })
+
+            for (const key in nodeChanges.a) {
+              if (nodeChanges.a.hasOwnProperty(key)) {
+                const node = nodeChanges.a[key]
+                node.u = 1.0
+                that.nodes.push(node)
+              }
+            }
+
+            that.nodes.sort(function (a, b) {
+              let pathA = a.p.toUpperCase()
+              let pathB = b.p.toUpperCase()
+              return (pathA < pathB) ? -1 : (pathA > pathB) ? 1 : 0
+            })
+          }
 
           let changedState = {}
           let changes = JSON.parse(commit.changes)
@@ -286,15 +340,16 @@ class App extends Component {
           changedState.currentCommitHash = commit.sha
           changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
           changedState.currentMsg = commit.msg
-          changedState.currentAdded = changes.a
-          changedState.currentChanged = changes.c
-          changedState.currentRemoved = changes.r
+          changedState.currentAdded = isNaN(changes.a) ? Object.keys(changes.a).length : changes.a
+          changedState.currentChanged = isNaN(changes.c) ? changes.c.length : changes.c
+          changedState.currentRemoved = isNaN(changes.r) ? changes.r.length : changes.r
+
           that.setState(changedState)
 
           if (that.FDG) {
             if (that.FDG.firstRun) {
               that.FDG.init({
-                nodeData: nodes,
+                nodeData: that.nodes,
                 edgeData: edges,
                 nodeCount: Config.FDG.nodeCount
               })
@@ -302,7 +357,7 @@ class App extends Component {
             } else {
               that.FDG.refresh()
               that.FDG.init({
-                nodeData: nodes,
+                nodeData: that.nodes,
                 edgeData: edges,
                 nodeCount: Config.FDG.nodeCount
               })
