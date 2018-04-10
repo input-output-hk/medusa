@@ -63,6 +63,30 @@ class App extends Component {
     this.loadCommitHash = Config.git.commitHash
   }
 
+  /**
+   * Set date to load commits from, if date is later
+   * than the latest commit date, the latest commit
+   * will be loaded
+   *
+   * @param {string} date
+   */
+  setDate (dateString) {
+    let date = moment(dateString).valueOf()
+    this.setState({
+      latestTime: date
+    })
+  }
+
+  /**
+   * Toggle sphere projection mode
+   *
+   * @param {bool} bool
+   */
+  setSphereView (bool) {
+    Config.FDG.sphereProject = bool
+    this.setState({spherize: Config.FDG.sphereProject})
+  }
+
   initFireBase () {
     firebase.initializeApp(Config.fireBase)
     this.firebaseDB = firebase.firestore()
@@ -243,7 +267,13 @@ class App extends Component {
       }
     }
 
-    const snapshot = await commits.get()
+    let snapshot = await commits.get()
+
+    // if no results found for the passed date, load latest commit
+    if (snapshot.empty && this.state.latestTime) {
+      commits = this.docRef.orderBy('date', 'desc').limit(1)
+      snapshot = await commits.get()
+    }
 
     if (snapshot.docs && snapshot.docs.length === 0) {
       setTimeout(() => {
