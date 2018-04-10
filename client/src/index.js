@@ -41,4 +41,16 @@ const setSphereView = function (bool) {
   Component.setSphereView(bool)
 }
 
-export {init, setDate, setSphereView}
+/**
+ * Toggle play mode
+ *
+ * @param {bool} bool
+ */
+const setPlay = function (bool) {
+  if (!Component) {
+    return
+  }
+  Component.setPlay(bool)
+}
+
+export {init, setDate, setSphereView, setPlay}

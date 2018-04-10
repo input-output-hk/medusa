@@ -24,6 +24,9 @@ class App extends Component {
 
     this.config = deepAssign(Config, this.props.config)
 
+    this.repo = Config.git.repo
+    this.repoChanges = Config.git.repo + '_changes'
+
     this.initFireBase()
     this.OrbitControls = OrbitContructor(THREE)
 
@@ -46,6 +49,7 @@ class App extends Component {
     this.commitsToProcess = []
     this.fetchFullCommit = true
     this.nodes = {}
+    this.APICalled = false
 
     this.state = {
       play: Config.FDG.autoPlay,
@@ -244,16 +248,17 @@ class App extends Component {
    * Get commit data
    */
   async callApi () {
+    this.APIprocessing = true
     let commits
     let singleCommit = false
-
-    // only get changed data in play mode
-    this.fetchFullCommit = !this.state.play
 
     // only retrieve changed data from db
     if (!this.fetchFullCommit) {
       this.docRef = this.firebaseDB.collection(Config.git.repo + '_changes')
     }
+
+    // only get changed data in play mode
+    this.fetchFullCommit = !this.play
 
     if (this.loadCommitHash !== '') {
       commits = this.docRef.doc(this.loadCommitHash)
@@ -319,7 +324,7 @@ class App extends Component {
         setTimeout(() => {
           let edges = JSON.parse(commit.edges)
 
-          if (that.fetchFullCommit) {
+          if (doc.ref.parent.id === that.repo) {
             that.nodes = JSON.parse(commit.nodes)[0]
           } else {
             let nodeChanges = JSON.parse(commit.changes)
@@ -396,6 +401,8 @@ class App extends Component {
 
           if (that.state.play) {
             resolve()
+          } else {
+            that.APIprocessing = false
           }
         }, that.delayAmount)
       })
@@ -405,6 +412,7 @@ class App extends Component {
       await asyncForEach(snapshots, async (snapshot) => {
         await updateGraph(snapshot)
       })
+      this.APIprocessing = false
       this.callApi()
     }
     addCommits()
@@ -415,11 +423,30 @@ class App extends Component {
     this.setState({spherize: Config.FDG.sphereProject})
   }
 
+  setPlay (bool) {
+    let play = bool
+    this.setState({play: play})
+
+    if (!play) {
+      this.APIprocessing = false
+      this.commitsToProcess = []
+    }
+
+    if (play && !this.APIprocessing) {
+      this.callApi()
+    }
+  }
+
   togglePlay () {
     let play = !this.state.play
     this.setState({play: play})
 
-    if (play) {
+    if (!play) {
+      this.APIprocessing = false
+      this.commitsToProcess = []
+    }
+
+    if (play && !this.APIprocessing) {
       this.callApi()
     }
   }
