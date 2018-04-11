@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import * as THREE from 'three'
 import OrbitContructor from 'three-orbit-controls'
 import deepAssign from 'deep-assign'
+import EventEmitter from 'eventemitter3'
 
 // Post
 import { EffectComposer, ShaderPass, RenderPass } from './libs/post/EffectComposer'
@@ -13,12 +14,14 @@ import FDG from './libs/FDG'
 // CSS
 import './App.css'
 
+const mixin = require('mixin')
+
 const moment = require('moment')
 
 const firebase = require('firebase')
 require('firebase/firestore')
 
-class App extends Component {
+class App extends mixin(EventEmitter, Component) {
   constructor (props) {
     super(props)
 
@@ -83,10 +86,10 @@ class App extends Component {
       latestTime: date
     })
     if (!this.state.play) {
-      this.callApi()
+      this.callAPI()
     } else {
       this.setPlay(false)
-      this.callApi()
+      this.callAPI()
     }
   }
 
@@ -107,7 +110,7 @@ class App extends Component {
   }
 
   componentDidMount () {
-    this.callApi()
+    this.callAPI()
     this.initStage()
   }
 
@@ -256,7 +259,7 @@ class App extends Component {
   /**
    * Get commit data
    */
-  async callApi () {
+  async callAPI () {
     this.APIprocessing = true
     let commits
     let singleCommit = false
@@ -296,7 +299,7 @@ class App extends Component {
 
     if (snapshot.docs && snapshot.docs.length === 0) {
       setTimeout(() => {
-        this.callApi()
+        this.callAPI()
       }, 5000)
       return
     }
@@ -388,6 +391,17 @@ class App extends Component {
 
           this.setState(changedState)
 
+          this.emit('commitChanged', {
+            removed: changedState.currentRemoved,
+            changed: changedState.currentChanged,
+            added: changedState.currentAdded,
+            msg: changedState.currentMsg,
+            author: changedState.currentAuthor,
+            hash: changedState.currentCommitHash,
+            date: changedState.currentDate,
+            index: commit.index
+          })
+
           if (this.FDG) {
             if (this.FDG.firstRun) {
               this.FDG.init({
@@ -420,7 +434,7 @@ class App extends Component {
         await updateGraph.call(this, snapshot)
       })
       this.APIprocessing = false
-      this.callApi()
+      this.callAPI()
     }
     addCommits()
   }
@@ -440,7 +454,7 @@ class App extends Component {
     }
 
     if (play && !this.APIprocessing) {
-      this.callApi()
+      this.callAPI()
     }
   }
 
@@ -454,7 +468,7 @@ class App extends Component {
     }
 
     if (play && !this.APIprocessing) {
-      this.callApi()
+      this.callAPI()
     }
   }
 
@@ -464,7 +478,7 @@ class App extends Component {
       this.loadCommitHash = commit
       this.commitsToProcess = [commit]
       this.setState({play: false})
-      this.callApi()
+      this.callAPI()
     }
   }
 
@@ -472,14 +486,28 @@ class App extends Component {
     this.loadPrevCommit = true
     this.commitsToProcess = []
     this.setState({play: false})
-    this.callApi()
+    this.callAPI()
   }
 
   goToNext () {
     this.loadNextCommit = true
     this.commitsToProcess = []
     this.setState({play: false})
-    this.callApi()
+    this.callAPI()
+  }
+
+  async getFirstCommit () {
+    let ref = this.firebaseDB.collection(this.repoChanges)
+    let commits = ref.orderBy('date', 'asc').limit(1)
+    let snapshot = await commits.get()
+    return snapshot.docs[0].data()
+  }
+
+  async getlastCommit () {
+    let ref = this.firebaseDB.collection(this.repoChanges)
+    let commits = ref.orderBy('date', 'desc').limit(1)
+    let snapshot = await commits.get()
+    return snapshot.docs[0].data()
   }
 
   UI () {
@@ -492,13 +520,13 @@ class App extends Component {
       return (
         <div className='gource-ui'>
           <div className='info'>
-            <div className='currentAdded'>Files Added: {this.state.currentAdded}</div>
-            <div className='currentChanged'>Files Changed: {this.state.currentChanged}</div>
-            <div className='currentRemoved'>Files Removed: {this.state.currentRemoved}</div>
-            <div className='currentAuthor'>Author: {this.state.currentAuthor}</div>
-            <div className='currentMsg'>Message: {this.state.currentMsg}</div>
-            <div className='currentDate'>Commit Date: {this.state.currentDate}</div>
-            <div className='currentCommitHash'>Commit Hash: {this.state.currentCommitHash}</div>
+            <div className='currentAdded'><span>Files Added:</span> <b>{this.state.currentAdded}</b></div>
+            <div className='currentChanged'><span>Files Changed:</span> <b>{this.state.currentChanged}</b></div>
+            <div className='currentRemoved'><span>Files Removed:</span> <b>{this.state.currentRemoved}</b></div>
+            <div className='currentAuthor'><span>Author:</span> <b>{this.state.currentAuthor}</b></div>
+            <div className='currentMsg'><span>Message:</span> <b>{this.state.currentMsg}</b></div>
+            <div className='currentDate'><span>Commit Date:</span> <b>{this.state.currentDate}</b></div>
+            <div className='currentCommitHash'><span>Commit Hash:</span> <b>{this.state.currentCommitHash}</b></div>
           </div>
           <div className='gource-controls'>
             <button className='previousCommit' onClick={this.goToPrev.bind(this)}>&lt; Prev</button>

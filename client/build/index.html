@@ -7,7 +7,7 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="shortcut icon" href="/favicon.ico">
     <title>WebGL Gource</title>
-  <link href="/static/css/gource.main.css" rel="stylesheet"></head>
+  <link href="./static/css/gource.main.css" rel="stylesheet"></head>
   <body>
     <noscript>
       You need to enable JavaScript to run this app.
@@ -74,6 +74,18 @@
            * Available methods
            */
 
+          /*gource.getFirstCommit().then(data => {
+            console.log(data)
+          })*/
+
+          /*gource.getlastCommit().then(data => {
+            console.log(data)
+          })*/
+
+          /*gource.on('commitChanged', (data) => {
+            console.log(data)
+          })*/
+
           // gource.setDate('2018-01-01')
 
           // gource.setSphereView(true)
@@ -90,5 +102,5 @@
           
         }
       </script>
-  <script type="text/javascript" src="/static/js/gource.main.js"></script></body>
+  <script type="text/javascript" src="./static/js/gource.main.js"></script></body>
 </html>

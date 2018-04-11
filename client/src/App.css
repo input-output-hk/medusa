@@ -24,7 +24,7 @@ canvas#stage {
   font-size: 11px;
 }
 
-.info * {
+.info div {
   display: inline-block;
   margin: 0 1em 1em 1em;
 }

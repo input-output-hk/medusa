@@ -73,4 +73,47 @@ const goToNext = function () {
   Component.goToNext()
 }
 
-export {init, setDate, setSphereView, setPlay, goToPrev, goToNext}
+/**
+ * Event emitter
+ *
+ * @param {string} event
+ * @param {function} fn
+ */
+const on = function (event, fn) {
+  if (!Component) {
+    return
+  }
+  return Component.on(event, fn)
+}
+
+/**
+ * Get first commit in data store
+ */
+const getFirstCommit = async function () {
+  if (!Component) {
+    return
+  }
+  return Component.getFirstCommit()
+}
+
+/**
+ * Get last commit in data store
+ */
+const getlastCommit = async function () {
+  if (!Component) {
+    return
+  }
+  return Component.getlastCommit()
+}
+
+export {
+  init,
+  setDate,
+  setSphereView,
+  setPlay,
+  goToPrev,
+  goToNext,
+  on,
+  getFirstCommit,
+  getlastCommit
+}
