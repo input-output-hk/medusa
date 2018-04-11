@@ -18,13 +18,14 @@
         config = {
           git: {
             owner: 'input-output-hk',
-            repo: 'symphony',
+            repo: 'cardano-sl',
             commitHash: '', // hash of commit to load
             commitDate: '', // date to load (YYYY-MM-DD)
             loadLatest: false // load latest commit in db
           },
           display: {
-            showUI: true
+            showUI: true,
+            customUI: false
           },
           FDG: {
             nodeSpritePath: 'textures/dot.png', // path to node texture
@@ -78,6 +79,14 @@
           // gource.setSphereView(true)
 
           // gource.setPlay(true)
+          
+          /*document.addEventListener('click', () => {
+            gource.goToPrev()
+          })
+
+          document.addEventListener('click', () => {
+            gource.goToNext()
+          })*/
           
         }
       </script>

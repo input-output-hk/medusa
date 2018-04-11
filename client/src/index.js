@@ -53,4 +53,24 @@ const setPlay = function (bool) {
   Component.setPlay(bool)
 }
 
-export {init, setDate, setSphereView, setPlay}
+/**
+ * Previous commit
+ */
+const goToPrev = function () {
+  if (!Component) {
+    return
+  }
+  Component.goToPrev()
+}
+
+/**
+ * Next commit
+ */
+const goToNext = function () {
+  if (!Component) {
+    return
+  }
+  Component.goToNext()
+}
+
+export {init, setDate, setSphereView, setPlay, goToPrev, goToNext}

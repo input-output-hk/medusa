@@ -50,6 +50,9 @@ class App extends Component {
     this.fetchFullCommit = true
     this.nodes = {}
     this.APICalled = false
+    this.currentCommitIndex = 0
+    this.loadPrevCommit = false
+    this.loadNextCommit = false
 
     this.state = {
       play: Config.FDG.autoPlay,
@@ -258,24 +261,29 @@ class App extends Component {
     let commits
     let singleCommit = false
 
-    // only retrieve changed data from db
+    // only get changed data in play mode
     if (!this.fetchFullCommit) {
       this.docRef = this.firebaseDB.collection(Config.git.repo + '_changes')
     }
 
-    // only get changed data in play mode
     this.fetchFullCommit = !this.play
 
+    // load commit by hash
     if (this.loadCommitHash !== '') {
       commits = this.docRef.doc(this.loadCommitHash)
       this.loadCommitHash = ''
       singleCommit = true
+    } else if (this.loadPrevCommit) { // load previous commit
+      commits = this.docRef.where('index', '==', (this.currentCommitIndex - 1)).limit(1)
+      this.loadPrevCommit = false
+    } else if (this.loadNextCommit) { // load next commit
+      commits = this.docRef.where('index', '==', (this.currentCommitIndex + 1)).limit(1)
+      this.loadNextCommit = false
+    } else if (Config.git.loadLatest && !this.state.latestTime) {
+      commits = this.docRef.orderBy('date', 'desc').limit(1)
+      Config.git.loadLatest = false
     } else {
-      if (Config.git.loadLatest && !this.state.latestTime) {
-        commits = this.docRef.orderBy('date', 'desc').limit(1)
-      } else {
-        commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
-      }
+      commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
     }
 
     let snapshot = await commits.get()
@@ -312,8 +320,6 @@ class App extends Component {
       }
     }
 
-    let that = this
-
     let updateGraph = async function (doc) {
       return new Promise((resolve, reject) => {
         if (!doc.exists) {
@@ -323,55 +329,49 @@ class App extends Component {
         let commit = doc.data()
         commit.sha = doc.id
 
-        if (that.commitsToProcess.indexOf(doc.id) === -1) {
+        if (this.commitsToProcess.indexOf(doc.id) === -1) {
           resolve()
         }
 
         setTimeout(() => {
           let edges = JSON.parse(commit.edges)
 
-          if (doc.ref.parent.id === that.repo) {
-            that.nodes = JSON.parse(commit.nodes)[0]
+          if (doc.ref.parent.id === this.repo) {
+            this.nodes = JSON.parse(commit.nodes)[0]
           } else {
             let nodeChanges = JSON.parse(commit.changes)
             nodeChanges.r.forEach((path) => {
-              for (const key in that.nodes) {
-                if (that.nodes.hasOwnProperty(key)) {
-                  const node = that.nodes[key]
+              for (const key in this.nodes) {
+                if (this.nodes.hasOwnProperty(key)) {
+                  const node = this.nodes[key]
                   if (node.p === path) {
-                    delete that.nodes[key]
+                    delete this.nodes[key]
                   }
                 }
               }
             })
 
-            for (const id in that.nodes) {
-              if (that.nodes.hasOwnProperty(id)) {
-                if (nodeChanges.c.indexOf(that.nodes[id].p) !== -1) {
-                  that.nodes[id].u = 1.0
+            for (const id in this.nodes) {
+              if (this.nodes.hasOwnProperty(id)) {
+                if (nodeChanges.c.indexOf(this.nodes[id].p) !== -1) {
+                  this.nodes[id].u = 1.0
                 } else {
-                  delete that.nodes[id].u
+                  delete this.nodes[id].u
                 }
               }
             }
 
-            that.nodes = Object.keys(that.nodes).map(function (key) {
-              return that.nodes[key]
+            this.nodes = Object.keys(this.nodes).map(function (key) {
+              return this.nodes[key]
             })
 
             for (const key in nodeChanges.a) {
               if (nodeChanges.a.hasOwnProperty(key)) {
                 const node = nodeChanges.a[key]
                 node.u = 1.0
-                that.nodes[key] = node
+                this.nodes[key] = node
               }
             }
-
-            /* that.nodes.sort(function (a, b) {
-              let pathA = a.p.toUpperCase()
-              let pathB = b.p.toUpperCase()
-              return (pathA < pathB) ? -1 : (pathA > pathB) ? 1 : 0
-            }) */
           }
 
           let changedState = {}
@@ -384,39 +384,40 @@ class App extends Component {
           changedState.currentAdded = isNaN(changes.a) ? Object.keys(changes.a).length : changes.a
           changedState.currentChanged = isNaN(changes.c) ? changes.c.length : changes.c
           changedState.currentRemoved = isNaN(changes.r) ? changes.r.length : changes.r
+          this.currentCommitIndex = commit.index
 
-          that.setState(changedState)
+          this.setState(changedState)
 
-          if (that.FDG) {
-            if (that.FDG.firstRun) {
-              that.FDG.init({
-                nodeData: that.nodes,
+          if (this.FDG) {
+            if (this.FDG.firstRun) {
+              this.FDG.init({
+                nodeData: this.nodes,
                 edgeData: edges,
                 nodeCount: Config.FDG.nodeCount
               })
-              that.FDG.setFirstRun(false)
+              this.FDG.setFirstRun(false)
             } else {
-              that.FDG.refresh()
-              that.FDG.init({
-                nodeData: that.nodes,
+              this.FDG.refresh()
+              this.FDG.init({
+                nodeData: this.nodes,
                 edgeData: edges,
                 nodeCount: Config.FDG.nodeCount
               })
             }
           }
 
-          if (that.state.play) {
+          if (this.state.play) {
             resolve()
           } else {
-            that.APIprocessing = false
+            this.APIprocessing = false
           }
-        }, that.delayAmount)
+        }, this.delayAmount)
       })
     }
 
     const addCommits = async () => {
       await asyncForEach(snapshots, async (snapshot) => {
-        await updateGraph(snapshot)
+        await updateGraph.call(this, snapshot)
       })
       this.APIprocessing = false
       this.callApi()
@@ -467,45 +468,68 @@ class App extends Component {
     }
   }
 
-  ui () {
-    if (Config.display.showUI) {
+  goToPrev () {
+    this.loadPrevCommit = true
+    this.commitsToProcess = []
+    this.setState({play: false})
+    this.callApi()
+  }
+
+  goToNext () {
+    this.loadNextCommit = true
+    this.commitsToProcess = []
+    this.setState({play: false})
+    this.callApi()
+  }
+
+  UI () {
+    if (!Config.display.showUI) {
+      return
+    }
+    if (Config.display.customUI) {
+
+    } else {
       return (
-        <div className='info'>
-          <div className='currentAdded'>Files Added: {this.state.currentAdded}</div>
-          <div className='currentChanged'>Files Changed: {this.state.currentChanged}</div>
-          <div className='currentRemoved'>Files Removed: {this.state.currentRemoved}</div>
-          <div className='currentAuthor'>Author: {this.state.currentAuthor}</div>
-          <div className='currentMsg'>Message: {this.state.currentMsg}</div>
-          <div className='currentDate'>Commit Date: {this.state.currentDate}</div>
-          <div className='currentCommitHash'>Commit Hash: {this.state.currentCommitHash}</div>
-          <label>
-        Play:
-        <input
-          name='play'
-          type='checkbox'
-          checked={this.state.play}
-          onChange={this.togglePlay.bind(this)} />
-          </label>
-          <br />
-          <label>
-        Commit:
-        <input
-          ref={input => {
-            this.commitInput = input
-          }}
-          name='commitInput'
-          type='text' />
-            <button onClick={this.loadCommit.bind(this)}>Go</button>
-          </label>
-          <br />
-          <label>
-        Sphere Projection:
-        <input
-          name='spherize'
-          type='checkbox'
-          checked={this.state.spherize}
-          onChange={this.toggleSpherize.bind(this)} />
-          </label>
+        <div className='gource-ui'>
+          <div className='info'>
+            <div className='currentAdded'>Files Added: {this.state.currentAdded}</div>
+            <div className='currentChanged'>Files Changed: {this.state.currentChanged}</div>
+            <div className='currentRemoved'>Files Removed: {this.state.currentRemoved}</div>
+            <div className='currentAuthor'>Author: {this.state.currentAuthor}</div>
+            <div className='currentMsg'>Message: {this.state.currentMsg}</div>
+            <div className='currentDate'>Commit Date: {this.state.currentDate}</div>
+            <div className='currentCommitHash'>Commit Hash: {this.state.currentCommitHash}</div>
+          </div>
+          <div className='gource-controls'>
+            <button className='previousCommit' onClick={this.goToPrev.bind(this)}>&lt; Prev</button>
+            <button className='nextCommit' onClick={this.goToNext.bind(this)}>Next &gt;</button>
+            <label>
+              Play:
+              <input
+                name='play'
+                type='checkbox'
+                checked={this.state.play}
+                onChange={this.togglePlay.bind(this)} />
+            </label>
+            <label>
+              Commit:
+              <input
+                ref={input => {
+                  this.commitInput = input
+                }}
+                name='commitInput'
+                type='text' />
+              <button onClick={this.loadCommit.bind(this)}>Go</button>
+            </label>
+            <label>
+              Sphere Projection:
+              <input
+                name='spherize'
+                type='checkbox'
+                checked={this.state.spherize}
+                onChange={this.toggleSpherize.bind(this)} />
+            </label>
+          </div>
         </div>
       )
     }
@@ -514,7 +538,7 @@ class App extends Component {
   render () {
     return (
       <div className='App'>
-        {this.ui()}
+        {this.UI()}
         <canvas width={Config.scene.width} height={Config.scene.height} id={Config.scene.canvasID} />
       </div>
     )

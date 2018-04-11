@@ -21,11 +21,17 @@ canvas#stage {
   color: #eee;
   padding: 1em;
   z-index: 1;
-  font-size: 10px;
+  font-size: 11px;
 }
 
-.controls {
+.info * {
+  display: inline-block;
+  margin: 0 1em 1em 1em;
+}
+
+.gource-controls {
   position: absolute;
+  font-size: 12px;
   top: 0;
   left: 0;
   width: 100%;
@@ -34,6 +40,16 @@ canvas#stage {
   z-index: 1;
 }
 
-.controls button {
-  margin: 0 .5em
+.gource-controls label {
+  display: inline-block;
+  margin: 0 1em 1em 0;
+}
+
+.gource-controls label input[type='checkbox'] {
+  vertical-align: middle;
+}
+
+.gource-controls button {
+  display: inline-block;
+  margin: 0 1em 1em 0;
 }
