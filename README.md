@@ -1,6 +1,6 @@
 This package comes with a Node JS server for populating Firebase Firestore from the Github API and a frontend client for running the visualization.
 
-![Gource](//gource.iohk.io/static/assets/images/gource.jpg)
+![Gource visual](//gource.iohk.io/static/assets/images/gource.jpg)
 
 ## Install server dependencies with:
 
