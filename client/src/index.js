@@ -106,6 +106,18 @@ const getlastCommit = async function () {
   return Component.getlastCommit()
 }
 
+/**
+ * Dynamically update a config setting
+ *
+ * @param {object} config
+ */
+const setConfig = async function (config) {
+  if (!Component) {
+    return
+  }
+  return Component.setConfig(config)
+}
+
 export {
   init,
   setDate,
@@ -115,5 +127,6 @@ export {
   goToNext,
   on,
   getFirstCommit,
-  getlastCommit
+  getlastCommit,
+  setConfig
 }

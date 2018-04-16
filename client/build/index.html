@@ -18,7 +18,7 @@
         config = {
           git: {
             owner: 'input-output-hk',
-            repo: 'cardano-sl',
+            repo: 'symphony',
             commitHash: '', // hash of commit to load
             commitDate: '', // date to load (YYYY-MM-DD)
             loadLatest: false // load latest commit in db
@@ -70,9 +70,19 @@
         window.onload = function() {
           gource.init(config)
 
+
+
           /**
            * Available methods
            */
+
+          /*document.addEventListener('click', () => {
+            gource.setConfig({
+              camera: {
+                fov: 120
+              }
+            })
+          })*/
 
           /*gource.getFirstCommit().then(data => {
             console.log(data)

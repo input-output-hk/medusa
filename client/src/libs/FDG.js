@@ -36,7 +36,9 @@ export default class FDG {
     this.forceMaterial = null
     this.pullGeometry = null
     this.pushGeometry = null
+    this.text = null
     this.newNodes = []
+    this.active = false
 
     this.initCamera()
   }
@@ -76,6 +78,8 @@ export default class FDG {
     this.nodeData = nodeData
     this.edgeData = edgeData
     this.nodeCount = nodeCount
+
+    this.active = true
 
     if (this.firstRun) {
       this.initPassThrough()
@@ -122,6 +126,18 @@ export default class FDG {
 
   setEnabled () {
     this.enabled = true
+  }
+
+  /**
+   * Force reload of the scene if config settings have changed
+   */
+  triggerUpdate () {
+    this.refresh()
+    this.init({
+      nodeData: this.nodeData,
+      edgeData: this.edgeData,
+      nodeCount: this.nodeCount
+    })
   }
 
   setTextureDimensions () {
@@ -221,10 +237,13 @@ export default class FDG {
 
   initText () {
     if (!this.config.FDG.showFilePaths) {
+      if (this.text) {
+        this.scene.remove(this.text)
+      }
       return
     }
 
-    if (this.firstRun) {
+    if (!this.text) {
       this.text = this.textGeometry.create(this.nodeData, this.nodeCount)
       this.scene.add(this.text)
     } else {

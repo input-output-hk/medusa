@@ -27,14 +27,14 @@ class App extends mixin(EventEmitter, Component) {
 
     this.config = deepAssign(Config, this.props.config)
 
-    this.repo = Config.git.repo
-    this.repoChanges = Config.git.repo + '_changes'
+    this.repo = this.config.git.repo
+    this.repoChanges = this.config.git.repo + '_changes'
 
     this.initFireBase()
     this.OrbitControls = OrbitContructor(THREE)
 
     this.FDG = null // Force Directed Graph class
-    this.delayAmount = Config.FDG.delayAmount // how long to wait between graph updates
+    this.delayAmount = this.config.FDG.delayAmount // how long to wait between graph updates
 
     let latestTime = 0
     if (typeof URLSearchParams !== 'undefined') {
@@ -43,14 +43,13 @@ class App extends mixin(EventEmitter, Component) {
       if (urlParams.has('date')) {
         latestTime = moment(urlParams.get('date')).valueOf()
       } else {
-        if (Config.git.commitDate) {
-          latestTime = moment(Config.git.commitDate).valueOf()
+        if (this.config.git.commitDate) {
+          latestTime = moment(this.config.git.commitDate).valueOf()
         }
       }
     }
 
     this.commitsToProcess = []
-    this.fetchFullCommit = true
     this.nodes = {}
     this.APICalled = false
     this.currentCommitIndex = 0
@@ -58,10 +57,10 @@ class App extends mixin(EventEmitter, Component) {
     this.loadNextCommit = false
 
     this.state = {
-      play: Config.FDG.autoPlay,
+      play: this.config.FDG.autoPlay,
       currentDate: null,
       currentCommitHash: '',
-      spherize: Config.FDG.sphereProject,
+      spherize: this.config.FDG.sphereProject,
       currentAuthor: null,
       currentMsg: null,
       currentAdded: null,
@@ -70,7 +69,7 @@ class App extends mixin(EventEmitter, Component) {
       latestTime: latestTime
     }
 
-    this.loadCommitHash = Config.git.commitHash
+    this.loadCommitHash = this.config.git.commitHash
   }
 
   /**
@@ -99,14 +98,14 @@ class App extends mixin(EventEmitter, Component) {
    * @param {bool} bool
    */
   setSphereView (bool) {
-    Config.FDG.sphereProject = bool
-    this.setState({spherize: Config.FDG.sphereProject})
+    this.config.FDG.sphereProject = bool
+    this.setState({spherize: this.config.FDG.sphereProject})
   }
 
   initFireBase () {
-    firebase.initializeApp(Config.fireBase)
+    firebase.initializeApp(this.config.fireBase)
     this.firebaseDB = firebase.firestore()
-    this.docRef = this.firebaseDB.collection(Config.git.repo)
+    this.docRef = this.firebaseDB.collection(this.config.git.repo)
   }
 
   componentDidMount () {
@@ -130,23 +129,39 @@ class App extends mixin(EventEmitter, Component) {
     this.renderPass = new RenderPass(this.scene, this.camera)
     this.composer.addPass(this.renderPass)
 
-    if (Config.post.vignette) {
-      this.vignettePass = new ShaderPass(Vignette)
-      this.vignettePass.material.uniforms.bgColor.value = new THREE.Color(Config.scene.bgColor)
-      this.vignettePass.renderToScreen = true
-      this.composer.addPass(this.vignettePass)
+    this.setPostSettings()
+  }
+
+  setPostSettings () {
+    if (this.config.post.vignette) {
+      if (this.vignettePass) {
+        this.vignettePass.enabled = true
+        this.renderPass.renderToScreen = false
+      } else {
+        this.vignettePass = new ShaderPass(Vignette)
+        this.vignettePass.material.uniforms.bgColor.value = new THREE.Color(this.config.scene.bgColor)
+        this.vignettePass.renderToScreen = true
+        this.composer.addPass(this.vignettePass)
+      }
     } else {
+      if (this.vignettePass) {
+        this.vignettePass.enabled = false
+      }
       this.renderPass.renderToScreen = true
     }
   }
 
   initControls () {
     this.controls = new this.OrbitControls(this.camera, this.renderer.domElement)
+    this.setControlsSettings()
+  }
+
+  setControlsSettings () {
     this.controls.minDistance = 200
     this.controls.maxDistance = 10000
     this.controls.enablePan = false
-    this.controls.autoRotate = Config.scene.autoRotate
-    this.controls.autoRotateSpeed = Config.scene.autoRotateSpeed
+    this.controls.autoRotate = this.config.scene.autoRotate
+    this.controls.autoRotateSpeed = this.config.scene.autoRotateSpeed
     this.controls.zoomSpeed = 0.7
     this.controls.rotateSpeed = 0.07
     this.controls.enableDamping = true
@@ -179,45 +194,24 @@ class App extends mixin(EventEmitter, Component) {
 
   initScene () {
     this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(Config.scene.bgColor)
+    this.scene.background = new THREE.Color(this.config.scene.bgColor)
   }
 
   /**
-   * Set up stage camera with defaults
+   * Set up camera with defaults
    */
   initCamera () {
-    // initial position of camera in the scene
-    this.defaultCameraPos = Config.camera.initPos
-    // xy bounds of the ambient camera movement
-    this.cameraDriftLimitMax = {
-      x: 100.0,
-      y: 100.0
-    }
-    this.cameraDriftLimitMin = {
-      x: -100.0,
-      y: -100.0
-    }
-
-    this.cameraMoveStep = 200.0 // how much to move the camera forward on z-axis
-    this.cameraLerpSpeed = 0.05 // speed of camera lerp
-
-    // scene camera
-    this.camera = new THREE.PerspectiveCamera(Config.camera.fov, window.innerWidth / window.innerHeight, 0.1, 2000000)
-    this.camera.position.set(this.defaultCameraPos.x, this.defaultCameraPos.y, this.defaultCameraPos.z)
+    this.camera = new THREE.PerspectiveCamera(this.config.camera.fov, window.innerWidth / window.innerHeight, 0.1, 2000000)
+    this.camera.position.x = this.config.camera.initPos.x
+    this.camera.position.y = this.config.camera.initPos.y
+    this.camera.position.z = this.config.camera.initPos.z
     this.camera.updateMatrixWorld()
+    this.setCameraSettings()
+  }
 
-    this.cameraPos = this.camera.position.clone() // current camera position
-    this.targetCameraPos = this.cameraPos.clone() // target camera position
-
-    this.cameraLookAtPos = new THREE.Vector3(0, 0, 0) // current camera lookat
-    this.targetCameraLookAt = new THREE.Vector3(0, 0, 0) // target camera lookat
-    this.camera.lookAt(this.cameraLookAtPos)
-
-    // set initial camera rotations
-    this.cameraFromQuaternion = new THREE.Quaternion().copy(this.camera.quaternion)
-    let cameraToRotation = new THREE.Euler().copy(this.camera.rotation)
-    this.cameraToQuaternion = new THREE.Quaternion().setFromEuler(cameraToRotation)
-    this.cameraMoveQuaternion = new THREE.Quaternion()
+  setCameraSettings () {
+    this.camera.fov = this.config.camera.fov
+    this.camera.updateMatrixWorld()
   }
 
   /**
@@ -225,8 +219,8 @@ class App extends mixin(EventEmitter, Component) {
    */
   initRenderer () {
     this.renderer = new THREE.WebGLRenderer({
-      antialias: Config.scene.antialias,
-      canvas: document.getElementById(Config.scene.canvasID)
+      antialias: this.config.scene.antialias,
+      canvas: document.getElementById(this.config.scene.canvasID)
     })
 
     this.composer = new EffectComposer(this.renderer)
@@ -236,16 +230,16 @@ class App extends mixin(EventEmitter, Component) {
    * Window resize
    */
   resize () {
-    if (Config.scene.fullScreen) {
+    if (this.config.scene.fullScreen) {
       this.width = window.innerWidth
       this.height = window.innerHeight
     } else {
-      this.width = Config.scene.width
-      this.height = Config.scene.height
+      this.width = this.config.scene.width
+      this.height = this.config.scene.height
     }
 
-    Config.scene.width = this.width
-    Config.scene.height = this.height
+    this.config.scene.width = this.width
+    this.config.scene.height = this.height
 
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix()
@@ -265,11 +259,10 @@ class App extends mixin(EventEmitter, Component) {
     let singleCommit = false
 
     // only get changed data in play mode
-    if (!this.fetchFullCommit) {
-      this.docRef = this.firebaseDB.collection(Config.git.repo + '_changes')
+    if (this.state.play) {
+      //this.docRef = this.firebaseDB.collection(this.config.git.repo + '_changes')
+      //console.log('changes')
     }
-
-    this.fetchFullCommit = !this.play
 
     // load commit by hash
     if (this.loadCommitHash !== '') {
@@ -282,11 +275,11 @@ class App extends mixin(EventEmitter, Component) {
     } else if (this.loadNextCommit) { // load next commit
       commits = this.docRef.where('index', '==', (this.currentCommitIndex + 1)).limit(1)
       this.loadNextCommit = false
-    } else if (Config.git.loadLatest && !this.state.latestTime) {
+    } else if (this.config.git.loadLatest && !this.state.latestTime) {
       commits = this.docRef.orderBy('date', 'desc').limit(1)
-      Config.git.loadLatest = false
+      this.config.git.loadLatest = false
     } else {
-      commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(10)
+      commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(1)
     }
 
     let snapshot = await commits.get()
@@ -366,7 +359,7 @@ class App extends mixin(EventEmitter, Component) {
 
             this.nodes = Object.keys(this.nodes).map(function (key) {
               return this.nodes[key]
-            })
+            }.bind(this))
 
             for (const key in nodeChanges.a) {
               if (nodeChanges.a.hasOwnProperty(key)) {
@@ -407,7 +400,7 @@ class App extends mixin(EventEmitter, Component) {
               this.FDG.init({
                 nodeData: this.nodes,
                 edgeData: edges,
-                nodeCount: Config.FDG.nodeCount
+                nodeCount: this.config.FDG.nodeCount
               })
               this.FDG.setFirstRun(false)
             } else {
@@ -415,7 +408,7 @@ class App extends mixin(EventEmitter, Component) {
               this.FDG.init({
                 nodeData: this.nodes,
                 edgeData: edges,
-                nodeCount: Config.FDG.nodeCount
+                nodeCount: this.config.FDG.nodeCount
               })
             }
           }
@@ -440,8 +433,8 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   toggleSpherize () {
-    Config.FDG.sphereProject = !this.state.spherize
-    this.setState({spherize: Config.FDG.sphereProject})
+    this.config.FDG.sphereProject = !this.state.spherize
+    this.setState({spherize: this.config.FDG.sphereProject})
   }
 
   setPlay (bool) {
@@ -496,6 +489,18 @@ class App extends mixin(EventEmitter, Component) {
     this.callAPI()
   }
 
+  setConfig (newConfig) {
+    this.config = deepAssign(this.config, newConfig)
+
+    this.setControlsSettings()
+    this.setPostSettings()
+    this.setCameraSettings()
+
+    if (this.FDG && this.FDG.active === true) {
+      this.FDG.triggerUpdate()
+    }
+  }
+
   async getFirstCommit () {
     let ref = this.firebaseDB.collection(this.repoChanges)
     let commits = ref.orderBy('date', 'asc').limit(1)
@@ -511,10 +516,10 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   UI () {
-    if (!Config.display.showUI) {
+    if (!this.config.display.showUI) {
       return
     }
-    if (Config.display.customUI) {
+    if (this.config.display.customUI) {
 
     } else {
       return (
@@ -567,7 +572,7 @@ class App extends mixin(EventEmitter, Component) {
     return (
       <div className='App'>
         {this.UI()}
-        <canvas width={Config.scene.width} height={Config.scene.height} id={Config.scene.canvasID} />
+        <canvas width={this.config.scene.width} height={this.config.scene.height} id={this.config.scene.canvasID} />
       </div>
     )
   }
