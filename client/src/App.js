@@ -169,7 +169,12 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   initFDG () {
-    this.FDG = new FDG(this.renderer, this.scene, this.config)
+    this.FDG = new FDG(
+      this.renderer,
+      this.scene,
+      this.config,
+      this.camera
+    )
   }
 
   animate () {
@@ -260,8 +265,8 @@ class App extends mixin(EventEmitter, Component) {
 
     // only get changed data in play mode
     if (this.state.play) {
-      //this.docRef = this.firebaseDB.collection(this.config.git.repo + '_changes')
-      //console.log('changes')
+      // this.docRef = this.firebaseDB.collection(this.config.git.repo + '_changes')
+      // console.log('changes')
     }
 
     // load commit by hash

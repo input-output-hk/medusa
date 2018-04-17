@@ -16,9 +16,10 @@ import PassThroughFrag from '../shaders/passThrough.frag'
  * GPGPU Force Directed Graph Simulation
  */
 export default class FDG {
-  constructor (renderer, scene, config) {
+  constructor (renderer, scene, config, camera) {
     this.renderer = renderer
     this.scene = scene
+    this.camera = camera
     this.config = config
     this.frame = 0
     this.textureHelper = new TextureHelper()
@@ -198,7 +199,8 @@ export default class FDG {
       this.calculatePositions()
 
       // update nodes
-      this.nodeGeometry.update()
+      this.nodeGeometry.update(this.camera)
+      this.edgeGeometry.update(this.camera)
     }
   }
 

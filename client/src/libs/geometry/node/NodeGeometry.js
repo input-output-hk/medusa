@@ -11,6 +11,7 @@ export default class NodeGeometry {
     this.config = config
     this.textureHelper = new TextureHelper()
     this.sprite = new THREE.TextureLoader().load(this.config.FDG.nodeSpritePath)
+    this.spriteBlur = new THREE.TextureLoader().load(this.config.FDG.nodeSpritePathBlur)
     this.uSprite = new THREE.TextureLoader().load(this.config.FDG.nodeUpdatedSpritePath)
     this.decayTime = 0.0
     this.material = null
@@ -126,6 +127,10 @@ export default class NodeGeometry {
     if (!this.material) {
       this.material = new THREE.ShaderMaterial({
         uniforms: {
+          camDistToCenter: {
+            type: 'f',
+            value: null
+          },
           cycleColors: {
             type: 'f',
             value: this.config.cycleColors ? 1.0 : 0.0
@@ -133,6 +138,10 @@ export default class NodeGeometry {
           map: {
             type: 't',
             value: this.sprite
+          },
+          mapBlur: {
+            type: 't',
+            value: this.spriteBlur
           },
           uMap: {
             type: 't',
@@ -176,8 +185,12 @@ export default class NodeGeometry {
     }
   }
 
-  update (width, height) {
+  update (camera) {
     this.decayTime++
     this.material.uniforms.decayTime.value = this.decayTime
+
+    let camPos = camera.getWorldPosition()
+    const center = new THREE.Vector3(0.0, 0.0, 0.0)
+    this.material.uniforms.camDistToCenter.value = camPos.distanceTo(center)
   }
 }

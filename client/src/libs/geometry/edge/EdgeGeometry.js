@@ -66,6 +66,10 @@ export default class EdgeGeometry {
     if (!this.material) {
       this.material = new THREE.ShaderMaterial({
         uniforms: {
+          camDistToCenter: {
+            type: 'f',
+            value: null
+          },
           cycleColors: {
             type: 'f',
             value: this.config.cycleColors ? 1.0 : 0.0
@@ -86,5 +90,11 @@ export default class EdgeGeometry {
     this.edges = new THREE.LineSegments(this.geometry, this.material)
 
     return this.edges
+  }
+
+  update (camera) {
+    let camPos = camera.getWorldPosition()
+    const center = new THREE.Vector3(0.0, 0.0, 0.0)
+    this.material.uniforms.camDistToCenter.value = camPos.distanceTo(center)
   }
 }

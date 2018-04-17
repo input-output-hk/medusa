@@ -25,6 +25,7 @@ const Config = {
   },
   FDG: {
     nodeSpritePath: 'textures/dot.png', // path to node texture
+    nodeSpritePathBlur: 'textures/dot-blur.png', // path to blur node texture
     nodeUpdatedSpritePath: 'textures/dot-concentric.png', // path to node updated state texture
     fontTexturePath: 'textures/UbuntuMono.png', // path to font texture
     nodeCount: 4096, // max number of nodes the scene can contain
