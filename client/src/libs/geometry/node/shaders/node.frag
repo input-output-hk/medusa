@@ -20,16 +20,16 @@ void main() {
       sprite = texture2D(map, vec2(gl_PointCoord.x, 1. - gl_PointCoord.y));
     }
 
-    if (cycleColors == 1.0) {
-      if (vColor.a > 1.) {
-        float amount = min(1., vColor.a - 1.);
-        sprite.rgb = mix(vec3(.09, .274, .627), vec3(.7, .7, .7), amount);
-      } else {
-        sprite.rgb = mix(vColor.rgb, vec3(.09, .274, .627), vColor.a);
-      }
-    } else {
+    // if (cycleColors == 1.0) {
+    //   if (vColor.a > 1.) {
+    //     float amount = min(1., vColor.a - 1.);
+    //     sprite.rgb = mix(vec3(.09, .274, .627), vec3(.7, .7, .7), amount);
+    //   } else {
+    //     sprite.rgb = mix(vColor.rgb, vec3(.09, .274, .627), vColor.a);
+    //   }
+    // } else {
       sprite.rgb = vColor.rgb;
-    }
+    //}
 
     sprite.rgb += vDecay * 0.9;
 

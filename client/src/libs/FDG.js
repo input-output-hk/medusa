@@ -266,10 +266,39 @@ export default class FDG {
     this.renderer.render(this.passThroughScene, this.quadCamera, output)
   }
 
+  setPositionTextureLocations () {
+    this.texLocationWidth = Object.keys(this.nodeData).length
+    this.texLocationHeight = 1.0
+
+    let dataArr = new Float32Array(this.texLocationWidth * this.texLocationHeight * 2)
+
+    for (let i = 0; i < Object.keys(this.nodeData).length; i++) {
+      let nodeTextureLocation = this.textureHelper.getNodeTextureLocation(i)
+      dataArr[i * 2 + 0] = nodeTextureLocation.x
+      dataArr[i * 2 + 1] = nodeTextureLocation.y
+    }
+
+    let texLocation = new THREE.DataTexture(dataArr, this.texLocationWidth, this.texLocationHeight, THREE.LuminanceAlphaFormat, THREE.FloatType)
+
+    texLocation.needsUpdate = true
+    texLocation.minFilter = THREE.NearestFilter
+    texLocation.magFilter = THREE.NearestFilter
+    texLocation.generateMipmaps = false
+    texLocation.flipY = false
+
+    return texLocation
+  }
+
   initPositions () {
+    let texLocation = this.setPositionTextureLocations()
+
     if (!this.positionMaterial) {
       this.positionMaterial = new THREE.ShaderMaterial({
         uniforms: {
+          texLocation: {
+            type: 't',
+            value: texLocation
+          },
           positionTexture: {
             type: 't',
             value: null
@@ -292,8 +321,9 @@ export default class FDG {
           }
         },
         defines: {
-          textureWidth: this.textureWidth.toFixed(2),
-          textureHeight: this.textureHeight.toFixed(2)
+          texLocationWidth: 1.0 / this.texLocationWidth.toFixed(2),
+          width: 1.0 / this.textureWidth.toFixed(2),
+          height: 1.0 / this.textureHeight.toFixed(2)
         },
         vertexShader: PassThroughVert,
         fragmentShader: PositionFrag
@@ -303,6 +333,14 @@ export default class FDG {
 
       this.positionMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), this.positionMaterial)
       this.positionScene.add(this.positionMesh)
+    } else {
+      this.positionMesh.material.uniforms.texLocation.value = texLocation
+      this.positionMesh.material.defines = {
+        width: 1.0 / this.textureWidth.toFixed(2),
+        height: 1.0 / this.textureHeight.toFixed(2),
+        texLocationWidth: 1.0 / this.texLocationWidth.toFixed(2)
+      }
+      this.positionMesh.material.needsUpdate = true
     }
   }
 
