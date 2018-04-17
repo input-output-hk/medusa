@@ -31,7 +31,7 @@ void main() {
       sprite.rgb = vColor.rgb;
     //}
 
-    sprite.rgb += vDecay * 0.9;
+    sprite.rgb += vDecay;
 
     sprite.a = min(sprite.a, (vDist * 0.5));
 
