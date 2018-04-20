@@ -93,7 +93,7 @@ export default class EdgeGeometry {
   }
 
   update (camera) {
-    let camPos = camera.getWorldPosition()
+    let camPos = camera.getWorldPosition(new THREE.Vector3())
     const center = new THREE.Vector3(0.0, 0.0, 0.0)
     this.material.uniforms.camDistToCenter.value = camPos.distanceTo(center)
   }

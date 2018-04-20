@@ -105,6 +105,8 @@ class App extends mixin(EventEmitter, Component) {
   initFireBase () {
     firebase.initializeApp(this.config.fireBase)
     this.firebaseDB = firebase.firestore()
+    const settings = {timestampsInSnapshots: true}
+    this.firebaseDB.settings(settings)
     this.docRef = this.firebaseDB.collection(this.config.git.repo)
   }
 

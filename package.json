@@ -8,13 +8,14 @@
   },
   "dependencies": {
     "express": "^4.16.2",
-    "firebase-admin": "5.8.1",
-    "moment": "^2.20.1",
+    "firebase-admin": "5.12.0",
+    "moment": "^2.22.1",
     "node-fetch": "^2.1.1",
-    "ws": "^4.0.0"
+    "nodemon": "^1.17.3",
+    "ws": "^5.1.1"
   },
   "devDependencies": {
     "concurrently": "^3.5.0",
-    "standard": "^10.0.3"
+    "standard": "^11.0.1"
   }
 }

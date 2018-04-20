@@ -88,7 +88,7 @@ export default class NodeGeometry {
         colorArray[i * 4 + 2] = nodeColor.b
       }
 
-        // store time since last update in alpha channel
+      // store time since last update in alpha channel
       if (node.u) {
         colorArray[i * 4 + 3] = 0.0
       } else {
@@ -189,7 +189,7 @@ export default class NodeGeometry {
     this.decayTime++
     this.material.uniforms.decayTime.value = this.decayTime
 
-    let camPos = camera.getWorldPosition()
+    let camPos = camera.getWorldPosition(new THREE.Vector3())
     const center = new THREE.Vector3(0.0, 0.0, 0.0)
     this.material.uniforms.camDistToCenter.value = camPos.distanceTo(center)
   }

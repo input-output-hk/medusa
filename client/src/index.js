@@ -11,6 +11,47 @@ const init = function (config) {
   registerServiceWorker()
 }
 
+/**
+ * Check if Gource can run
+ */
+const canRun = function () {
+  const webGLSupport = !!window.WebGLRenderingContext
+
+  if (!webGLSupport) {
+    console.log('Your browser does not support WebGL')
+    return false
+  }
+
+  const gl = document.createElement('canvas').getContext('webgl').getSupportedExtensions()
+
+  if (gl.indexOf('ANGLE_instanced_arrays') === -1) {
+    console.log('ANGLE_instanced_arrays support is required to run this app')
+    return false
+  }
+
+  if (gl.indexOf('OES_texture_float') === -1) {
+    console.log('OES_texture_float support is required to run this app')
+    return false
+  }
+
+  if (gl.indexOf('OES_texture_float_linear') === -1) {
+    console.log('OES_texture_float support is required to run this app')
+    return false
+  }
+
+  if (gl.indexOf('OES_texture_half_float') === -1) {
+    console.log('OES_texture_float support is required to run this app')
+    return false
+  }
+
+  if (gl.indexOf('OES_texture_half_float_linear') === -1) {
+    console.log('OES_texture_float support is required to run this app')
+    return false
+  }
+
+  return true
+}
+
 // ----------------------------------------------
 // Public API methods
 // ----------------------------------------------
@@ -120,6 +161,7 @@ const setConfig = async function (config) {
 
 export {
   init,
+  canRun,
   setDate,
   setSphereView,
   setPlay,
