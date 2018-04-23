@@ -15,14 +15,22 @@ const init = function (config) {
  * Check if Gource can run
  */
 const canRun = function () {
-  const webGLSupport = !!window.WebGLRenderingContext
-
-  if (!webGLSupport) {
+  if (!window.WebGLRenderingContext) {
     console.log('Your browser does not support WebGL')
     return false
   }
 
-  const gl = document.createElement('canvas').getContext('webgl').getSupportedExtensions()
+  let glContext = document.createElement('canvas').getContext('webgl')
+  if (glContext === null) {
+    glContext = document.createElement('canvas').getContext('experimental-webgl')
+  }
+
+  if (glContext === null) {
+    console.log('Your browser does not support WebGL')
+    return false
+  }
+
+  const gl = glContext.getSupportedExtensions()
 
   if (gl.indexOf('ANGLE_instanced_arrays') === -1) {
     console.log('ANGLE_instanced_arrays support is required to run this app')

@@ -36,6 +36,8 @@ class App extends mixin(EventEmitter, Component) {
     this.FDG = null // Force Directed Graph class
     this.delayAmount = this.config.FDG.delayAmount // how long to wait between graph updates
 
+    this.userInteracting = true
+
     let latestTime = 0
     if (typeof URLSearchParams !== 'undefined') {
       // get date from URL
@@ -162,8 +164,6 @@ class App extends mixin(EventEmitter, Component) {
     this.controls.minDistance = 200
     this.controls.maxDistance = 10000
     this.controls.enablePan = false
-    this.controls.autoRotate = this.config.scene.autoRotate
-    this.controls.autoRotateSpeed = this.config.scene.autoRotateSpeed
     this.controls.zoomSpeed = 0.7
     this.controls.rotateSpeed = 0.07
     this.controls.enableDamping = true
@@ -189,6 +189,12 @@ class App extends mixin(EventEmitter, Component) {
       this.FDG.update()
     }
 
+    if (this.config.scene.autoRotate) {
+      this.scene.rotation.y += this.config.scene.autoRotateSpeed
+    }
+
+    this.cameraFollowTarget()
+
     this.controls.update()
 
     this.composer.render()
@@ -197,6 +203,39 @@ class App extends mixin(EventEmitter, Component) {
   addEvents () {
     window.addEventListener('resize', this.resize.bind(this), false)
     this.resize()
+
+    const canvas = document.querySelector('#' + this.config.scene.canvasID)
+
+    const timeout = function () {
+      this.userInteracting = true
+      clearTimeout(this.interactionTimeout)
+      this.interactionTimeout = setTimeout(() => {
+        this.userInteracting = false
+        const camPos = this.camera.getWorldPosition(new THREE.Vector3())
+        this.cameraPos.x = camPos.x
+        this.cameraPos.y = camPos.y
+        this.cameraPos.z = camPos.z
+        this.targetCameraPos.x = camPos.x
+        this.targetCameraPos.y = camPos.y
+        this.targetCameraPos.z = camPos.z
+      }, 3000)
+    }
+
+    canvas.addEventListener('touchstart', (e) => {
+      timeout.call(this)
+    })
+
+    canvas.addEventListener('mousedown', (e) => {
+      timeout.call(this)
+    })
+
+    canvas.addEventListener('wheel', (e) => {
+      timeout.call(this)
+    })
+
+    canvas.addEventListener('mousewheel', (e) => {
+      timeout.call(this)
+    })
   }
 
   initScene () {
@@ -212,6 +251,24 @@ class App extends mixin(EventEmitter, Component) {
     this.camera.position.x = this.config.camera.initPos.x
     this.camera.position.y = this.config.camera.initPos.y
     this.camera.position.z = this.config.camera.initPos.z
+
+    // speed of lerp
+    this.cameraLerpSpeed = 0.03
+
+    // set target positions
+    this.cameraPos = this.camera.position.clone() // current camera position
+    this.targetCameraPos = this.cameraPos.clone() // target camera position
+
+    this.cameraLookAtPos = new THREE.Vector3(0, 0, 0) // current camera lookat
+    this.targetCameraLookAt = new THREE.Vector3(0, 0, 0) // target camera lookat
+    this.camera.lookAt(this.cameraLookAtPos)
+
+    // set initial camera rotations
+    this.cameraFromQuaternion = new THREE.Quaternion().copy(this.camera.quaternion)
+    let cameraToRotation = new THREE.Euler().copy(this.camera.rotation)
+    this.cameraToQuaternion = new THREE.Quaternion().setFromEuler(cameraToRotation)
+    this.cameraMoveQuaternion = new THREE.Quaternion()
+
     this.camera.updateMatrixWorld()
     this.setCameraSettings()
   }
@@ -219,6 +276,21 @@ class App extends mixin(EventEmitter, Component) {
   setCameraSettings () {
     this.camera.fov = this.config.camera.fov
     this.camera.updateMatrixWorld()
+  }
+
+  /**
+   * Move camera to target position
+   */
+  cameraFollowTarget () {
+    this.camera.lookAt(this.cameraLookAtPos)
+    if (!this.userInteracting) {
+      // lerp camera position to target
+      this.cameraPos.lerp(this.targetCameraPos, this.cameraLerpSpeed)
+      this.camera.position.copy(this.cameraPos)
+
+      // constantly look at target
+      this.cameraLookAtPos.lerp(this.targetCameraLookAt, this.cameraLerpSpeed)
+    }
   }
 
   /**
@@ -402,6 +474,25 @@ class App extends mixin(EventEmitter, Component) {
             index: commit.index
           })
 
+          // get vector to center
+          let toCentre = this.camera.getWorldPosition(new THREE.Vector3()).normalize()
+
+          const nodeCount = Object.keys(this.nodes).length
+
+          // y = ax^2 + bx + c
+          let dist = (0.0001 * (Math.pow(nodeCount, 2))) + (1 * (nodeCount)) + this.config.camera.initPos.z
+          if (this.state.spherize) {
+            if (this.config.scene.width > this.config.scene.height) {
+              dist = this.config.FDG.sphereRadius + 1200.0
+            } else {
+              dist = this.config.FDG.sphereRadius + 1600.0
+            }
+          }
+          let newPos = toCentre.multiplyScalar(dist)
+          this.targetCameraPos.x = newPos.x
+          this.targetCameraPos.y = newPos.y
+          this.targetCameraPos.z = newPos.z
+
           if (this.FDG) {
             if (this.FDG.firstRun) {
               this.FDG.init({
@@ -526,53 +617,50 @@ class App extends mixin(EventEmitter, Component) {
     if (!this.config.display.showUI) {
       return
     }
-    if (this.config.display.customUI) {
 
-    } else {
-      return (
-        <div className='gource-ui'>
-          <div className='info'>
-            <div className='currentAdded'><span>Files Added:</span> <b>{this.state.currentAdded}</b></div>
-            <div className='currentChanged'><span>Files Changed:</span> <b>{this.state.currentChanged}</b></div>
-            <div className='currentRemoved'><span>Files Removed:</span> <b>{this.state.currentRemoved}</b></div>
-            <div className='currentAuthor'><span>Author:</span> <b>{this.state.currentAuthor}</b></div>
-            <div className='currentMsg'><span>Message:</span> <b>{this.state.currentMsg}</b></div>
-            <div className='currentDate'><span>Commit Date:</span> <b>{this.state.currentDate}</b></div>
-            <div className='currentCommitHash'><span>Commit Hash:</span> <b>{this.state.currentCommitHash}</b></div>
-          </div>
-          <div className='gource-controls'>
-            <button className='previousCommit' onClick={this.goToPrev.bind(this)}>&lt; Prev</button>
-            <button className='nextCommit' onClick={this.goToNext.bind(this)}>Next &gt;</button>
-            <label>
-              Play:
-              <input
-                name='play'
-                type='checkbox'
-                checked={this.state.play}
-                onChange={this.togglePlay.bind(this)} />
-            </label>
-            <label>
-              Commit:
-              <input
-                ref={input => {
-                  this.commitInput = input
-                }}
-                name='commitInput'
-                type='text' />
-              <button onClick={this.loadCommit.bind(this)}>Go</button>
-            </label>
-            <label>
-              Sphere Projection:
-              <input
-                name='spherize'
-                type='checkbox'
-                checked={this.state.spherize}
-                onChange={this.toggleSpherize.bind(this)} />
-            </label>
-          </div>
+    return (
+      <div className='gource-ui'>
+        <div className='info'>
+          <div className='currentAdded'><span>Files Added:</span> <b>{this.state.currentAdded}</b></div>
+          <div className='currentChanged'><span>Files Changed:</span> <b>{this.state.currentChanged}</b></div>
+          <div className='currentRemoved'><span>Files Removed:</span> <b>{this.state.currentRemoved}</b></div>
+          <div className='currentAuthor'><span>Author:</span> <b>{this.state.currentAuthor}</b></div>
+          <div className='currentMsg'><span>Message:</span> <b>{this.state.currentMsg}</b></div>
+          <div className='currentDate'><span>Commit Date:</span> <b>{this.state.currentDate}</b></div>
+          <div className='currentCommitHash'><span>Commit Hash:</span> <b>{this.state.currentCommitHash}</b></div>
         </div>
-      )
-    }
+        <div className='gource-controls'>
+          <button className='previousCommit' onClick={this.goToPrev.bind(this)}>&lt; Prev</button>
+          <button className='nextCommit' onClick={this.goToNext.bind(this)}>Next &gt;</button>
+          <label>
+              Play:
+            <input
+              name='play'
+              type='checkbox'
+              checked={this.state.play}
+              onChange={this.togglePlay.bind(this)} />
+          </label>
+          <label>
+              Commit:
+            <input
+              ref={input => {
+                this.commitInput = input
+              }}
+              name='commitInput'
+              type='text' />
+            <button onClick={this.loadCommit.bind(this)}>Go</button>
+          </label>
+          <label>
+              Sphere Projection:
+            <input
+              name='spherize'
+              type='checkbox'
+              checked={this.state.spherize}
+              onChange={this.toggleSpherize.bind(this)} />
+          </label>
+        </div>
+      </div>
+    )
   }
 
   render () {
