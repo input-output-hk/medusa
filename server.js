@@ -83,13 +83,13 @@ const getCommitTotal = function () {
         'Authorization': `Bearer ${accessToken}`
       }
     })
-  .then(res => res.text())
-  .then((body) => {
-    let json = JSON.parse(body)
-    commitTotal = json.data.repository.ref.target.history.totalCount
-    resolve()
-  })
-  .catch(error => console.error(error))
+      .then(res => res.text())
+      .then((body) => {
+        let json = JSON.parse(body)
+        commitTotal = json.data.repository.ref.target.history.totalCount
+        resolve()
+      })
+      .catch(error => console.error(error))
   })
 }
 
@@ -218,81 +218,206 @@ const updateRoutine = function () {
                 clearNodeUpdatedFlag()
 
                 githubCliDotCom.fetchTreeRecursive({sha: commit.sha, owner: GHOwner, repository: GHRepo})
-                .then(treeData => {
+                  .then(treeData => {
                   // clear node if we are over the github file limit
-                  if (commitDetail.files.length === GHFileLimit) {
-                    nodes = {}
-                  }
+                    if (commitDetail.files.length === GHFileLimit) {
+                      nodes = {}
+                    }
 
-                  // add root node
-                  addNode({
-                    type: 'r',
-                    path: '/',
-                    id: 0
-                  })
+                    // add root node
+                    addNode({
+                      type: 'r',
+                      path: '/',
+                      id: 0
+                    })
 
-                  for (const key in treeData.tree) {
-                    if (treeData.tree.hasOwnProperty(key)) {
-                      const treeNode = treeData.tree[key]
+                    for (const key in treeData.tree) {
+                      if (treeData.tree.hasOwnProperty(key)) {
+                        const treeNode = treeData.tree[key]
 
-                      let nodeType = ''
-                      if (treeNode.type === 'blob') {
-                        nodeType = 'f'
-                      }
-                      if (treeNode.type === 'tree') {
-                        nodeType = 'd'
-                      }
+                        let nodeType = ''
+                        if (treeNode.type === 'blob') {
+                          nodeType = 'f'
+                        }
+                        if (treeNode.type === 'tree') {
+                          nodeType = 'd'
+                        }
 
-                      let nodeData = {
-                        type: nodeType,
-                        path: treeNode.path
-                      }
+                        let nodeData = {
+                          type: nodeType,
+                          path: treeNode.path
+                        }
 
-                      // get parent dir of this node
-                      let parentDirArray = []
-                      let nodePathArray = treeNode.path.split('/')
-                      for (let index = 0; index < nodePathArray.length - 1; index++) {
-                        parentDirArray.push(nodePathArray[index])
-                      }
-                      let parentDirPath = parentDirArray.join('/')
+                        // get parent dir of this node
+                        let parentDirArray = []
+                        let nodePathArray = treeNode.path.split('/')
+                        for (let index = 0; index < nodePathArray.length - 1; index++) {
+                          parentDirArray.push(nodePathArray[index])
+                        }
+                        let parentDirPath = parentDirArray.join('/')
 
-                      // check for parent directory
-                      if (parentDirPath.length > 0) {
-                        for (const id in nodes) {
-                          if (nodes.hasOwnProperty(id)) {
-                            let node = nodes[id]
-                            if (changedPaths.indexOf(node.p) !== -1) {
-                              node.u = true
+                        // check for parent directory
+                        if (parentDirPath.length > 0) {
+                          for (const id in nodes) {
+                            if (nodes.hasOwnProperty(id)) {
+                              let node = nodes[id]
+                              if (changedPaths.indexOf(node.p) !== -1) {
+                                node.u = true
+                              }
+                              if (addedPaths.indexOf(node.p) !== -1) {
+                                node.u = true
+                              }
+                              if (node.t === 'd') {
+                                if (node.p === parentDirPath) {
+                                  nodeData.parentId = id
+                                }
+                              }
                             }
-                            if (addedPaths.indexOf(node.p) !== -1) {
-                              node.u = true
+                          }
+                        }
+
+                        addNode(nodeData)
+                      }
+                    }
+
+                    // remove deleted nodes
+
+                    // the github api only shows up to 300 files, if we are over this amount
+                    // fall back to reading the directory contents (we don't use this method
+                    // each time) as a branch may have been created with a completely different
+                    // folder structure and the previous folder structure is carried from the
+                    // previous commit - this is unusual, but if it is the case, it is most likely
+                    // an experimental branch which doesn't contain many files
+                    if (commitDetail.files.length === GHFileLimit) {
+                    // compare previous directory structure to current
+
+                    // check for removed nodes
+                      let removedPaths = []
+                      for (const key in previousNodeData) {
+                        if (previousNodeData.hasOwnProperty(key)) {
+                          const prevNode = previousNodeData[key]
+                          let foundNode = false
+                          for (const id in nodes) {
+                            if (nodes.hasOwnProperty(id)) {
+                              const node = nodes[id]
+                              if (prevNode.p === node.p) {
+                                foundNode = true
+                              }
                             }
-                            if (node.t === 'd') {
-                              if (node.p === parentDirPath) {
-                                nodeData.parentId = id
+                          }
+                          if (foundNode === false) {
+                            removedPaths.push(prevNode.p)
+                          }
+                        }
+                      }
+                    }
+
+                    // run through removedPaths array and delete
+                    for (const id in nodes) {
+                      if (nodes.hasOwnProperty(id)) {
+                        const node = nodes[id]
+                        let nodePathArray = node.p.split('/')
+                        if (removedPaths.indexOf(node.p) !== -1) {
+                          console.log('delete node', nodes[id])
+                          delete nodes[id]
+
+                          // remove parent directories
+                          let length = JSON.parse(JSON.stringify(nodePathArray.length))
+
+                          for (let index = length; index > 0; index--) {
+                            nodePathArray.pop()
+                            let checkDirPath = nodePathArray.join('/')
+
+                            // find node by path
+                            for (const nodeId in nodes) {
+                              if (nodes.hasOwnProperty(nodeId)) {
+                                if (nodes[nodeId].p === checkDirPath) {
+                                  let checkDir = nodes[nodeId]
+
+                                  // do any nodes have this dir as a parent?
+                                  let foundParent = false
+                                  for (const pNodeId in nodes) {
+                                    if (nodes.hasOwnProperty(pNodeId)) {
+                                      if (nodes[pNodeId].pid == checkDir.id) {
+                                        foundParent = true
+                                      }
+                                    }
+                                  }
+
+                                  if (!foundParent) {
+                                    console.log('delete dir', checkDir.p)
+                                    removedPaths.push(checkDir.p)
+                                    delete nodes[checkDir.id]
+                                  }
+                                }
                               }
                             }
                           }
                         }
                       }
-
-                      addNode(nodeData)
                     }
-                  }
 
-                  // remove deleted nodes
+                    // create edges structure for graph
+                    let edges = []
+                    for (const id in nodes) {
+                      if (nodes.hasOwnProperty(id)) {
+                        const node = nodes[id]
+                        const idInt = parseInt(id)
+                        const parentId = typeof node.pid !== 'undefined' ? parseInt(node.pid) : 0
 
-                  // the github api only shows up to 300 files, if we are over this amount
-                  // fall back to reading the directory contents (we don't use this method
-                  // each time) as a branch may have been created with a completely different
-                  // folder structure and the previous folder structure is carried from the
-                  // previous commit - this is unusual, but if it is the case, it is most likely
-                  // an experimental branch which doesn't contain many files
-                  if (commitDetail.files.length === GHFileLimit) {
-                    // compare previous directory structure to current
+                        if (idInt !== parentId) {
+                          edges.push(idInt)
+                          edges.push(parentId)
+                        }
+                      }
+                    }
+
+                    let nodesArr = []
+                    for (const key in nodes) {
+                      if (nodes.hasOwnProperty(key)) {
+                        nodes[key].id = parseInt(key)
+                        nodesArr.push(
+                          nodes[key]
+                        )
+                      }
+                    }
+
+                    // sort array alphabetically so the order matches on the front and back end
+                    /* nodesArr.sort(function (a, b) {
+                    let pathA = a.p.toUpperCase()
+                    let pathB = b.p.toUpperCase()
+                    return (pathA < pathB) ? -1 : (pathA > pathB) ? 1 : 0
+                  }) */
+
+                    // create array of edges
+                    let edgesArr = []
+                    edges.forEach(edge => {
+                      nodesArr.forEach((node, i) => {
+                        if (node.id === edge) {
+                          edgesArr.push(i)
+                        }
+                      })
+                    })
+
+                    // check for added nodes
+                    let addedNodes = {}
+                    nodesArr.forEach((node, index) => {
+                      let foundNode = false
+                      for (const key in previousNodeData) {
+                        if (previousNodeData.hasOwnProperty(key)) {
+                          const prevNode = previousNodeData[key]
+                          if (prevNode.p === node.p) {
+                            foundNode = true
+                          }
+                        }
+                      }
+                      if (foundNode === false) {
+                        addedNodes[index] = node
+                      }
+                    })
 
                     // check for removed nodes
-                    let removedPaths = []
+                    let removedNodes = []
                     for (const key in previousNodeData) {
                       if (previousNodeData.hasOwnProperty(key)) {
                         const prevNode = previousNodeData[key]
@@ -306,187 +431,62 @@ const updateRoutine = function () {
                           }
                         }
                         if (foundNode === false) {
-                          removedPaths.push(prevNode.p)
+                          removedNodes.push(prevNode.p)
                         }
                       }
                     }
-                  }
 
-                  // run through removedPaths array and delete
-                  for (const id in nodes) {
-                    if (nodes.hasOwnProperty(id)) {
-                      const node = nodes[id]
-                      let nodePathArray = node.p.split('/')
-                      if (removedPaths.indexOf(node.p) !== -1) {
-                        console.log('delete node', nodes[id])
-                        delete nodes[id]
+                    let saveData = {
+                      edges: JSON.stringify(edgesArr),
+                      nodes: JSON.stringify([nodesArr]),
+                      email: commitDetail.commit.author.email,
+                      author: commitDetail.commit.author.name,
+                      date: commitDateObj.valueOf(),
+                      msg: commitDetail.commit.message,
+                      changes: JSON.stringify({ a: addedPaths.length, c: changedPaths.length, r: removedPaths.length }),
+                      index: currentCommitIndex,
+                      count: nodeCounter
+                    }
 
-                        // remove parent directories
-                        let length = JSON.parse(JSON.stringify(nodePathArray.length))
+                    // save to db
+                    let docRef = firebaseDB.collection(GHRepo).doc(commitDetail.sha)
+                    docRef.get().then((snapshot) => {
+                      if (snapshot.exists) {
+                        console.log(snapshot.id + ' already exists, skipping...')
+                        return
+                      }
 
-                        for (let index = length; index > 0; index--) {
-                          nodePathArray.pop()
-                          let checkDirPath = nodePathArray.join('/')
-
-                          // find node by path
-                          for (const nodeId in nodes) {
-                            if (nodes.hasOwnProperty(nodeId)) {
-                              if (nodes[nodeId].p === checkDirPath) {
-                                let checkDir = nodes[nodeId]
-
-                                // do any nodes have this dir as a parent?
-                                let foundParent = false
-                                for (const pNodeId in nodes) {
-                                  if (nodes.hasOwnProperty(pNodeId)) {
-                                    if (nodes[pNodeId].pid == checkDir.id) {
-                                      foundParent = true
-                                    }
-                                  }
-                                }
-
-                                if (!foundParent) {
-                                  console.log('delete dir', checkDir.p)
-                                  removedPaths.push(checkDir.p)
-                                  delete nodes[checkDir.id]
-                                }
-                              }
-                            }
+                      if (!latestCommit) {
+                        docRef.set(saveData).then(() => {
+                          if (currentPage > 0 && recurse) {
+                            updateRoutine()
                           }
+                        })
+                      } else {
+                        docRef.set(saveData)
+                      }
+
+                      if (latestCommit) {
+                        let docRefChanges = firebaseDB.collection(GHRepo + '_changes').doc(commitDetail.sha)
+
+                        let changeData = {
+                          edges: JSON.stringify(edgesArr),
+                          changes: JSON.stringify({ a: addedNodes, c: changedPaths, r: removedNodes }),
+                          email: commitDetail.commit.author.email,
+                          author: commitDetail.commit.author.name,
+                          date: commitDateObj.valueOf(),
+                          msg: commitDetail.commit.message,
+                          index: currentCommitIndex
                         }
-                      }
-                    }
-                  }
 
-                  // create edges structure for graph
-                  let edges = []
-                  for (const id in nodes) {
-                    if (nodes.hasOwnProperty(id)) {
-                      const node = nodes[id]
-                      const idInt = parseInt(id)
-                      const parentId = typeof node.pid !== 'undefined' ? parseInt(node.pid) : 0
-
-                      if (idInt !== parentId) {
-                        edges.push(idInt)
-                        edges.push(parentId)
-                      }
-                    }
-                  }
-
-                  let nodesArr = []
-                  for (const key in nodes) {
-                    if (nodes.hasOwnProperty(key)) {
-                      nodes[key].id = parseInt(key)
-                      nodesArr.push(
-                        nodes[key]
-                      )
-                    }
-                  }
-
-                  // sort array alphabetically so the order matches on the front and back end
-                  /* nodesArr.sort(function (a, b) {
-                    let pathA = a.p.toUpperCase()
-                    let pathB = b.p.toUpperCase()
-                    return (pathA < pathB) ? -1 : (pathA > pathB) ? 1 : 0
-                  }) */
-
-                  // create array of edges
-                  let edgesArr = []
-                  edges.forEach(edge => {
-                    nodesArr.forEach((node, i) => {
-                      if (node.id === edge) {
-                        edgesArr.push(i)
+                        docRefChanges.set(changeData).then(() => {
+                          if (currentPage > 0 && recurse) {
+                            updateRoutine()
+                          }
+                        })
                       }
                     })
                   })
-
-                  // check for added nodes
-                  let addedNodes = {}
-                  nodesArr.forEach((node, index) => {
-                    let foundNode = false
-                    for (const key in previousNodeData) {
-                      if (previousNodeData.hasOwnProperty(key)) {
-                        const prevNode = previousNodeData[key]
-                        if (prevNode.p === node.p) {
-                          foundNode = true
-                        }
-                      }
-                    }
-                    if (foundNode === false) {
-                      addedNodes[index] = node
-                    }
-                  })
-
-                  // check for removed nodes
-                  let removedNodes = []
-                  for (const key in previousNodeData) {
-                    if (previousNodeData.hasOwnProperty(key)) {
-                      const prevNode = previousNodeData[key]
-                      let foundNode = false
-                      for (const id in nodes) {
-                        if (nodes.hasOwnProperty(id)) {
-                          const node = nodes[id]
-                          if (prevNode.p === node.p) {
-                            foundNode = true
-                          }
-                        }
-                      }
-                      if (foundNode === false) {
-                        removedNodes.push(prevNode.p)
-                      }
-                    }
-                  }
-
-                  let saveData = {
-                    edges: JSON.stringify(edgesArr),
-                    nodes: JSON.stringify([nodesArr]),
-                    email: commitDetail.commit.author.email,
-                    author: commitDetail.commit.author.name,
-                    date: commitDateObj.valueOf(),
-                    msg: commitDetail.commit.message,
-                    changes: JSON.stringify({ a: addedPaths.length, c: changedPaths.length, r: removedPaths.length }),
-                    index: currentCommitIndex,
-                    count: nodeCounter
-                  }
-
-                  // save to db
-                  let docRef = firebaseDB.collection(GHRepo).doc(commitDetail.sha)
-                  docRef.get().then((snapshot) => {
-                    if (snapshot.exists) {
-                      console.log(snapshot.id + ' already exists, skipping...')
-                      return
-                    }
-
-                    if (!latestCommit) {
-                      docRef.set(saveData).then(() => {
-                        if (currentPage > 0 && recurse) {
-                          updateRoutine()
-                        }
-                      })
-                    } else {
-                      docRef.set(saveData)
-                    }
-
-                    if (latestCommit) {
-                      let docRefChanges = firebaseDB.collection(GHRepo + '_changes').doc(commitDetail.sha)
-
-                      let changeData = {
-                        edges: JSON.stringify(edgesArr),
-                        changes: JSON.stringify({ a: addedNodes, c: changedPaths, r: removedNodes }),
-                        email: commitDetail.commit.author.email,
-                        author: commitDetail.commit.author.name,
-                        date: commitDateObj.valueOf(),
-                        msg: commitDetail.commit.message,
-                        index: currentCommitIndex
-                      }
-
-                      docRefChanges.set(changeData).then(() => {
-                        if (currentPage > 0 && recurse) {
-                          updateRoutine()
-                        }
-                      })
-                    }
-                  })
-                })
               })
             })
           }

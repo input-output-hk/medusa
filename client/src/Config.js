@@ -16,12 +16,12 @@ const Config = {
     showUI: false
   },
   fireBase: {
-    apiKey: 'AIzaSyA9_GvRguuv5zZLdV0-bVnVfA0FEGWy4gA',
-    authDomain: 'gource-774ad.firebaseapp.com',
-    databaseURL: 'https://gource-774ad.firebaseio.com',
-    projectId: 'gource-774ad',
-    storageBucket: 'gource-774ad.appspot.com',
-    messagingSenderId: '290917146601'
+    apiKey: 'AIzaSyCwfdzrjQ5GRqyz-napBM29T7Zel_6KIUY',
+    authDomain: 'webgl-gource-1da99.firebaseapp.com',
+    databaseURL: 'https://webgl-gource-1da99.firebaseio.com',
+    projectId: 'webgl-gource-1da99',
+    storageBucket: 'webgl-gource-1da99.appspot.com',
+    messagingSenderId: '532264380396'
   },
   FDG: {
     nodeSpritePath: 'textures/dot.png', // path to node texture
