@@ -42,7 +42,7 @@ export default class TextGeometry {
         let fileName = fileNameArray[fileNameArray.length - 1]
 
         if (node.p === '/') {
-          fileName = '/'
+          fileName = this.config.git.repo
         }
 
         if (fileName.length > this.config.FDG.filePathCharLimit) {
