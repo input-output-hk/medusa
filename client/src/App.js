@@ -373,7 +373,7 @@ class App extends mixin(EventEmitter, Component) {
       commits = this.docRef.orderBy('index', 'desc').limit(1)
       this.config.git.loadLatest = false
     } else {
-      commits = this.docRef.orderBy('index', 'asc').where('index', '>=', this.state.currentCommitIndex + 1).limit(1)
+      commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
     }
 
     let snapshot = await commits.get()
