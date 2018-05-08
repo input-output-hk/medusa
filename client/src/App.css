@@ -53,3 +53,89 @@ canvas#stage {
   display: inline-block;
   margin: 0 1em 1em 0;
 }
+
+.gource-sidebar {
+  list-style: none;
+  position: fixed;
+  color: #fff;
+  font-size: 0.7em;
+  text-align: left;
+}
+
+.gource-sidebar p {
+  margin: 0 0 0.8em;
+}
+
+.gource-sidebar li {
+  padding: 0.7em 1em 0 1em;
+  margin: 1em 0;
+  border: 1px solid transparent;
+  height: 4.3em;
+}
+
+.gource-sidebar li:hover {
+  cursor: pointer;
+  border: 1px solid #eeeeee;
+  border-radius: 44px;
+  
+}
+
+.gource-sidebar li > div {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.gource-sidebar li.current {
+  border: 1px solid #832dc4;
+  border-radius: 44px;
+}
+
+.gource-sidebar .sidebar-gravatar {
+  margin-right: 0.7em;
+}
+
+.gource-sidebar .sidebar-gravatar img {
+  border-top-left-radius: 50% 50%;
+  border-top-right-radius: 50% 50%;
+  border-bottom-right-radius: 50% 50%;
+  border-bottom-left-radius: 50% 50%;
+}
+
+.gource-sidebar .sidebar-author {
+  font-weight: bold;
+}
+
+.gource-sidebar .sidebar-date {
+  color: #eee;
+}
+
+.sidebar-message {
+  display: block;
+  width: 270px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-message a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.sidebar-message a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.sidebar-github-view {
+  color: #fff;
+  text-decoration: none;
+  margin-top: 0.3em;
+  display: block;
+  font-size: 0.8em;
+  float: right;
+}
+
+.sidebar-github-view:hover {
+  text-decoration: underline;
+}

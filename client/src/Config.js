@@ -13,7 +13,8 @@ const Config = {
     loadLatest: true // load latest commit in db
   },
   display: {
-    showUI: false
+    showUI: true,
+    showSidebar: true
   },
   fireBase: {
     apiKey: 'AIzaSyCwfdzrjQ5GRqyz-napBM29T7Zel_6KIUY',
@@ -30,7 +31,7 @@ const Config = {
     fontTexturePath: 'textures/UbuntuMono.png', // path to font texture
     nodeCount: 4096, // max number of nodes the scene can contain
     autoPlay: true,
-    delayAmount: 500, // time in between new commits being added to the graph
+    delayAmount: 1000, // time in between new commits being added to the graph
     sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
     sphereRadius: 700, // radius of sphere if in sphere projection mode
     showFilePaths: true, // display filepath overlay on nodes

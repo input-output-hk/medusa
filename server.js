@@ -450,42 +450,36 @@ const updateRoutine = function () {
 
                     // save to db
                     let docRef = firebaseDB.collection(GHRepo).doc(commitDetail.sha)
-                    docRef.get().then((snapshot) => {
-                      if (snapshot.exists) {
-                        console.log(snapshot.id + ' already exists, skipping...')
-                        return
-                      }
 
-                      if (!latestCommit) {
-                        docRef.set(saveData).then(() => {
-                          if (currentPage > 0 && recurse) {
-                            updateRoutine()
-                          }
-                        })
-                      } else {
-                        docRef.set(saveData)
-                      }
-
-                      if (latestCommit) {
-                        let docRefChanges = firebaseDB.collection(GHRepo + '_changes').doc(commitDetail.sha)
-
-                        let changeData = {
-                          edges: JSON.stringify(edgesArr),
-                          changes: JSON.stringify({ a: addedNodes, c: changedPaths, r: removedNodes }),
-                          email: commitDetail.commit.author.email,
-                          author: commitDetail.commit.author.name,
-                          date: commitDateObj.valueOf(),
-                          msg: commitDetail.commit.message,
-                          index: currentCommitIndex
+                    if (!latestCommit) {
+                      docRef.set(saveData).then(() => {
+                        if (currentPage > 0 && recurse) {
+                          updateRoutine()
                         }
+                      })
+                    } else {
+                      docRef.set(saveData)
+                    }
 
-                        docRefChanges.set(changeData).then(() => {
-                          if (currentPage > 0 && recurse) {
-                            updateRoutine()
-                          }
-                        })
+                    if (latestCommit) {
+                      let docRefChanges = firebaseDB.collection(GHRepo + '_changes').doc(commitDetail.sha)
+
+                      let changeData = {
+                        edges: JSON.stringify(edgesArr),
+                        changes: JSON.stringify({ a: addedNodes, c: changedPaths, r: removedNodes }),
+                        email: commitDetail.commit.author.email,
+                        author: commitDetail.commit.author.name,
+                        date: commitDateObj.valueOf(),
+                        msg: commitDetail.commit.message,
+                        index: currentCommitIndex
                       }
-                    })
+
+                      docRefChanges.set(changeData).then(() => {
+                        if (currentPage > 0 && recurse) {
+                          updateRoutine()
+                        }
+                      })
+                    }
                   })
               })
             })
