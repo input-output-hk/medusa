@@ -31,6 +31,8 @@ class App extends mixin(EventEmitter, Component) {
     this.repoChanges = this.config.git.repo + '_changes'
 
     this.initFireBase()
+    this.anonymousSignin()
+
     this.OrbitControls = OrbitContructor(THREE)
 
     this.FDG = null // Force Directed Graph class
@@ -74,6 +76,16 @@ class App extends mixin(EventEmitter, Component) {
     }
 
     this.loadCommitHash = this.config.git.commitHash
+  }
+
+  /**
+   * Slow down a potential DDOS attack by requiring the user to be signed in anonymously
+   */
+  anonymousSignin () {
+    firebase.auth().signInAnonymously().catch(function (error) {
+      console.log(error.code)
+      console.log(error.message)
+    })
   }
 
   /**
@@ -374,7 +386,7 @@ class App extends mixin(EventEmitter, Component) {
     if (snapshot.docs && snapshot.docs.length === 0) {
       setTimeout(() => {
         this.callAPI()
-      }, 5000)
+      }, 60000)
       return
     }
 
