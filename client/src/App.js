@@ -124,6 +124,7 @@ class App extends mixin(EventEmitter, Component) {
     const settings = {timestampsInSnapshots: true}
     this.firebaseDB.settings(settings)
     this.docRef = this.firebaseDB.collection(this.config.git.repo)
+    this.docRefChanges = this.firebaseDB.collection(this.config.git.repo + '_changes')
   }
 
   componentDidMount () {
@@ -554,9 +555,12 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async populateSideBar () {
-    let docRef = this.firebaseDB.collection(this.config.git.repo + '_changes')
+    if (!this.config.display.showSidebar) {
+      return
+    }
+    let docRef = this.docRefChanges
     if (this.state.currentCommitIndex < 4) {
-      docRef = this.firebaseDB.collection(this.config.git.repo)
+      docRef = this.docRef
     }
     const commits = docRef.orderBy('index', 'asc').where('index', '>=', this.state.currentCommitIndex - 2).limit(5)
     const snapshot = await commits.get()
