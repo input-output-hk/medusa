@@ -9,6 +9,7 @@ let Component
 const init = function (config) {
   Component = ReactDOM.render(<App config={config} />, document.getElementById('gource-root'))
   registerServiceWorker()
+  return this
 }
 
 /**

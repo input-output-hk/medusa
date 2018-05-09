@@ -141,6 +141,9 @@ class App extends mixin(EventEmitter, Component) {
     this.anonymousSignin()
 
     this.callAPI()
+
+    // send ready event
+    this.emit('ready')
   }
 
   componentDidMount () {

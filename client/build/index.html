@@ -71,49 +71,51 @@
 
           if (gource.canRun()) {
 
-            gource.init(config)
-
-            /**
-             * Available methods
-             */
-
-            /*document.addEventListener('click', () => {
-              gource.setConfig({
-                camera: {
-                  fov: 120
-                }
-              })
-            })*/
-
-            /*gource.getFirstCommit().then(data => {
-              console.log(data)
-            })*/
-
-            /*gource.getlastCommit().then(data => {
-              console.log(data)
-            })*/
-
-            /*gource.on('commitChanged', (data) => {
-              console.log(data)
-            })*/
-
-            // gource.setDate('2018-01-01')
-
-            // gource.setSphereView(true)
-
-            // gource.setPlay(true)
-            
-            /*document.addEventListener('click', () => {
-              gource.goToPrev()
+            gource.init(config).on('ready', function() {
+              
+              /**
+               * Available methods
+               */
+              
+              // document.addEventListener('click', () => {
+              //   gource.setConfig({
+              //     camera: {
+              //       fov: 120
+              //     }
+              //   })
+              // })
+              
+              // gource.getFirstCommit().then(data => {
+              //   console.log(data)
+              // })
+              
+              // gource.getlastCommit().then(data => {
+              //   console.log(data)
+              // })
+              
+              // gource.on('commitChanged', (data) => {
+              //   console.log(data)
+              // })
+              
+              // gource.setDate('2018-01-01')
+              
+              // gource.setSphereView(true)
+              
+              // gource.setPlay(true)
+              
+              // document.addEventListener('click', () => {
+              //   gource.goToPrev()
+              // })
+              
+              // document.addEventListener('click', () => {
+              //   gource.goToNext()
+              // })
+              
             })
-
-            document.addEventListener('click', () => {
-              gource.goToNext()
-            })*/
-          
           }
-
+          
         }
-      </script>
+    </script>
   <script type="text/javascript" src="./static/js/gource.main.js"></script></body>
 </html>
+          
