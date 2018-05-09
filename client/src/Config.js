@@ -17,12 +17,12 @@ const Config = {
     showSidebar: true
   },
   fireBase: {
-    apiKey: 'AIzaSyDej_mWL4xh1p_q60EFOFUfPUx4MpEebgY',
-    authDomain: 'gource-backup.firebaseapp.com',
-    databaseURL: 'https://gource-backup.firebaseio.com',
-    projectId: 'gource-backup',
-    storageBucket: 'gource-backup.appspot.com',
-    messagingSenderId: '279399430754'
+    apiKey: 'AIzaSyCwfdzrjQ5GRqyz-napBM29T7Zel_6KIUY',
+    authDomain: 'webgl-gource-1da99.firebaseapp.com',
+    databaseURL: 'https://webgl-gource-1da99.firebaseio.com',
+    projectId: 'webgl-gource-1da99',
+    storageBucket: 'webgl-gource-1da99.appspot.com',
+    messagingSenderId: '532264380396'
   },
   FDG: {
     nodeSpritePath: 'textures/dot.png', // path to node texture
