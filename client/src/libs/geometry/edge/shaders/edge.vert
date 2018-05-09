@@ -27,13 +27,11 @@ void main() {
 
   vec4 mvPosition = modelViewMatrix * currentPosition;
 
-  vDist = 0.05;
+  vDist = 2000.0 / dot(mvPosition.xyz, mvPosition.xyz);
 
-  dofAmount = map(camDistToCenter, 0., 4000., 0., 0.5);
+  dofAmount = map(camDistToCenter, 0., 800., 0., 0.5);
 
-  vDist += dofAmount;
-
-  vDist = clamp(vDist, 0., 0.2);
+  vDist = clamp(mix(vDist, .2, dofAmount), 0., .9);
 
   gl_Position = projectionMatrix * mvPosition;
 }

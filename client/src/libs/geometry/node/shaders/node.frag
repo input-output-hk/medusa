@@ -20,14 +20,14 @@ void main() {
     vec4 spriteBlur = vec4(1.);
     if (vDecay > 0.) {
       sprite = texture2D(uMap, vec2(gl_PointCoord.x, 1. - gl_PointCoord.y));
-      spriteBlur = texture2D(mapBlur, vec2(gl_PointCoord.x, 1. - gl_PointCoord.y));
+      spriteBlur = texture2D(uMap, vec2(gl_PointCoord.x, 1. - gl_PointCoord.y));
     } else {
       sprite = texture2D(map, vec2(gl_PointCoord.x, 1. - gl_PointCoord.y));
       spriteBlur = texture2D(mapBlur, vec2(gl_PointCoord.x, 1. - gl_PointCoord.y));
     }
 
     //float dist = normalize((vDist * 0.5));
-    float dist = (1.0 - clamp((vDistSq * vDistSq * vDistSq), 0.0, 1.0)) * dofAmount;
+    float dist = (1.0 - clamp(pow(vDistSq, 4.0), 0.0, 1.0)) * dofAmount;
 
     vec4 diffuse = mix(sprite, spriteBlur, dist);
 
@@ -44,7 +44,8 @@ void main() {
 
     diffuse.rgb += vDecay;
 
-    //diffuse.a = min(diffuse.a, (vDist * 0.5));
+    diffuse.a = mix(diffuse.a, diffuse.a * (vDist * 0.005), dist * 1.0);
+    diffuse.a = clamp(diffuse.a, 0.0, 1.0);
 
     gl_FragColor = vec4(diffuse.rgb, diffuse.a);
   }

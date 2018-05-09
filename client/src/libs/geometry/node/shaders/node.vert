@@ -46,12 +46,12 @@ void main() {
             vDecay = max(0.0, vDecay);
         }
         
-        float decayScale = scale * ((vDecay * 0.65) + 1.0);
+        float decayScale = scale * ((vDecay * 0.75) + 1.0);
 
         vDist = decayScale / length(mvPosition.xyz);
         vDistSq = decayScale / dot(mvPosition.xyz, mvPosition.xyz);
 
-        dofAmount = map(camDistToCenter, 0., 2000., 1., 0.);
+        dofAmount = map(camDistToCenter, 0., 1000., 1., 0.);
 
         gl_PointSize = vDist;
         gl_Position = projectionMatrix * mvPosition;
