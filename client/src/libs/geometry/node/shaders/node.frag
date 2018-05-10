@@ -1,6 +1,7 @@
 uniform sampler2D map;
 uniform sampler2D mapBlur;
 uniform sampler2D uMap;
+uniform float uTime;
 uniform float decayTime;
 uniform float cycleColors;
 
@@ -28,6 +29,13 @@ void main() {
 
     //float dist = normalize((vDist * 0.5));
     float dist = (1.0 - clamp(pow(vDistSq, 4.0), 0.0, 1.0)) * dofAmount;
+
+    float scaledTime = uTime * 0.0001;
+    if (scaledTime < 1.) {
+      dist += (1.0 - scaledTime);
+    }
+
+    dist = clamp(dist, 0., 1.);
 
     vec4 diffuse = mix(sprite, spriteBlur, dist);
 

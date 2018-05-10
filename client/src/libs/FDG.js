@@ -201,6 +201,7 @@ export default class FDG {
       // update nodes
       this.nodeGeometry.update(this.camera)
       this.edgeGeometry.update(this.camera)
+      this.textGeometry.update()
     }
   }
 

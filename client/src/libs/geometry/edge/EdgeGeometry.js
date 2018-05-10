@@ -77,6 +77,10 @@ export default class EdgeGeometry {
           positionTexture: {
             type: 't',
             value: null
+          },
+          uTime: {
+            type: 'f',
+            value: null
           }
         },
         transparent: true,
@@ -96,5 +100,6 @@ export default class EdgeGeometry {
     let camPos = camera.getWorldPosition(new THREE.Vector3())
     const center = new THREE.Vector3(0.0, 0.0, 0.0)
     this.material.uniforms.camDistToCenter.value = camPos.distanceTo(center)
+    this.material.uniforms.uTime.value = performance.now()
   }
 }

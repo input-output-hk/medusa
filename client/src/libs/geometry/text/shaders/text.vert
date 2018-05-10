@@ -1,4 +1,5 @@
 uniform sampler2D positionTexture;
+uniform float uTime;
 
 attribute vec2 labelPositions;
 attribute vec4 textCoord;
@@ -21,6 +22,13 @@ void main(){
 
     vColor = vec4(1.);
     vColor.a = 40000. / dot(meshPosition.xyz, meshPosition.xyz);
+
+    float scaledTime = uTime * 0.0001;
+    if (scaledTime < 1.) {
+        vColor.a -= (1.0 - scaledTime);
+    }
+
+    vColor.a = clamp(vColor.a, 0.0, 1.0);
 
     gl_Position = projectionMatrix * meshPosition;
 }

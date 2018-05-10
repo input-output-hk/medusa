@@ -1,6 +1,7 @@
 uniform sampler2D positionTexture;
 uniform float cycleColors;
 uniform float camDistToCenter;
+uniform float uTime;
 
 attribute float updated;
 attribute vec2 texLocation;
@@ -30,6 +31,11 @@ void main() {
   vDist = 2000.0 / dot(mvPosition.xyz, mvPosition.xyz);
 
   dofAmount = map(camDistToCenter, 0., 800., 0., 0.5);
+
+  float scaledTime = uTime * 0.0001;
+  if (scaledTime < 1.) {
+    vDist -= (1.0 - scaledTime);
+  }
 
   vDist = clamp(mix(vDist, .2, dofAmount), 0., .9);
 

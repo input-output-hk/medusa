@@ -1,4 +1,5 @@
 uniform sampler2D positionTexture;
+uniform float uTime;
 uniform float decayTime;
 uniform float scale;
 uniform float cycleColors;

@@ -123,6 +123,10 @@ export default class TextGeometry {
           positionTexture: {
             type: 't',
             value: null
+          },
+          uTime: {
+            type: 'f',
+            value: null
           }
         },
         vertexShader: VertexShader,
@@ -154,5 +158,9 @@ export default class TextGeometry {
       xOffset: charData[4] / this.textureSize,
       yOffset: charData[5] / this.textureSize
     }
+  }
+
+  update () {
+    this.material.uniforms.uTime.value = performance.now()
   }
 }

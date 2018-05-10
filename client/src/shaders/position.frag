@@ -15,10 +15,10 @@ vec3 getRepelForce (vec4 currentPosition) {
 
       vec4 texPos = texture2D(texLocation, vec2(x, 0));
 
-      vec4 otherPosition = texture2D(positionTexture, vec2(texPos.x, texPos.y));
+      /*vec4 otherPosition = texture2D(positionTexture, vec2(texPos.x, texPos.y));
       vec3 diff = currentPosition.xyz - otherPosition.xyz;
       float magnitude = length(diff);
-      repelForce += (diff / (magnitude * magnitude * magnitude + 1.));
+      repelForce += (diff / (magnitude * magnitude * magnitude + 1.));*/
 
       vec4 otherPosition2 = texture2D(positionTexture, vec2(texPos.z, texPos.w));
       vec3 diff2 = currentPosition.xyz - otherPosition2.xyz;

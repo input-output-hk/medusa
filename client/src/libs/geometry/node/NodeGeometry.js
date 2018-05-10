@@ -151,6 +151,10 @@ export default class NodeGeometry {
             type: 'f',
             value: null
           },
+          uTime: {
+            type: 'f',
+            value: null
+          },
           positionTexture: {
             type: 't',
             value: null
@@ -188,6 +192,7 @@ export default class NodeGeometry {
   update (camera) {
     this.decayTime++
     this.material.uniforms.decayTime.value = this.decayTime
+    this.material.uniforms.uTime.value = performance.now()
 
     let camPos = camera.getWorldPosition(new THREE.Vector3())
     const center = new THREE.Vector3(0.0, 0.0, 0.0)
