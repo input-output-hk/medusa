@@ -1,16 +1,13 @@
 uniform sampler2D map;
 uniform sampler2D mapBlur;
 uniform sampler2D uMap;
-uniform float uTime;
-uniform float decayTime;
 uniform float cycleColors;
 
 varying float vDecay;
 varying vec4 vColor;
 varying float vActive;
 varying float vDist;
-varying float vDistSq;
-varying float dofAmount;
+varying float vSpriteMix;
 
 void main() {
 
@@ -27,17 +24,7 @@ void main() {
       spriteBlur = texture2D(mapBlur, vec2(gl_PointCoord.x, 1. - gl_PointCoord.y));
     }
 
-    //float dist = normalize((vDist * 0.5));
-    float dist = (1.0 - clamp(pow(vDistSq, 4.0), 0.0, 1.0)) * dofAmount;
-
-    float scaledTime = uTime * 0.0001;
-    if (scaledTime < 1.) {
-      dist += (1.0 - scaledTime);
-    }
-
-    dist = clamp(dist, 0., 1.);
-
-    vec4 diffuse = mix(sprite, spriteBlur, dist);
+    vec4 diffuse = mix(sprite, spriteBlur, vSpriteMix);
 
     // if (cycleColors == 1.0) {
     //   if (vColor.a > 1.) {
@@ -52,7 +39,7 @@ void main() {
 
     diffuse.rgb += vDecay;
 
-    diffuse.a = mix(diffuse.a, diffuse.a * (vDist * 0.005), dist * 1.0);
+    diffuse.a = mix(diffuse.a, diffuse.a * (vDist * 0.005), vSpriteMix * 1.0);
     diffuse.a = clamp(diffuse.a, 0.0, 1.0);
 
     gl_FragColor = vec4(diffuse.rgb, diffuse.a);

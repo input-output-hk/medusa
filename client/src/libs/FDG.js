@@ -199,9 +199,9 @@ export default class FDG {
       this.calculatePositions()
 
       // update nodes
-      this.nodeGeometry.update(this.camera)
-      this.edgeGeometry.update(this.camera)
-      this.textGeometry.update()
+      this.nodeGeometry.update(this.camera, this.frame)
+      this.edgeGeometry.update(this.camera, this.frame)
+      this.textGeometry.update(this.camera, this.frame)
     }
   }
 

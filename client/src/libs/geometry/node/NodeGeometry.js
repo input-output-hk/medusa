@@ -189,10 +189,10 @@ export default class NodeGeometry {
     }
   }
 
-  update (camera) {
+  update (camera, frame) {
     this.decayTime++
     this.material.uniforms.decayTime.value = this.decayTime
-    this.material.uniforms.uTime.value = performance.now()
+    this.material.uniforms.uTime.value = frame
 
     let camPos = camera.getWorldPosition(new THREE.Vector3())
     const center = new THREE.Vector3(0.0, 0.0, 0.0)

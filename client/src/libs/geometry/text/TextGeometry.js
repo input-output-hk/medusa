@@ -160,7 +160,7 @@ export default class TextGeometry {
     }
   }
 
-  update () {
-    this.material.uniforms.uTime.value = performance.now()
+  update (camera, frame) {
+    this.material.uniforms.uTime.value = frame
   }
 }

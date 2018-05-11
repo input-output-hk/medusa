@@ -13,7 +13,7 @@ varying float vDecay;
 varying float vActive;
 varying float vDist;
 varying float vDistSq;
-varying float dofAmount;
+varying float vSpriteMix;
 
 float map(float value, float inMin, float inMax, float outMin, float outMax) {
   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
@@ -52,7 +52,16 @@ void main() {
         vDist = decayScale / length(mvPosition.xyz);
         vDistSq = decayScale / dot(mvPosition.xyz, mvPosition.xyz);
 
-        dofAmount = map(camDistToCenter, 0., 1000., 1., 0.);
+        float dofAmount = map(camDistToCenter, 0., 1000., 1., 0.);
+
+        vSpriteMix = (1.0 - clamp(pow(vDistSq, 4.0), 0.0, 1.0)) * dofAmount;
+
+        float scaledTime = uTime * 0.005;
+        if (scaledTime < 1.) {
+            vSpriteMix += (1.0 - scaledTime);
+        }
+
+        vSpriteMix = clamp(vSpriteMix, 0., 1.);
 
         gl_PointSize = vDist;
         gl_Position = projectionMatrix * mvPosition;

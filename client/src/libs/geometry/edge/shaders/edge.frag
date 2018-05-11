@@ -1,6 +1,6 @@
 uniform float cycleColors;
 
-varying float vDist;
+varying float vAlpha;
 varying float vUpdated;
 
 void main(){
@@ -16,7 +16,7 @@ void main(){
     }
   }*/
 
-  float a = vDist;
+  float a = vAlpha;
 
   gl_FragColor = vec4(color, a);
 }

@@ -23,7 +23,7 @@ void main(){
     vColor = vec4(1.);
     vColor.a = 40000. / dot(meshPosition.xyz, meshPosition.xyz);
 
-    float scaledTime = uTime * 0.0001;
+    float scaledTime = uTime * 0.0025;
     if (scaledTime < 1.) {
         vColor.a -= (1.0 - scaledTime);
     }
