@@ -5,9 +5,11 @@ import App from './App'
 import registerServiceWorker from './registerServiceWorker'
 
 let Component
+let Container
 
 const init = function (config) {
-  Component = ReactDOM.render(<App config={config} />, document.getElementById('gource-root'))
+  Container = document.getElementById('gource-root')
+  Component = ReactDOM.render(<App config={config} />, Container)
   registerServiceWorker()
   return this
 }
@@ -168,6 +170,19 @@ const setConfig = async function (config) {
   return Component.setConfig(config)
 }
 
+/**
+ * Destroy application instance
+ */
+const destroy = async function (config) {
+  if (!Component) {
+    return
+  }
+  Component.destroy()
+  ReactDOM.unmountComponentAtNode(Container)
+  Component = null
+  Container = null
+}
+
 export {
   init,
   canRun,
@@ -179,5 +194,6 @@ export {
   on,
   getFirstCommit,
   getlastCommit,
-  setConfig
+  setConfig,
+  destroy
 }

@@ -21,7 +21,7 @@
             repo: 'symphony',
             commitHash: '', // hash of commit to load
             commitDate: '', // date to load (YYYY-MM-DD)
-            loadLatest: false // load latest commit in db
+            loadLatest: true // load latest commit in db
           },
           display: {
             showUI: true,
@@ -63,7 +63,8 @@
           },
           camera: {
             fov: 45,
-            initPos: {x: 0, y: 0, z: 400}
+            initPos: {x: 0, y: 0, z: 400},
+            enableZoom: true // enable camera zoom on mousewheel/pinch gesture
           }
         }
 
@@ -78,12 +79,16 @@
                */
               
               // document.addEventListener('click', () => {
-              //   gource.setConfig({
-              //     camera: {
-              //       fov: 120
-              //     }
-              //   })
+              //   gource.destroy()
               // })
+
+              // document.addEventListener('click', () => {
+              //    gource.setConfig({
+              //      camera: {
+              //        enableZoom: false
+              //      }
+              //    })
+              //  })
               
               // gource.getFirstCommit().then(data => {
               //   console.log(data)

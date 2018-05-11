@@ -26,6 +26,8 @@ class App extends mixin(EventEmitter, Component) {
   constructor (props) {
     super(props)
 
+    this.running = true
+
     this.config = deepAssign(Config, this.props.config)
 
     this.repo = this.config.git.repo
@@ -122,15 +124,15 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async initFireBase () {
-    firebase.initializeApp(this.config.fireBase)
-
-    const settings = {timestampsInSnapshots: true}
-    firebase.firestore().settings(settings)
-
     try {
+      firebase.initializeApp(this.config.fireBase)
+
+      const settings = {timestampsInSnapshots: true}
+      firebase.firestore().settings(settings)
+
       await firebase.firestore().enablePersistence()
     } catch (error) {
-      //
+      console.log(error)
     }
 
     this.firebaseDB = firebase.firestore()
@@ -197,6 +199,7 @@ class App extends mixin(EventEmitter, Component) {
     this.controls.minDistance = 200
     this.controls.maxDistance = 10000
     this.controls.enablePan = false
+    this.controls.enableZoom = this.config.camera.enableZoom
     this.controls.zoomSpeed = 0.7
     this.controls.rotateSpeed = 0.07
     this.controls.enableDamping = true
@@ -218,6 +221,11 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   renderFrame () {
+    if (!this.running) {
+      window.cancelAnimationFrame(this.animate)
+      return
+    }
+
     this.currentFrame++
 
     if (this.FDG) {
@@ -688,6 +696,30 @@ class App extends mixin(EventEmitter, Component) {
     if (this.FDG && this.FDG.active === true) {
       this.FDG.triggerUpdate()
     }
+  }
+
+  destroy () {
+    this.renderer.dispose()
+
+    this.scene.traverse(function (object) {
+      if (object.geometry) {
+        object.geometry.dispose()
+      }
+      if (object.material) {
+        object.material.dispose()
+      }
+    })
+
+    this.controls.dispose()
+
+    delete this.composer
+    delete this.renderer
+    delete this.scene
+    delete this.controls
+    delete this.FDG
+
+    window.cancelAnimationFrame(this.animate)
+    this.running = false
   }
 
   async getFirstCommit () {
