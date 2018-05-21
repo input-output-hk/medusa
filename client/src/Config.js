@@ -14,7 +14,8 @@ const Config = {
   },
   display: {
     showUI: true,
-    showSidebar: true
+    showSidebar: true,
+    sidebarCommitLimit: 5
   },
   fireBase: {
     apiKey: 'AIzaSyCwfdzrjQ5GRqyz-napBM29T7Zel_6KIUY',

@@ -19,8 +19,9 @@ const mixin = require('mixin')
 
 const moment = require('moment')
 
-const firebase = require('firebase')
+const firebase = require('firebase/app')
 require('firebase/firestore')
+require('firebase/auth')
 
 class App extends mixin(EventEmitter, Component) {
   constructor (props) {
@@ -60,7 +61,6 @@ class App extends mixin(EventEmitter, Component) {
 
     this.commitsToProcess = []
     this.nodes = {}
-    this.APICalled = false
     this.loadPrevCommit = false
     this.loadNextCommit = false
 
@@ -397,32 +397,69 @@ class App extends mixin(EventEmitter, Component) {
     }
     this.commitsToProcess = []
 
+    this.direction = ''
+
     // load commit by hash
     if (this.loadCommitHash !== '') {
       commits = this.docRef.doc(this.loadCommitHash)
-      this.loadCommitHash = ''
     } else if (this.loadPrevCommit) { // load previous commit
-      commits = this.docRef.where('index', '==', (this.state.currentCommitIndex - 1)).limit(1)
-      this.loadPrevCommit = false
+      commits = this.docRef.where('index', '==', this.state.currentCommitIndex - 1).limit(1)
+      this.direction = 'prev'
     } else if (this.loadNextCommit) { // load next commit
-      commits = this.docRef.where('index', '==', (this.state.currentCommitIndex + 1)).limit(1)
-      this.loadNextCommit = false
+      commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
+      this.direction = 'next'
     } else if (this.config.git.loadLatest && !this.state.latestTime) {
       commits = this.docRef.orderBy('index', 'desc').limit(1)
-      this.config.git.loadLatest = false
     } else if (this.state.latestTime) {
-      commits = this.docRef.orderBy('date', 'asc').where('date', '>=', this.state.latestTime).limit(1)
+      commits = this.docRef.where('date', '>=', this.state.latestTime).limit(1)
     } else {
       commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
+      this.direction = 'next'
     }
 
+    // reset flags
+    this.loadCommitHash = ''
+    this.loadPrevCommit = false
+    this.loadNextCommit = false
+    this.config.git.loadLatest = false
+
+    // collect snapshots
     let snapshots = []
 
     commits.onSnapshot(async function (querySnapshot) {
-      querySnapshot.forEach(snapshot => {
-        snapshots.push(snapshot)
-        this.commitsToProcess.push(snapshot.id)
-      })
+      // no results found for this index, check for next/prev index in db
+      if (querySnapshot.size === 0) {
+        let commits = null
+        if (this.direction === 'prev') {
+          commits = this.docRef.where('index', '<', this.state.currentCommitIndex).orderBy('index', 'desc').limit(1)
+        } else {
+          commits = this.docRef.where('index', '>', this.state.currentCommitIndex).orderBy('index', 'asc').limit(1)
+        }
+        let snapshot = await commits.get()
+        if (snapshot.size !== 0) {
+          let commit = snapshot.docs[0].data()
+          if (this.direction === 'prev') {
+            this.setState({currentCommitIndex: commit.index + 1})
+            this.loadPrevCommit = true
+          } else {
+            this.setState({currentCommitIndex: commit.index - 1})
+            this.loadNextCommit = true
+          }
+          this.callAPI()
+        }
+
+        return
+      }
+
+      if (typeof querySnapshot.docs !== 'undefined') {
+        querySnapshot.forEach(snapshot => {
+          snapshots.push(snapshot)
+          this.commitsToProcess.push(snapshot.id)
+        })
+      } else {
+        snapshots.push(querySnapshot)
+        this.commitsToProcess.push(querySnapshot.id)
+      }
 
       // if no results found for the passed date, load latest commit
       if (this.state.latestTime && snapshots.length === 0) {
@@ -432,7 +469,9 @@ class App extends mixin(EventEmitter, Component) {
       // if no newer results, check again in a minute
       } else if (snapshots.length === 0) {
         setTimeout(() => {
-          this.callAPI()
+          if (this.state.play) {
+            this.callAPI()
+          }
         }, 60000)
         return
       }
@@ -542,7 +581,7 @@ class App extends mixin(EventEmitter, Component) {
               }
             }
 
-            this.populateSideBar()
+            this.populateSideBar(changedState.currentCommitIndex)
 
             if (this.state.play) {
               resolve()
@@ -561,7 +600,9 @@ class App extends mixin(EventEmitter, Component) {
         this.callAPI()
       }
       addCommits()
-    }.bind(this))
+    }.bind(this), function (error) {
+      console.log(error)
+    })
   }
 
   /**
@@ -597,33 +638,45 @@ class App extends mixin(EventEmitter, Component) {
     return 'https://secure.gravatar.com/avatar/' + MD5(email) + '.jpg?s=' + size
   }
 
-  async populateSideBar () {
+  async populateSideBar (currentCommitIndex) {
     if (!this.config.display.showSidebar) {
       return
     }
-    let docRef = this.docRefChanges
-    if (this.state.currentCommitIndex < 4) {
-      docRef = this.docRef
+    let commits
+
+    if (currentCommitIndex < 4) {
+      commits = this.docRef.orderBy('index', 'asc').where('index', '>=', currentCommitIndex - 2).limit(this.config.display.sidebarCommitLimit)
+    } else {
+      commits = this.docRef.orderBy('index', 'desc').where('index', '<=', currentCommitIndex + 2).limit(this.config.display.sidebarCommitLimit)
     }
-    const commits = docRef.orderBy('index', 'asc').where('index', '>=', this.state.currentCommitIndex - 2).limit(5)
-    const snapshot = await commits.get()
-    let sideBarCommits = []
-    snapshot.forEach(snapshot => {
-      let data = snapshot.data()
-      data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
-      data.dateShort = moment(data.date).format('MMM Do')
-      data.sha = snapshot.id
-      data.gravatar = this.getGravatar(data.email, 40)
-      sideBarCommits.push(data)
-    })
 
-    sideBarCommits.sort((a, b) => {
-      return b.date - a.date
-    })
+    commits.onSnapshot(function (querySnapshot) {
+      let sideBarCommits = []
+      querySnapshot.forEach(snapshot => {
+        let data = snapshot.data()
+        data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
+        data.dateShort = moment(data.date).format('MMM Do')
+        data.sha = snapshot.id
+        data.gravatar = this.getGravatar(data.email, 40)
+        sideBarCommits.push(data)
+      })
 
-    this.setState({
-      sideBarCommits: sideBarCommits,
-      sidebarCurrentCommitIndex: this.state.currentCommitIndex
+      sideBarCommits.sort((a, b) => {
+        return b.date - a.date
+      })
+
+      // due to enablePersistance(), onSnapshot() will immediately return the results we have locally from IndexedDB,
+      // we need to wait until we have the complete set from firebase
+      if (sideBarCommits.length !== this.config.display.sidebarCommitLimit) {
+        return
+      }
+
+      this.setState({
+        sideBarCommits: sideBarCommits,
+        sidebarCurrentCommitIndex: currentCommitIndex
+      })
+    }.bind(this), function (error) {
+      console.log(error)
     })
   }
 
@@ -661,9 +714,6 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   loadCommit (hash = '') {
-    if (hash === '') {
-      hash = this.commitInput.value.trim()
-    }
     if (hash) {
       this.loadCommitHash = hash
       this.commitsToProcess = [hash]
@@ -807,7 +857,7 @@ class App extends mixin(EventEmitter, Component) {
               }}
               name='commitInput'
               type='text' />
-            <button onClick={this.loadCommit.bind(this)}>Go</button>
+            <button onClick={() => { this.loadCommit(this.commitInput.value.trim()) }}>Go</button>
           </label>
           <label>
               Sphere Projection:
