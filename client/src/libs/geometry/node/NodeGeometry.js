@@ -74,6 +74,10 @@ export default class NodeGeometry {
           dir = dirArray[dirArray.length - 2]
         }
 
+        if (typeof dir === 'undefined') {
+          dir = dirArray[0]
+        }
+
         let dirNumber = 0
         for (let charIndex = 0; charIndex < dir.length; charIndex++) {
           dirNumber += dir[charIndex].charCodeAt(0)
