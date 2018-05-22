@@ -436,6 +436,46 @@ const updateRoutine = function () {
                       }
                     }
 
+                    // compare prev node order to current node order
+                    // this means we can keep the same order on the front end when using the _changes db
+                    let prevNodeOrder = {}
+                    let i = 0
+                    for (const key in previousNodeData) {
+                      if (previousNodeData.hasOwnProperty(key)) {
+                        const node = previousNodeData[key]
+                        prevNodeOrder[i] = node
+                        i++
+                      }
+                    }
+
+                    let newNodeOrder = {}
+                    i = 0
+                    nodesArr.forEach((node, index) => {
+                      newNodeOrder[i] = node
+                      i++
+                    })
+
+                    let changedIds = {}
+
+                    for (const prevKey in prevNodeOrder) {
+                      if (prevNodeOrder.hasOwnProperty(prevKey)) {
+                        const prevNode = prevNodeOrder[prevKey]
+
+                        for (const newKey in newNodeOrder) {
+                          if (newNodeOrder.hasOwnProperty(newKey)) {
+                            const newNode = newNodeOrder[newKey]
+                            if (prevNode.p === newNode.p) {
+                              if (prevKey !== newKey) {
+                                changedIds[newKey] = newNode
+                                console.log('changed index:', newNode)
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+
+
                     let saveData = {
                       edges: JSON.stringify(edgesArr),
                       nodes: JSON.stringify([nodesArr]),
@@ -466,7 +506,7 @@ const updateRoutine = function () {
 
                       let changeData = {
                         edges: JSON.stringify(edgesArr),
-                        changes: JSON.stringify({ a: addedNodes, c: changedPaths, r: removedNodes }),
+                        changes: JSON.stringify({ a: addedNodes, c: changedPaths, r: removedNodes, i: changedIds }), // a: added; c: changed path; r: removed; i: index changed;
                         email: commitDetail.commit.author.email,
                         author: commitDetail.commit.author.name,
                         date: commitDateObj.valueOf(),

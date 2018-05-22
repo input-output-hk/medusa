@@ -390,11 +390,15 @@ class App extends mixin(EventEmitter, Component) {
     this.APIprocessing = true
     let commits
 
-    // only get changed data in play mode
-    if (this.state.play) {
-      // this.docRef = this.firebaseDB.collection(this.config.git.repo + '_changes')
-      // console.log('changes')
+    if (this.config.fireBase.useChangesDB) {
+      // only get changed data in play mode
+      if (this.state.play) {
+        this.docRef = this.firebaseDB.collection(this.config.git.repo + '_changes')
+      } else {
+        this.docRef = this.firebaseDB.collection(this.config.git.repo)
+      }
     }
+
     this.commitsToProcess = []
 
     this.direction = ''
@@ -523,9 +527,22 @@ class App extends mixin(EventEmitter, Component) {
                 }
               }
 
-              this.nodes = Object.keys(this.nodes).map(function (key) {
-                return this.nodes[key]
-              }.bind(this))
+              for (const newIndex in nodeChanges.i) {
+                if (nodeChanges.i.hasOwnProperty(newIndex)) {
+                  const newNode = nodeChanges.i[newIndex]
+
+                  for (const key in this.nodes) {
+                    if (this.nodes.hasOwnProperty(key)) {
+                      const oldNode = this.nodes[key]
+                      if (oldNode.p === newNode.p) {
+                        delete this.nodes[key]
+                      }
+                    }
+                  }
+
+                  this.nodes[newIndex] = newNode
+                }
+              }
 
               for (const key in nodeChanges.a) {
                 if (nodeChanges.a.hasOwnProperty(key)) {
