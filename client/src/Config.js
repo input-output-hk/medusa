@@ -24,7 +24,7 @@ const Config = {
     projectId: 'webgl-gource-1da99',
     storageBucket: 'webgl-gource-1da99.appspot.com',
     messagingSenderId: '532264380396',
-    useChangesDB: false // in play mode only load in data which has changed
+    useChangesDB: true // in play mode only load in data which has changed
   },
   FDG: {
     nodeSpritePath: 'textures/dot.png', // path to node texture
