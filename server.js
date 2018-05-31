@@ -144,9 +144,9 @@ const updateRoutine = function () {
   getCommitTotal().then(() => {
     // lookup latest commit in db and load latest nodes/edges structure
     loadLatestCommit().then(() => {
-      if (latestCommit === null) { // nothing in db
+      if (latestCommit === null && commitTotal === 0) { // nothing in db
         currentCommitIndex = 0
-        currentPage = commitTotal
+        currentPage = 0
       } else {
         currentCommitIndex = latestCommit.index + 1
         currentPage = Math.abs(currentCommitIndex - commitTotal)
@@ -157,8 +157,17 @@ const updateRoutine = function () {
       // fetch next commit
       githubCliDotCom.fetchAllCommits({owner: GHOwner, repository: GHRepo, perPage: 1, page: currentPage, branch: GHBranch})
         .then(commits => {
-          if (commits.length > 0) {
-            commits.forEach((commit) => {
+          if (commits.length === 1) {
+            commits.forEach(async (commit) => {
+              let commitData = firebaseDB.collection(GHRepo).doc(commit.sha)
+              let snapshot = await commitData.get()
+
+              if (snapshot.exists) {
+                console.log('Commit ' + commit.sha + ' already exists in DB')
+                recurse = false
+                return
+              }
+
               if (latestCommit && latestCommit.sha === commit.sha) {
                 console.log('No new commits to add')
                 recurse = false
@@ -318,7 +327,7 @@ const updateRoutine = function () {
                         const node = nodes[id]
                         let nodePathArray = node.p.split('/')
                         if (removedPaths.indexOf(node.p) !== -1) {
-                          console.log('delete node', nodes[id])
+                          // console.log('delete node', nodes[id])
                           delete nodes[id]
 
                           // remove parent directories
@@ -467,7 +476,7 @@ const updateRoutine = function () {
                             if (prevNode.p === newNode.p) {
                               if (prevKey !== newKey) {
                                 changedIds[newKey] = newNode
-                                console.log('changed index:', newNode)
+                                // console.log('changed index:', newNode)
                               }
                             }
                           }
@@ -533,6 +542,24 @@ const updateRoutine = function () {
 app.get('/api/updateDB', (req, res) => {
   updateRoutine()
   res.send({ express: 'Commits updating...' })
+})
+
+app.get('/api/removeCommit', (req, res) => {
+  let sha = req.query.sha
+
+  firebaseDB.collection(GHRepo).doc(sha).delete().then(function () {
+    console.log('Commit ' + sha + ' successfully deleted!')
+  }).catch(function (error) {
+    console.error('Error removing document: ', error)
+  })
+
+  firebaseDB.collection(GHRepo + '_changes').doc(sha).delete().then(function () {
+    console.log('Commit ' + sha + ' successfully deleted (changes db)!')
+  }).catch(function (error) {
+    console.error('Error removing document: ', error)
+  })
+
+  res.send({ express: 'Commit ' + sha + ' removed from firestore' })
 })
 
 const loadLatestCommit = function () {
