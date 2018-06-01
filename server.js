@@ -22,8 +22,8 @@ const firebaseDB = admin.firestore()
 const GitHubClient = require('./libs/GitHubClient.js').GitHubClient
 const commits = require('./libs/features/commits')
 const tree = require('./libs/features/tree')
-const GHRepo = config.GHRepo
-const GHBranch = config.GHBranch
+var GHRepo = config.GHRepo
+var GHBranch = config.GHBranch
 const GHOwner = config.GHOwner
 const GHFileLimit = 300
 
@@ -540,8 +540,14 @@ const updateRoutine = function () {
 
 // script to run periodically to update the db with latest commits
 app.get('/api/updateDB', (req, res) => {
+  if (req.query.repo) {
+    GHRepo = req.query.repo
+  }
+  if (req.query.branch) {
+    GHBranch = req.query.branch
+  }
   updateRoutine()
-  res.send({ express: 'Commits updating...' })
+  res.send({ express: 'Updating commits for ' + GHRepo + ': ' + GHBranch + '...' })
 })
 
 app.get('/api/removeCommit', (req, res) => {

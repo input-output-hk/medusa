@@ -43,7 +43,7 @@ void main() {
         vec4 mvPosition = modelViewMatrix * vec4(currentPosition, 1.);
 
         if (vColor.a == 0.) {
-            vDecay = 3. - (decayTime * 0.05);
+            vDecay = 2. - (decayTime * 0.05);
             vDecay = max(0.0, vDecay);
         }
         

@@ -5,7 +5,7 @@ import deepAssign from 'deep-assign'
 import EventEmitter from 'eventemitter3'
 
 // Post
-import { EffectComposer, ShaderPass, RenderPass } from './libs/post/EffectComposer'
+import { EffectComposer, ShaderPass, RenderPass, UnrealBloomPass } from './libs/post/EffectComposer'
 import Vignette from './libs/post/Vignette'
 
 import Config from './Config'
@@ -188,6 +188,10 @@ class App extends mixin(EventEmitter, Component) {
       }
       this.renderPass.renderToScreen = true
     }
+
+    /* this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.5, 0.5, 0.2) // 1.0, 9, 0.5, 512);
+    this.bloomPass.renderToScreen = true
+    this.composer.addPass(this.bloomPass) */
   }
 
   initControls () {
