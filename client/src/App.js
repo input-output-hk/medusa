@@ -69,6 +69,7 @@ class App extends mixin(EventEmitter, Component) {
       currentDate: null,
       currentCommitHash: '',
       spherize: this.config.FDG.sphereProject,
+      currentCommit: null,
       currentAuthor: null,
       currentMsg: null,
       currentAdded: null,
@@ -349,7 +350,7 @@ class App extends mixin(EventEmitter, Component) {
       canvas: document.getElementById(this.config.scene.canvasID)
     })
 
-    this.composer = new EffectComposer(this.renderer)
+    // this.composer = new EffectComposer(this.renderer)
   }
 
   /**
@@ -560,6 +561,7 @@ class App extends mixin(EventEmitter, Component) {
             let changedState = {}
             let changes = JSON.parse(commit.changes)
             changedState.latestTime = 0
+            changedState.currentCommit = commit
             changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
             changedState.currentCommitHash = commit.sha
             changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
@@ -663,41 +665,88 @@ class App extends mixin(EventEmitter, Component) {
     if (!this.config.display.showSidebar) {
       return
     }
-    let commits
 
-    if (currentCommitIndex < 4) {
-      commits = this.docRef.orderBy('index', 'asc').where('index', '>=', currentCommitIndex - 2).limit(this.config.display.sidebarCommitLimit)
-    } else {
-      commits = this.docRef.orderBy('index', 'desc').where('index', '<=', currentCommitIndex + 2).limit(this.config.display.sidebarCommitLimit)
-    }
+    let commitsAbove = this.docRef.orderBy('index', 'asc').where('index', '>', currentCommitIndex).limit(this.config.display.sidebarCommitLimit)
+    let commitsBelow = this.docRef.orderBy('index', 'desc').where('index', '<', currentCommitIndex).limit(this.config.display.sidebarCommitLimit)
 
-    commits.onSnapshot(function (querySnapshot) {
-      let sideBarCommits = []
+    this.sidebarRunCount = 0
+
+    commitsAbove.onSnapshot(function (querySnapshot) {
+      this.commitsAboveArr = []
+
       querySnapshot.forEach(snapshot => {
         let data = snapshot.data()
         data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
         data.dateShort = moment(data.date).format('MMM Do')
         data.sha = snapshot.id
         data.gravatar = this.getGravatar(data.email, 40)
-        sideBarCommits.push(data)
+        this.commitsAboveArr.push(data)
       })
 
-      sideBarCommits.sort((a, b) => {
-        return b.date - a.date
-      })
+      commitsBelow.onSnapshot(function (querySnapshot) {
+        this.commitsBelowArr = []
+        querySnapshot.forEach(snapshot => {
+          let data = snapshot.data()
 
-      // due to enablePersistance(), onSnapshot() will immediately return the results we have locally from IndexedDB,
-      // we need to wait until we have the complete set from firebase
-      if (sideBarCommits.length !== this.config.display.sidebarCommitLimit) {
-        return
-      }
+          data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
+          data.dateShort = moment(data.date).format('MMM Do')
+          data.sha = snapshot.id
+          data.gravatar = this.getGravatar(data.email, 40)
+          this.commitsBelowArr.push(data)
+        })
 
-      this.setState({
-        sideBarCommits: sideBarCommits,
-        sidebarCurrentCommitIndex: currentCommitIndex
+        this.sortCommitsSidebar(currentCommitIndex)
+      }.bind(this), function (error) {
+        console.log(error)
       })
     }.bind(this), function (error) {
       console.log(error)
+    })
+  }
+
+  sortCommitsSidebar (currentCommitIndex) {
+    if (this.sidebarRunCount > 0) {
+      return
+    }
+
+    this.sidebarRunCount++
+
+    if (typeof this.commitsAboveArr === 'undefined' || typeof this.commitsBelowArr === 'undefined') {
+      return
+    }
+
+    // current commit
+    let data = this.state.currentCommit
+    data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
+    data.dateShort = moment(data.date).format('MMM Do')
+    data.gravatar = this.getGravatar(data.email, 40)
+    let sidebarCommits = [data]
+
+    let added = 0
+    for (let index = 0; index < this.config.display.sidebarCommitLimit * 2; index++) {
+      let commitToAddAbove = this.commitsAboveArr.shift()
+      if (typeof commitToAddAbove !== 'undefined') {
+        sidebarCommits.push(commitToAddAbove)
+        added++
+      }
+      let commitToAddBelow = this.commitsBelowArr.shift()
+      if (typeof commitToAddBelow !== 'undefined') {
+        sidebarCommits.push(commitToAddBelow)
+        added++
+      }
+
+      if (added === this.config.display.sidebarCommitLimit - 1) {
+        break
+      }
+    }
+
+    sidebarCommits.sort((a, b) => {
+      return b.index - a.index
+    })
+
+    this.setState({
+      sideBarCommits: sidebarCommits,
+      sidebarCurrentCommitIndex: currentCommitIndex
     })
   }
 
