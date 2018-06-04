@@ -149,7 +149,7 @@ const updateRoutine = function () {
         currentPage = 0
       } else {
         currentCommitIndex = latestCommit.index + 1
-        currentPage = Math.abs(currentCommitIndex - commitTotal)
+        currentPage = commitTotal - currentCommitIndex
       }
 
       let recurse = true
@@ -162,16 +162,14 @@ const updateRoutine = function () {
               let commitData = firebaseDB.collection(GHRepo).doc(commit.sha)
               let snapshot = await commitData.get()
 
-              if (snapshot.exists) {
-                console.log('Commit ' + commit.sha + ' already exists in DB')
-                recurse = false
-                return
-              }
-
               if (latestCommit && latestCommit.sha === commit.sha) {
                 console.log('No new commits to add')
                 recurse = false
                 return
+              }
+
+              if (snapshot.exists) {
+                console.log('Commit ' + commit.sha + ' already exists in DB, updating index')
               }
 
               // add commit to db
