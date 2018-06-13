@@ -161,6 +161,8 @@ export default class TextGeometry {
   }
 
   update (camera, frame) {
-    this.material.uniforms.uTime.value = frame
+    if (this.material) {
+      this.material.uniforms.uTime.value = frame
+    }
   }
 }
