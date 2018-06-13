@@ -5,7 +5,7 @@ import deepAssign from 'deep-assign'
 import EventEmitter from 'eventemitter3'
 
 // Post
-import { EffectComposer, ShaderPass, RenderPass, UnrealBloomPass } from './libs/post/EffectComposer'
+import { EffectComposer, ShaderPass, RenderPass } from './libs/post/EffectComposer'
 import Vignette from './libs/post/Vignette'
 
 import Config from './Config'
@@ -435,197 +435,209 @@ class App extends mixin(EventEmitter, Component) {
     // collect snapshots
     let snapshots = []
 
-    commits.onSnapshot(async function (querySnapshot) {
-      // no results found for this index, check for next/prev index in db
-      if (querySnapshot.size === 0) {
-        let commits = null
-        if (this.direction === 'prev') {
-          commits = this.docRef.where('index', '<', this.state.currentCommitIndex).orderBy('index', 'desc').limit(1)
-        } else {
-          commits = this.docRef.where('index', '>', this.state.currentCommitIndex).orderBy('index', 'asc').limit(1)
+    let snapshotOptions = {}
+
+    if (this.state.latestTime) {
+      snapshotOptions.includeMetadataChanges = true
+    }
+
+    commits.onSnapshot(snapshotOptions,
+      async function (querySnapshot) {
+        // if loading from a particular date, disable local storage cache
+        if (this.state.latestTime && querySnapshot.metadata.fromCache) {
+          return
         }
-        let snapshot = await commits.get()
-        if (snapshot.size !== 0) {
-          let commit = snapshot.docs[0].data()
+
+        // no results found for this index, check for next/prev index in db
+        if (querySnapshot.size === 0) {
+          let commits = null
           if (this.direction === 'prev') {
-            this.setState({currentCommitIndex: commit.index + 1})
-            this.loadPrevCommit = true
+            commits = this.docRef.where('index', '<', this.state.currentCommitIndex).orderBy('index', 'desc').limit(1)
           } else {
-            this.setState({currentCommitIndex: commit.index - 1})
-            this.loadNextCommit = true
+            commits = this.docRef.where('index', '>', this.state.currentCommitIndex).orderBy('index', 'asc').limit(1)
           }
-          this.callAPI()
-        }
-
-        return
-      }
-
-      if (typeof querySnapshot.docs !== 'undefined') {
-        querySnapshot.forEach(snapshot => {
-          snapshots.push(snapshot)
-          this.commitsToProcess.push(snapshot.id)
-        })
-      } else {
-        snapshots.push(querySnapshot)
-        this.commitsToProcess.push(querySnapshot.id)
-      }
-
-      // if no results found for the passed date, load latest commit
-      if (this.state.latestTime && snapshots.length === 0) {
-        commits = this.docRef.orderBy('index', 'desc').limit(1)
-        let snapshot = await commits.get()
-        snapshots.push(snapshot)
-      // if no newer results, check again in a minute
-      } else if (snapshots.length === 0) {
-        setTimeout(() => {
-          if (this.state.play) {
+          let snapshot = await commits.get()
+          if (snapshot.size !== 0) {
+            let commit = snapshot.docs[0].data()
+            if (this.direction === 'prev') {
+              this.setState({currentCommitIndex: commit.index + 1})
+              this.loadPrevCommit = true
+            } else {
+              this.setState({currentCommitIndex: commit.index - 1})
+              this.loadNextCommit = true
+            }
             this.callAPI()
           }
-        }, 60000)
-        return
-      }
 
-      async function asyncForEach (array, callback) {
-        for (let index = 0; index < array.length; index++) {
-          await callback(array[index], index, array)
+          return
         }
-      }
 
-      let updateGraph = async function (doc) {
-        return new Promise((resolve, reject) => {
-          if (!doc.exists) {
-            console.log('Error: Commit ' + doc.id + ' does not exist in repo')
-            resolve()
-          }
-          let commit = doc.data()
-          commit.sha = doc.id
+        if (typeof querySnapshot.docs !== 'undefined') {
+          querySnapshot.forEach(snapshot => {
+            snapshots.push(snapshot)
+            this.commitsToProcess.push(snapshot.id)
+          })
+        } else {
+          snapshots.push(querySnapshot)
+          this.commitsToProcess.push(querySnapshot.id)
+        }
 
-          if (this.commitsToProcess.indexOf(doc.id) === -1) {
-            resolve()
-          }
-
+        // if no results found for the passed date, load latest commit
+        if (this.state.latestTime && snapshots.length === 0) {
+          commits = this.docRef.orderBy('index', 'desc').limit(1)
+          let snapshot = await commits.get()
+          snapshots.push(snapshot)
+          // if no newer results, check again in a minute
+        } else if (snapshots.length === 0) {
           setTimeout(() => {
-            let edges = JSON.parse(commit.edges)
-
-            if (doc.ref.parent.id === this.repo) {
-              this.nodes = JSON.parse(commit.nodes)[0]
-            } else {
-              let nodeChanges = JSON.parse(commit.changes)
-              nodeChanges.r.forEach((path) => {
-                for (const key in this.nodes) {
-                  if (this.nodes.hasOwnProperty(key)) {
-                    const node = this.nodes[key]
-                    if (node.p === path) {
-                      delete this.nodes[key]
-                    }
-                  }
-                }
-              })
-
-              for (const id in this.nodes) {
-                if (this.nodes.hasOwnProperty(id)) {
-                  if (nodeChanges.c.indexOf(this.nodes[id].p) !== -1) {
-                    this.nodes[id].u = 1.0
-                  } else {
-                    delete this.nodes[id].u
-                  }
-                }
-              }
-
-              for (const newIndex in nodeChanges.i) {
-                if (nodeChanges.i.hasOwnProperty(newIndex)) {
-                  const newNode = nodeChanges.i[newIndex]
-
-                  for (const key in this.nodes) {
-                    if (this.nodes.hasOwnProperty(key)) {
-                      const oldNode = this.nodes[key]
-                      if (oldNode.p === newNode.p) {
-                        delete this.nodes[key]
-                      }
-                    }
-                  }
-
-                  this.nodes[newIndex] = newNode
-                }
-              }
-
-              for (const key in nodeChanges.a) {
-                if (nodeChanges.a.hasOwnProperty(key)) {
-                  const node = nodeChanges.a[key]
-                  node.u = 1.0
-                  this.nodes[key] = node
-                }
-              }
-            }
-
-            let changedState = {}
-            let changes = JSON.parse(commit.changes)
-            changedState.latestTime = 0
-            changedState.currentCommit = commit
-            changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
-            changedState.currentCommitHash = commit.sha
-            changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
-            changedState.currentMsg = commit.msg
-            changedState.currentAdded = isNaN(changes.a) ? Object.keys(changes.a).length : changes.a
-            changedState.currentChanged = isNaN(changes.c) ? changes.c.length : changes.c
-            changedState.currentRemoved = isNaN(changes.r) ? changes.r.length : changes.r
-            changedState.currentCommitIndex = commit.index
-
-            this.setState(changedState)
-
-            this.emit('commitChanged', {
-              removed: changedState.currentRemoved,
-              changed: changedState.currentChanged,
-              added: changedState.currentAdded,
-              msg: changedState.currentMsg,
-              author: changedState.currentAuthor,
-              hash: changedState.currentCommitHash,
-              date: changedState.currentDate,
-              index: commit.index
-            })
-
-            this.cameraAccommodateNodes()
-
-            if (this.FDG) {
-              if (this.FDG.firstRun) {
-                this.FDG.init({
-                  nodeData: this.nodes,
-                  edgeData: edges,
-                  nodeCount: this.config.FDG.nodeCount
-                })
-                this.FDG.setFirstRun(false)
-              } else {
-                this.FDG.refresh()
-                this.FDG.init({
-                  nodeData: this.nodes,
-                  edgeData: edges,
-                  nodeCount: this.config.FDG.nodeCount
-                })
-              }
-            }
-
-            this.populateSideBar(changedState.currentCommitIndex)
-
             if (this.state.play) {
-              resolve()
-            } else {
-              this.APIprocessing = false
+              this.callAPI()
             }
-          }, this.delayAmount)
-        })
+          }, 60000)
+          return
+        }
+
+        const addCommits = async () => {
+          await this.asyncForEach(snapshots, async (snapshot) => {
+            await this.updateGraph(snapshot)
+          })
+          this.APIprocessing = false
+          this.callAPI()
+        }
+        addCommits()
+      }.bind(this), function (error) {
+        console.log(error)
+      })
+  }
+
+  async updateGraph (doc) {
+    return new Promise((resolve, reject) => {
+      if (!doc.exists) {
+        console.log('Error: Commit ' + doc.id + ' does not exist in repo')
+        resolve()
+      }
+      let commit = doc.data()
+      commit.sha = doc.id
+
+      if (this.commitsToProcess.indexOf(doc.id) === -1) {
+        resolve()
       }
 
-      const addCommits = async () => {
-        await asyncForEach(snapshots, async (snapshot) => {
-          await updateGraph.call(this, snapshot)
+      setTimeout(() => {
+        let edges = JSON.parse(commit.edges)
+
+        if (doc.ref.parent.id === this.repo) {
+          this.nodes = JSON.parse(commit.nodes)[0]
+        } else {
+          let nodeChanges = JSON.parse(commit.changes)
+          nodeChanges.r.forEach((path) => {
+            for (const key in this.nodes) {
+              if (this.nodes.hasOwnProperty(key)) {
+                const node = this.nodes[key]
+                if (node.p === path) {
+                  delete this.nodes[key]
+                }
+              }
+            }
+          })
+
+          for (const id in this.nodes) {
+            if (this.nodes.hasOwnProperty(id)) {
+              if (nodeChanges.c.indexOf(this.nodes[id].p) !== -1) {
+                this.nodes[id].u = 1.0
+              } else {
+                delete this.nodes[id].u
+              }
+            }
+          }
+
+          for (const newIndex in nodeChanges.i) {
+            if (nodeChanges.i.hasOwnProperty(newIndex)) {
+              const newNode = nodeChanges.i[newIndex]
+
+              for (const key in this.nodes) {
+                if (this.nodes.hasOwnProperty(key)) {
+                  const oldNode = this.nodes[key]
+                  if (oldNode.p === newNode.p) {
+                    delete this.nodes[key]
+                  }
+                }
+              }
+
+              this.nodes[newIndex] = newNode
+            }
+          }
+
+          for (const key in nodeChanges.a) {
+            if (nodeChanges.a.hasOwnProperty(key)) {
+              const node = nodeChanges.a[key]
+              node.u = 1.0
+              this.nodes[key] = node
+            }
+          }
+        }
+
+        let changedState = {}
+        let changes = JSON.parse(commit.changes)
+        changedState.latestTime = 0
+        changedState.currentCommit = commit
+        changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
+        changedState.currentCommitHash = commit.sha
+        changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
+        changedState.currentMsg = commit.msg
+        changedState.currentAdded = isNaN(changes.a) ? Object.keys(changes.a).length : changes.a
+        changedState.currentChanged = isNaN(changes.c) ? changes.c.length : changes.c
+        changedState.currentRemoved = isNaN(changes.r) ? changes.r.length : changes.r
+        changedState.currentCommitIndex = commit.index
+
+        this.cameraAccommodateNodes()
+
+        if (this.FDG) {
+          if (this.FDG.firstRun) {
+            this.FDG.init({
+              nodeData: this.nodes,
+              edgeData: edges,
+              nodeCount: this.config.FDG.nodeCount
+            })
+            this.FDG.setFirstRun(false)
+          } else {
+            this.FDG.refresh()
+            this.FDG.init({
+              nodeData: this.nodes,
+              edgeData: edges,
+              nodeCount: this.config.FDG.nodeCount
+            })
+          }
+        }
+
+        this.populateSideBar(changedState.currentCommitIndex)
+
+        this.setState(changedState)
+
+        this.emit('commitChanged', {
+          removed: changedState.currentRemoved,
+          changed: changedState.currentChanged,
+          added: changedState.currentAdded,
+          msg: changedState.currentMsg,
+          author: changedState.currentAuthor,
+          hash: changedState.currentCommitHash,
+          date: changedState.currentDate,
+          index: commit.index
         })
-        this.APIprocessing = false
-        this.callAPI()
-      }
-      addCommits()
-    }.bind(this), function (error) {
-      console.log(error)
+
+        if (this.state.play) {
+          resolve()
+        } else {
+          this.APIprocessing = false
+        }
+      }, this.delayAmount)
     })
+  }
+
+  async asyncForEach (array, callback) {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array)
+    }
   }
 
   /**
@@ -669,9 +681,18 @@ class App extends mixin(EventEmitter, Component) {
     let commitsAbove = this.docRef.orderBy('index', 'asc').where('index', '>', currentCommitIndex).limit(this.config.display.sidebarCommitLimit)
     let commitsBelow = this.docRef.orderBy('index', 'desc').where('index', '<', currentCommitIndex).limit(this.config.display.sidebarCommitLimit)
 
-    this.sidebarRunCount = 0
+    // this.sidebarRunCount = 0
 
-    commitsAbove.onSnapshot(function (querySnapshot) {
+    let snapshotOptions = {}
+    if (this.state.latestTime) {
+      snapshotOptions.includeMetadataChanges = true
+    }
+
+    commitsAbove.onSnapshot(snapshotOptions, function (querySnapshot) {
+      if (this.state.latestTime && querySnapshot.metadata.fromCache) {
+        return
+      }
+
       this.commitsAboveArr = []
 
       querySnapshot.forEach(snapshot => {
@@ -684,6 +705,10 @@ class App extends mixin(EventEmitter, Component) {
       })
 
       commitsBelow.onSnapshot(function (querySnapshot) {
+        if (this.state.latestTime && querySnapshot.metadata.fromCache) {
+          return
+        }
+
         this.commitsBelowArr = []
         querySnapshot.forEach(snapshot => {
           let data = snapshot.data()
@@ -705,11 +730,11 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   sortCommitsSidebar (currentCommitIndex) {
-    if (this.sidebarRunCount > 0) {
+    /* if (this.sidebarRunCount > 0 && this.state.latestTime === 0) {
       return
     }
 
-    this.sidebarRunCount++
+    this.sidebarRunCount++ */
 
     if (typeof this.commitsAboveArr === 'undefined' || typeof this.commitsBelowArr === 'undefined') {
       return
