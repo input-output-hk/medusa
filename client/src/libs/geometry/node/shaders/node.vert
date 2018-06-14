@@ -5,15 +5,19 @@ uniform float scale;
 uniform float cycleColors;
 uniform float camDistToCenter;
 
+attribute vec3 pickerColor;
+attribute float isHovered; // id of hovered node
 attribute float id;
 attribute vec4 color;
 
 varying vec4 vColor;
+varying vec3 vPickerColor;
 varying float vDecay;
 varying float vActive;
 varying float vDist;
 varying float vDistSq;
 varying float vSpriteMix;
+varying float vIsHovered;
 
 float map(float value, float inMin, float inMax, float outMin, float outMax) {
   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
@@ -21,6 +25,10 @@ float map(float value, float inMin, float inMax, float outMin, float outMax) {
 
 void main() {
     vColor = color;
+
+    vPickerColor = pickerColor; // color for GPU picker
+
+    vIsHovered = isHovered;
 
     // if color is black, node is inactive
     if (vColor.r == 0.) {

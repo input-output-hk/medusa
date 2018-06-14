@@ -16,10 +16,11 @@ import PassThroughFrag from '../shaders/passThrough.frag'
  * GPGPU Force Directed Graph Simulation
  */
 export default class FDG {
-  constructor (renderer, scene, config, camera) {
+  constructor (renderer, scene, config, camera, mouse) {
     this.renderer = renderer
     this.scene = scene
     this.camera = camera
+    this.mouse = mouse
     this.config = config
     this.frame = 0
     this.textureHelper = new TextureHelper()
@@ -42,11 +43,61 @@ export default class FDG {
     this.active = false
 
     this.initCamera()
+    this.initPicker()
   }
 
   initCamera () {
     this.quadCamera = new THREE.OrthographicCamera()
     this.quadCamera.position.z = 1
+  }
+
+  initPicker () {
+    this.lastHoveredNodeID = -1
+    this.pickingScene = new THREE.Scene()
+    this.pickingTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight)
+    this.pickingTexture.texture.minFilter = THREE.LinearFilter
+    this.pickingTexture.texture.generateMipmaps = false
+  }
+
+  updatePicker () {
+    this.renderer.setClearColor(0)
+    this.renderer.render(this.pickingScene, this.camera, this.pickingTexture)
+
+    let pixelBuffer = new Uint8Array(4)
+
+    this.renderer.readRenderTargetPixels(
+      this.pickingTexture,
+      this.mouse.x * window.devicePixelRatio,
+      this.pickingTexture.height - this.mouse.y * window.devicePixelRatio,
+      1,
+      1,
+      pixelBuffer
+    )
+
+    let id = (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | (pixelBuffer[2] - 1)
+
+    /* if (id !== -1) {
+      this.movementPaused = true
+    } else {
+      this.movementPaused = false
+    } */
+
+    if (this.lastHoveredNodeID !== id) {
+      this.lastHoveredNodeID = id
+      // if (typeof this.nodeData[id] !== 'undefined') {
+      let hoveredArray = new Float32Array(this.nodeCount)
+
+      for (let index = 0; index < hoveredArray.length; index++) {
+        hoveredArray[index] = 0.0
+        if (index === this.lastHoveredNodeID) {
+          hoveredArray[index] = 3.0
+        }
+      }
+
+      this.nodes.geometry.attributes.isHovered.array = hoveredArray
+      this.nodes.geometry.attributes.isHovered.needsUpdate = true
+      // }
+    }
   }
 
   /**
@@ -187,6 +238,7 @@ export default class FDG {
     this.renderer.render(this.positionScene, this.quadCamera, this.outputPositionRenderTarget)
 
     this.nodes.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+    this.pickingMesh.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
     this.edges.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
 
     if (this.config.FDG.showFilePaths) {
@@ -196,6 +248,14 @@ export default class FDG {
 
   update () {
     if (this.enabled) {
+      // picker
+      if (this.frame % 10 === 0.0) {
+        this.updatePicker()
+      }
+      if (this.movementPaused) {
+        return
+      }
+
       this.calculatePositions()
 
       // update nodes
@@ -205,7 +265,8 @@ export default class FDG {
     }
   }
 
-  resize () {
+  resize (width, height) {
+    this.pickingTexture.setSize(width, height)
     this.nodeGeometry.resize()
   }
 
@@ -226,15 +287,21 @@ export default class FDG {
     if (this.firstRun) {
       this.nodes = this.nodeGeometry.create(this.nodeData, this.nodeCount)
       this.scene.add(this.nodes)
+      this.pickingMesh = this.nodeGeometry.getPickingMesh()
+      this.pickingScene.add(this.pickingMesh)
     } else {
       this.nodeGeometry.setTextureLocations(
         this.nodeData,
         this.nodeCount,
         this.nodes.geometry.attributes.position.array,
-        this.nodes.geometry.attributes.color.array
+        this.nodes.geometry.attributes.color.array,
+        this.pickingMesh.geometry.attributes.pickerColor,
+        this.nodes.geometry.attributes.isHovered
       )
       this.nodes.geometry.attributes.position.needsUpdate = true
       this.nodes.geometry.attributes.color.needsUpdate = true
+      this.nodes.geometry.attributes.isHovered.needsUpdate = true
+      this.pickingMesh.geometry.attributes.pickerColor.needsUpdate = true
     }
   }
 

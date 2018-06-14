@@ -8,12 +8,14 @@ varying vec4 vColor;
 varying float vActive;
 varying float vDist;
 varying float vSpriteMix;
+varying float vIsHovered;
 
 void main() {
 
-  if (vActive == 0.) {
-    gl_FragColor = vec4(0.);
-  } else {
+   if (vActive == 0.) {
+     gl_FragColor = vec4(0.);
+   } else {
+
     vec4 sprite = vec4(1.);
     vec4 spriteBlur = vec4(1.);
     if (vDecay > 0.) {
@@ -42,6 +44,10 @@ void main() {
     diffuse.a = mix(diffuse.a, diffuse.a * (vDist * 0.005), vSpriteMix * 1.0);
     diffuse.a = clamp(diffuse.a, 0.0, 1.0);
 
+    diffuse.rgb += vIsHovered;
+
     gl_FragColor = vec4(diffuse.rgb, diffuse.a);
+  
+
   }
 }

@@ -27,6 +27,8 @@ class App extends mixin(EventEmitter, Component) {
   constructor (props) {
     super(props)
 
+    this.debugPicker = false
+
     this.running = true
 
     this.config = deepAssign(Config, this.props.config)
@@ -45,6 +47,8 @@ class App extends mixin(EventEmitter, Component) {
     this.delayAmount = this.config.FDG.delayAmount // how long to wait between graph updates
 
     this.userInteracting = true
+
+    this.mouse = new THREE.Vector2()
 
     let latestTime = 0
     if (typeof URLSearchParams !== 'undefined') {
@@ -189,10 +193,6 @@ class App extends mixin(EventEmitter, Component) {
       }
       this.renderPass.renderToScreen = true
     }
-
-    /* this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.5, 0.5, 0.2) // 1.0, 9, 0.5, 512);
-    this.bloomPass.renderToScreen = true
-    this.composer.addPass(this.bloomPass) */
   }
 
   initControls () {
@@ -216,7 +216,8 @@ class App extends mixin(EventEmitter, Component) {
       this.renderer,
       this.scene,
       this.config,
-      this.camera
+      this.camera,
+      this.mouse
     )
   }
 
@@ -245,7 +246,12 @@ class App extends mixin(EventEmitter, Component) {
 
     this.controls.update()
 
-    this.composer.render()
+    if (this.FDG && this.debugPicker) {
+      this.renderer.render(this.FDG.pickingScene, this.camera)
+    } else {
+      // this.renderer.render(this.scene, this.camera)
+      this.composer.render()
+    }
   }
 
   addEvents () {
@@ -284,6 +290,13 @@ class App extends mixin(EventEmitter, Component) {
     canvas.addEventListener('mousewheel', (e) => {
       timeout.call(this)
     })
+
+    canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
+  }
+
+  onMouseMove (e) {
+    this.mouse.x = e.clientX
+    this.mouse.y = e.clientY
   }
 
   initScene () {
@@ -374,7 +387,7 @@ class App extends mixin(EventEmitter, Component) {
 
     this.composer.setSize(this.width, this.height)
 
-    this.FDG.resize()
+    this.FDG.resize(this.width, this.height)
   }
 
   /**
