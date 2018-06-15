@@ -203,6 +203,10 @@ export default class NodeGeometry {
         scale: {
           type: 'f',
           value: this.baseScale
+        },
+        nodeIsHovered: {
+          type: 'f',
+          value: 0.0
         }
       }
 

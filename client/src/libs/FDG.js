@@ -1,10 +1,15 @@
+// 3rd Party
 import * as THREE from 'three'
 
+// Helpers
 import TextureHelper from './TextureHelper'
+
+// Geometry
 import NodeGeometry from './geometry/node/NodeGeometry'
 import EdgeGeometry from './geometry/edge/EdgeGeometry'
 import TextGeometry from './geometry/text/TextGeometry'
 
+// Shaders
 import PullVert from '../shaders/pull.vert'
 import PushVert from '../shaders/push.vert'
 import ForceFrag from '../shaders/force.frag'
@@ -16,18 +21,29 @@ import PassThroughFrag from '../shaders/passThrough.frag'
  * GPGPU Force Directed Graph Simulation
  */
 export default class FDG {
-  constructor (renderer, scene, config, camera, mouse) {
+  constructor (
+    renderer,
+    scene,
+    config,
+    camera,
+    mousePos,
+    App
+  ) {
     this.renderer = renderer
     this.scene = scene
-    this.camera = camera
-    this.mouse = mouse
     this.config = config
-    this.frame = 0
+    this.camera = camera
+    this.mousePos = mousePos
+    this.app = App // application instance
+
+    this.frame = 0 // current frame of the animation
+
     this.textureHelper = new TextureHelper()
     this.nodeGeometry = new NodeGeometry(this.config)
     this.edgeGeometry = new EdgeGeometry(this.config)
     this.textGeometry = new TextGeometry(this.config)
-    this.firstRun = true
+
+    this.firstRun = true // if this is the first time the class has been run
     this.textureWidth = 0
     this.textureHeight = 0
     this.enabled = false
@@ -40,7 +56,6 @@ export default class FDG {
     this.pushGeometry = null
     this.text = null
     this.newNodes = []
-    this.active = false
 
     this.initCamera()
     this.initPicker()
@@ -67,8 +82,8 @@ export default class FDG {
 
     this.renderer.readRenderTargetPixels(
       this.pickingTexture,
-      this.mouse.x * window.devicePixelRatio,
-      this.pickingTexture.height - this.mouse.y * window.devicePixelRatio,
+      this.mousePos.x * window.devicePixelRatio,
+      this.pickingTexture.height - this.mousePos.y * window.devicePixelRatio,
       1,
       1,
       pixelBuffer
@@ -84,19 +99,32 @@ export default class FDG {
 
     if (this.lastHoveredNodeID !== id) {
       this.lastHoveredNodeID = id
-      // if (typeof this.nodeData[id] !== 'undefined') {
+
+      if (typeof this.nodeData[id] !== 'undefined') {
+        this.hoveredNodeData = this.nodeData[id]
+        this.app.emit('nodeMouseOver', {
+          nodeData: this.hoveredNodeData,
+          mousePos: this.mousePos
+        })
+        this.nodes.material.uniforms.nodeIsHovered.value = 1.0
+      } else {
+        this.app.emit('nodeMouseOut', {
+          mousePos: this.mousePos
+        })
+        this.nodes.material.uniforms.nodeIsHovered.value = 0.0
+      }
+
       let hoveredArray = new Float32Array(this.nodeCount)
 
       for (let index = 0; index < hoveredArray.length; index++) {
         hoveredArray[index] = 0.0
         if (index === this.lastHoveredNodeID) {
-          hoveredArray[index] = 3.0
+          hoveredArray[index] = 1.0
         }
       }
 
       this.nodes.geometry.attributes.isHovered.array = hoveredArray
       this.nodes.geometry.attributes.isHovered.needsUpdate = true
-      // }
     }
   }
 
@@ -130,8 +158,6 @@ export default class FDG {
     this.nodeData = nodeData
     this.edgeData = edgeData
     this.nodeCount = nodeCount
-
-    this.active = true
 
     if (this.firstRun) {
       this.initPassThrough()

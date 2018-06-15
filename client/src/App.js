@@ -1,72 +1,53 @@
+// 3rd Party
 import React, { Component } from 'react'
 import * as THREE from 'three'
 import OrbitContructor from 'three-orbit-controls'
 import deepAssign from 'deep-assign'
 import EventEmitter from 'eventemitter3'
+import mixin from 'mixin'
+import moment from 'moment'
+import firebase from 'firebase/app'
+import 'firebase/firestore'
+import 'firebase/auth'
+import MD5 from './libs/MD5'
 
 // Post
 import { EffectComposer, ShaderPass, RenderPass } from './libs/post/EffectComposer'
 import Vignette from './libs/post/Vignette'
 
+// Libs
 import Config from './Config'
 import FDG from './libs/FDG'
-import MD5 from './libs/MD5'
 
 // CSS
 import './App.css'
-
-const mixin = require('mixin')
-
-const moment = require('moment')
-
-const firebase = require('firebase/app')
-require('firebase/firestore')
-require('firebase/auth')
 
 class App extends mixin(EventEmitter, Component) {
   constructor (props) {
     super(props)
 
-    this.debugPicker = false
-
-    this.running = true
-
     this.config = deepAssign(Config, this.props.config)
-
-    this.repo = this.config.git.repo
-    this.repoChanges = this.config.git.repo + '_changes'
 
     this.initFireBase()
 
-    this.currentFrame = 0
-    this.prevAPICallFrame = 0
+    this.running = true // whether the app is running
 
-    this.OrbitControls = OrbitContructor(THREE)
+    this.currentFrame = 0 // current frame of animation
+    this.prevAPICallFrame = 0 // last frame which API was called on
 
     this.FDG = null // Force Directed Graph class
-    this.delayAmount = this.config.FDG.delayAmount // how long to wait between graph updates
 
-    this.userInteracting = true
+    this.userInteracting = true // whether user is interacting with graph
 
-    this.mouse = new THREE.Vector2()
+    this.mousePos = new THREE.Vector2() // keep track of mouse position
 
-    let latestTime = 0
-    if (typeof URLSearchParams !== 'undefined') {
-      // get date from URL
-      let urlParams = new URLSearchParams(window.location.search)
-      if (urlParams.has('date')) {
-        latestTime = moment(urlParams.get('date')).valueOf()
-      } else {
-        if (this.config.git.commitDate) {
-          latestTime = moment(this.config.git.commitDate).valueOf()
-        }
-      }
-    }
+    let timestampToLoad = this.setTimestampToLoad() // should a specific timestamp be loaded
 
-    this.commitsToProcess = []
-    this.nodes = {}
-    this.loadPrevCommit = false
-    this.loadNextCommit = false
+    this.commitsToProcess = [] // list of commits to process
+    this.nodes = {} // node data
+    this.edges = [] // edge data
+    this.loadPrevCommit = false // load in the previous commit
+    this.loadNextCommit = false // load in the next commit
 
     this.state = {
       play: this.config.FDG.autoPlay,
@@ -79,13 +60,29 @@ class App extends mixin(EventEmitter, Component) {
       currentAdded: null,
       currentChanged: null,
       currentRemoved: null,
-      latestTime: latestTime,
+      timestampToLoad: timestampToLoad,
       currentCommitIndex: -1,
       sideBarCommits: [],
       sidebarCurrentCommitIndex: -1
     }
 
     this.loadCommitHash = this.config.git.commitHash
+  }
+
+  setTimestampToLoad () {
+    let timestampToLoad = 0
+    if (typeof URLSearchParams !== 'undefined') {
+      // get date from URL
+      let urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('date')) {
+        timestampToLoad = moment(urlParams.get('date')).valueOf()
+      } else {
+        if (this.config.git.commitDate) {
+          timestampToLoad = moment(this.config.git.commitDate).valueOf()
+        }
+      }
+    }
+    return timestampToLoad
   }
 
   /**
@@ -108,7 +105,7 @@ class App extends mixin(EventEmitter, Component) {
   setDate (dateString) {
     let date = moment(dateString).valueOf()
     this.setState({
-      latestTime: date
+      timestampToLoad: date
     })
     if (!this.state.play) {
       this.callAPI()
@@ -129,6 +126,10 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async initFireBase () {
+    // set firebase collection names
+    this.repo = this.config.git.repo
+    this.repoChanges = this.config.git.repo + '_changes'
+
     try {
       firebase.initializeApp(this.config.fireBase)
 
@@ -142,8 +143,8 @@ class App extends mixin(EventEmitter, Component) {
 
     this.firebaseDB = firebase.firestore()
 
-    this.docRef = this.firebaseDB.collection(this.config.git.repo)
-    this.docRefChanges = this.firebaseDB.collection(this.config.git.repo + '_changes')
+    this.docRef = this.firebaseDB.collection(this.repo)
+    this.docRefChanges = this.firebaseDB.collection(this.repoChanges)
 
     this.anonymousSignin()
 
@@ -196,6 +197,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   initControls () {
+    this.OrbitControls = OrbitContructor(THREE)
     this.controls = new this.OrbitControls(this.camera, this.renderer.domElement)
     this.setControlsSettings()
   }
@@ -217,7 +219,8 @@ class App extends mixin(EventEmitter, Component) {
       this.scene,
       this.config,
       this.camera,
-      this.mouse
+      this.mousePos,
+      this
     )
   }
 
@@ -246,7 +249,7 @@ class App extends mixin(EventEmitter, Component) {
 
     this.controls.update()
 
-    if (this.FDG && this.debugPicker) {
+    if (this.FDG && this.config.dev.debugPicker) {
       this.renderer.render(this.FDG.pickingScene, this.camera)
     } else {
       // this.renderer.render(this.scene, this.camera)
@@ -295,8 +298,8 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   onMouseMove (e) {
-    this.mouse.x = e.clientX
-    this.mouse.y = e.clientY
+    this.mousePos.x = e.clientX
+    this.mousePos.y = e.clientY
   }
 
   initScene () {
@@ -411,9 +414,9 @@ class App extends mixin(EventEmitter, Component) {
     if (this.config.fireBase.useChangesDB) {
       // only get changed data in play mode
       if (this.state.play) {
-        this.docRef = this.firebaseDB.collection(this.config.git.repo + '_changes')
+        this.docRef = this.firebaseDB.collection(this.repoChanges)
       } else {
-        this.docRef = this.firebaseDB.collection(this.config.git.repo)
+        this.docRef = this.firebaseDB.collection(this.repo)
       }
     }
 
@@ -430,10 +433,10 @@ class App extends mixin(EventEmitter, Component) {
     } else if (this.loadNextCommit) { // load next commit
       commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
       this.direction = 'next'
-    } else if (this.config.git.loadLatest && !this.state.latestTime) {
+    } else if (this.config.git.loadLatest && !this.state.timestampToLoad) {
       commits = this.docRef.orderBy('index', 'desc').limit(1)
-    } else if (this.state.latestTime) {
-      commits = this.docRef.where('date', '>=', this.state.latestTime).limit(1)
+    } else if (this.state.timestampToLoad) {
+      commits = this.docRef.where('date', '>=', this.state.timestampToLoad).limit(1)
     } else {
       commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
       this.direction = 'next'
@@ -450,14 +453,14 @@ class App extends mixin(EventEmitter, Component) {
 
     let snapshotOptions = {}
 
-    if (this.state.latestTime) {
+    if (this.state.timestampToLoad) {
       snapshotOptions.includeMetadataChanges = true
     }
 
     commits.onSnapshot(snapshotOptions,
       async function (querySnapshot) {
         // if loading from a particular date, disable local storage cache
-        if (this.state.latestTime && querySnapshot.metadata.fromCache) {
+        if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
           return
         }
 
@@ -496,7 +499,7 @@ class App extends mixin(EventEmitter, Component) {
         }
 
         // if no results found for the passed date, load latest commit
-        if (this.state.latestTime && snapshots.length === 0) {
+        if (this.state.timestampToLoad && snapshots.length === 0) {
           commits = this.docRef.orderBy('index', 'desc').limit(1)
           let snapshot = await commits.get()
           snapshots.push(snapshot)
@@ -537,7 +540,7 @@ class App extends mixin(EventEmitter, Component) {
       }
 
       setTimeout(() => {
-        let edges = JSON.parse(commit.edges)
+        this.edges = JSON.parse(commit.edges)
 
         if (doc.ref.parent.id === this.repo) {
           this.nodes = JSON.parse(commit.nodes)[0]
@@ -592,7 +595,7 @@ class App extends mixin(EventEmitter, Component) {
 
         let changedState = {}
         let changes = JSON.parse(commit.changes)
-        changedState.latestTime = 0
+        changedState.timestampToLoad = 0
         changedState.currentCommit = commit
         changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
         changedState.currentCommitHash = commit.sha
@@ -609,7 +612,7 @@ class App extends mixin(EventEmitter, Component) {
           if (this.FDG.firstRun) {
             this.FDG.init({
               nodeData: this.nodes,
-              edgeData: edges,
+              edgeData: this.edges,
               nodeCount: this.config.FDG.nodeCount
             })
             this.FDG.setFirstRun(false)
@@ -617,7 +620,7 @@ class App extends mixin(EventEmitter, Component) {
             this.FDG.refresh()
             this.FDG.init({
               nodeData: this.nodes,
-              edgeData: edges,
+              edgeData: this.edges,
               nodeCount: this.config.FDG.nodeCount
             })
           }
@@ -643,7 +646,7 @@ class App extends mixin(EventEmitter, Component) {
         } else {
           this.APIprocessing = false
         }
-      }, this.delayAmount)
+      }, this.config.FDG.delayAmount)
     })
   }
 
@@ -697,12 +700,12 @@ class App extends mixin(EventEmitter, Component) {
     // this.sidebarRunCount = 0
 
     let snapshotOptions = {}
-    if (this.state.latestTime) {
+    if (this.state.timestampToLoad) {
       snapshotOptions.includeMetadataChanges = true
     }
 
     commitsAbove.onSnapshot(snapshotOptions, function (querySnapshot) {
-      if (this.state.latestTime && querySnapshot.metadata.fromCache) {
+      if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
         return
       }
 
@@ -718,7 +721,7 @@ class App extends mixin(EventEmitter, Component) {
       })
 
       commitsBelow.onSnapshot(function (querySnapshot) {
-        if (this.state.latestTime && querySnapshot.metadata.fromCache) {
+        if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
           return
         }
 
@@ -743,7 +746,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   sortCommitsSidebar (currentCommitIndex) {
-    /* if (this.sidebarRunCount > 0 && this.state.latestTime === 0) {
+    /* if (this.sidebarRunCount > 0 && this.state.timestampToLoad === 0) {
       return
     }
 

@@ -41,10 +41,10 @@ void main() {
 
     diffuse.rgb += vDecay;
 
-    diffuse.a = mix(diffuse.a, diffuse.a * (vDist * 0.005), vSpriteMix * 1.0);
+    diffuse.a = mix(diffuse.a, diffuse.a * (vDist * 0.01), vSpriteMix * 1.0);
     diffuse.a = clamp(diffuse.a, 0.0, 1.0);
 
-    diffuse.rgb += vIsHovered;
+    diffuse.rgb += (vIsHovered * 0.4);
 
     gl_FragColor = vec4(diffuse.rgb, diffuse.a);
   

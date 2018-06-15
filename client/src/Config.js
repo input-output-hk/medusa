@@ -68,6 +68,9 @@ const Config = {
     initPos: {x: 0, y: 0, z: 800},
     enableZoom: true // enable camera zoom on mousewheel/pinch gesture
   },
+  dev: {
+    debugPicker: false
+  },
   floatType: detector.isIOS ? THREE.HalfFloatType : THREE.FloatType
 }
 

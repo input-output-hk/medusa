@@ -4,6 +4,7 @@ uniform float decayTime;
 uniform float scale;
 uniform float cycleColors;
 uniform float camDistToCenter;
+uniform float nodeIsHovered;
 
 attribute vec3 pickerColor;
 attribute float isHovered; // id of hovered node
@@ -70,6 +71,10 @@ void main() {
         }
 
         vSpriteMix = clamp(vSpriteMix, 0., 1.);
+
+        if (nodeIsHovered == 1.0) {
+            vSpriteMix = clamp( (1.0 - isHovered) * (dofAmount * 2.0), 0.0, 1.0);
+        }
 
         gl_PointSize = vDist;
         gl_Position = projectionMatrix * mvPosition;
