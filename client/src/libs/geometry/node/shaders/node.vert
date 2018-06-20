@@ -5,9 +5,11 @@ uniform float scale;
 uniform float cycleColors;
 uniform float camDistToCenter;
 uniform float nodeIsHovered;
+uniform float nodeIsSelected;
 
 attribute vec3 pickerColor;
 attribute float isHovered; // id of hovered node
+attribute float isSelected; // id of selected node
 attribute float id;
 attribute vec4 color;
 
@@ -19,6 +21,7 @@ varying float vDist;
 varying float vDistSq;
 varying float vSpriteMix;
 varying float vIsHovered;
+varying float vIsSelected;
 
 float map(float value, float inMin, float inMax, float outMin, float outMax) {
   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
@@ -30,6 +33,7 @@ void main() {
     vPickerColor = pickerColor; // color for GPU picker
 
     vIsHovered = isHovered;
+    vIsSelected = isSelected;
 
     // if color is black, node is inactive
     if (vColor.r == 0.) {
@@ -75,6 +79,8 @@ void main() {
         if (nodeIsHovered == 1.0) {
             vSpriteMix = clamp( (1.0 - isHovered) * (dofAmount * 2.0), 0.0, 1.0);
         }
+
+        vSpriteMix *= (1.0 - isSelected);
 
         gl_PointSize = vDist;
         gl_Position = projectionMatrix * mvPosition;

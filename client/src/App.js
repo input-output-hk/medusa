@@ -40,6 +40,7 @@ class App extends mixin(EventEmitter, Component) {
     this.userInteracting = true // whether user is interacting with graph
 
     this.mousePos = new THREE.Vector2() // keep track of mouse position
+    this.mouseDelta = new THREE.Vector2() // keep track of mouse position
 
     let timestampToLoad = this.setTimestampToLoad() // should a specific timestamp be loaded
 
@@ -63,7 +64,19 @@ class App extends mixin(EventEmitter, Component) {
       timestampToLoad: timestampToLoad,
       currentCommitIndex: -1,
       sideBarCommits: [],
-      sidebarCurrentCommitIndex: -1
+      sidebarCurrentCommitIndex: -1,
+      selectedFileCommitID: '',
+      selectedFilePath: '',
+      selectedFileAuthorLogin: '',
+      selectedFileAuthorName: '',
+      selectedFileAuthorEmail: '',
+      selectedFileAuthorImg: '',
+      selectedFileDate: '',
+      selectedFileName: '',
+      selectedFileMessage: '',
+      fileInfoLocation: {x: 0, y: 0},
+      showFileInfo: false,
+      loadingFileInfo: true
     }
 
     this.loadCommitHash = this.config.git.commitHash
@@ -261,8 +274,6 @@ class App extends mixin(EventEmitter, Component) {
     window.addEventListener('resize', this.resize.bind(this), false)
     this.resize()
 
-    const canvas = document.querySelector('#' + this.config.scene.canvasID)
-
     const timeout = function () {
       this.userInteracting = true
       clearTimeout(this.interactionTimeout)
@@ -278,23 +289,131 @@ class App extends mixin(EventEmitter, Component) {
       }, 3000)
     }
 
-    canvas.addEventListener('touchstart', (e) => {
+    this.canvas.addEventListener('touchstart', (e) => {
       timeout.call(this)
     })
 
-    canvas.addEventListener('mousedown', (e) => {
+    this.canvas.addEventListener('mousedown', (e) => {
+      timeout.call(this)
+      if (this.FDG && this.FDG.enabled) {
+        this.FDG.onMouseDown()
+      }
+    })
+
+    this.canvas.addEventListener('mouseup', (e) => {
+      if (this.FDG && this.FDG.enabled) {
+        this.FDG.onMouseUp()
+      }
+    })
+
+    this.canvas.addEventListener('wheel', (e) => {
       timeout.call(this)
     })
 
-    canvas.addEventListener('wheel', (e) => {
+    this.canvas.addEventListener('mousewheel', (e) => {
       timeout.call(this)
     })
 
-    canvas.addEventListener('mousewheel', (e) => {
-      timeout.call(this)
+    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
+
+    this.on('nodeDeselect', function (data) {
+      this.controls.enabled = true
+      this.controls.enableDamping = true
+      this.setState({
+        showFileInfo: false
+      })
     })
 
-    canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
+    // call github API when selecting node
+    this.on('nodeSelect', function (data) {
+      this.controls.enableDamping = false
+      this.controls.enabled = false
+
+      // check dist of popup from screen edge
+      let fileInfoLocation = data.mousePos.clone()
+      let distFromRightEdge = this.canvas.width - data.mousePos.x
+      if (distFromRightEdge < 400) {
+        fileInfoLocation.x -= 390
+      }
+
+      let distFromBottomEdge = this.canvas.height - data.mousePos.y
+      if (distFromBottomEdge < 100) {
+        fileInfoLocation.y -= 50
+      }
+
+      let distFromTopEdge = data.mousePos.y
+      if (distFromTopEdge < 50) {
+        fileInfoLocation.y += 50
+      }
+
+      this.setState({
+        loadingFileInfo: true,
+        selectedFilePath: data.nodeData.p,
+        fileInfoLocation: fileInfoLocation,
+        showFileInfo: true
+      })
+
+      let commitDate = moment(this.state.currentCommit.date).format()
+
+      const query = `{
+        repository(owner: "${this.config.git.owner}", name: "${this.config.git.repo}") {
+          ref(qualifiedName: "${this.config.git.branch}") {
+            target {
+              ... on Commit {
+                history(first: 1, path: "${data.nodeData.p}", until: "${commitDate}") {
+                  nodes {
+                    author {
+                      user {
+                        login
+                      }
+                      name
+                      email
+                      date
+                      avatarUrl
+                    }
+                    message
+                    oid
+                    commitUrl
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`
+
+      window.fetch('https://api.github.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({query}),
+        headers: {
+          'Authorization': `Bearer ${this.config.git.accessToken}`
+        }
+      })
+        .then(res => res.text())
+        .then((body) => {
+          let json = JSON.parse(body)
+          let fileCommitDetails = json.data.repository.ref.target.history.nodes[0]
+
+          let fileNameArr = data.nodeData.p.split('/')
+          let fileName = fileNameArr[fileNameArr.length - 1]
+
+          this.setState({
+            selectedFileCommitID: fileCommitDetails.oid,
+            selectedFileAuthorLogin: fileCommitDetails.author.user.login,
+            selectedFileAuthorEmail: fileCommitDetails.author.email,
+            selectedFileAuthorName: fileCommitDetails.author.name,
+            selectedFileAuthorImg: fileCommitDetails.author.avatarUrl,
+            selectedFileCommitURL: fileCommitDetails.commitUrl,
+            selectedFileDate: fileCommitDetails.author.date,
+            selectedFileDateRelative: moment(fileCommitDetails.author.date).fromNow(),
+            selectedFileMessage: fileCommitDetails.message,
+            selectedFileName: fileName,
+            showFileInfo: true,
+            loadingFileInfo: false
+          })
+        })
+        .catch(error => console.error(error))
+    }.bind(this))
   }
 
   onMouseMove (e) {
@@ -361,12 +480,12 @@ class App extends mixin(EventEmitter, Component) {
    * Set up default stage renderer
    */
   initRenderer () {
+    this.canvas = document.querySelector('#' + this.config.scene.canvasID)
+
     this.renderer = new THREE.WebGLRenderer({
       antialias: this.config.scene.antialias,
-      canvas: document.getElementById(this.config.scene.canvasID)
+      canvas: this.canvas
     })
-
-    // this.composer = new EffectComposer(this.renderer)
   }
 
   /**
@@ -983,9 +1102,54 @@ class App extends mixin(EventEmitter, Component) {
     )
   }
 
+  fileInfoWidget () {
+    return (
+      <div className='gource-file-info-widget' style={{ left: this.state.fileInfoLocation.x + 30, top: this.state.fileInfoLocation.y - 50, display: this.state.showFileInfo ? 'block' : 'none' }}>
+        <div className='file-info-loading' style={{ display: this.state.loadingFileInfo ? 'block' : 'none' }}>
+          <img width='70' src='assets/images/loading.svg' />
+        </div>
+        <div className='file-info-contents' style={{ display: this.state.loadingFileInfo ? 'none' : 'block' }}>
+          <div className='file-info-gravatar'>
+            <img src={this.state.selectedFileAuthorImg} width='40' height='40' alt='' />
+          </div>
+          <div className='file-info-details'>
+            <div className='file-info-author-name'>
+              <p>
+                <a href={'https://github.com/' + this.config.git.owner + '/' + this.config.git.repo + '/commits?author=' + this.state.selectedFileAuthorLogin}
+                  target='_blank'
+                  title={'View all commits by ' + this.state.selectedFileAuthorName}
+                >
+                  {this.state.selectedFileAuthorName}
+                </a> {this.state.selectedFileDateRelative}
+              </p>
+            </div>
+
+            <div className='file-info-name'>
+              <p>{this.state.selectedFileName}</p>
+            </div>
+            <div className='file-info-message'>
+              <p>{this.state.selectedFileMessage}</p>
+            </div>
+            <div className='file-info-links'>
+              <a className='' href={'https://github.com/' + this.config.git.owner + '/' + this.config.git.repo + '/blob/' + this.state.selectedFileCommitID + '/' + this.state.selectedFilePath}
+                target='_blank'
+                title='View file on GitHub'
+              >View file</a>&nbsp;|&nbsp;
+              <a href={this.state.selectedFileCommitURL}
+                target='_blank'
+                title='View full commit on GitHub'
+              >View commit</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   render () {
     return (
       <div className='App'>
+        {this.fileInfoWidget()}
         {this.UI()}
         <canvas width={this.config.scene.width} height={this.config.scene.height} id={this.config.scene.canvasID} />
       </div>

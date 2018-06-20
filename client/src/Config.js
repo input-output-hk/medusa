@@ -8,6 +8,8 @@ const Config = {
   git: {
     owner: 'input-output-hk',
     repo: 'cardano-sl',
+    branch: 'develop',
+    accessToken: 'd9e4e66d62e22569b55b847242703b95d2e9db9e',
     commitHash: '', // hash of commit to load
     commitDate: '', // date to load
     loadLatest: true // load latest commit in db

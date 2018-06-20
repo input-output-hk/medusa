@@ -34,7 +34,8 @@ export default class NodeGeometry {
     positionArray,
     colorArray,
     pickingColors,
-    isHovered
+    isHovered,
+    isSelected
   ) {
     let pickColor = new THREE.Color(0x999999)
 
@@ -47,6 +48,7 @@ export default class NodeGeometry {
       pickingColors.array[i * 3 + 2] = pickColor.b
 
       isHovered.array[i] = 0
+      isSelected.array[i] = 0
 
       if (!node) {
         positionArray[i * 3] = 9999999
@@ -137,6 +139,7 @@ export default class NodeGeometry {
     // picking geometry attributes
     let pickingColors = new THREE.BufferAttribute(new Float32Array(nodeCount * 3), 3)
     let isHovered = new THREE.BufferAttribute(new Float32Array(nodeCount), 1)
+    let isSelected = new THREE.BufferAttribute(new Float32Array(nodeCount), 1)
 
     this.setTextureLocations(
       nodeData,
@@ -144,7 +147,8 @@ export default class NodeGeometry {
       positionArray,
       colorArray,
       pickingColors,
-      isHovered
+      isHovered,
+      isSelected
     )
 
     let position = new THREE.BufferAttribute(positionArray, 3)
@@ -153,6 +157,7 @@ export default class NodeGeometry {
     this.geometry.addAttribute('position', position)
     this.geometry.addAttribute('color', color)
     this.geometry.addAttribute('isHovered', isHovered)
+    this.geometry.addAttribute('isSelected', isSelected)
 
     let idArray = new Float32Array(nodeCount)
     for (let index = 0; index < idArray.length; index++) {
@@ -205,6 +210,10 @@ export default class NodeGeometry {
           value: this.baseScale
         },
         nodeIsHovered: {
+          type: 'f',
+          value: 0.0
+        },
+        nodeIsSelected: {
           type: 'f',
           value: 0.0
         }

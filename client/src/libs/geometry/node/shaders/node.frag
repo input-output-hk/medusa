@@ -9,6 +9,7 @@ varying float vActive;
 varying float vDist;
 varying float vSpriteMix;
 varying float vIsHovered;
+varying float vIsSelected;
 
 void main() {
 
@@ -45,6 +46,7 @@ void main() {
     diffuse.a = clamp(diffuse.a, 0.0, 1.0);
 
     diffuse.rgb += (vIsHovered * 0.4);
+    diffuse.rgb += (vIsSelected);
 
     gl_FragColor = vec4(diffuse.rgb, diffuse.a);
   

@@ -34,6 +34,7 @@ export default class FDG {
     this.config = config
     this.camera = camera
     this.mousePos = mousePos
+    this.lastMousePos = new THREE.Vector2(0, 0)
     this.app = App // application instance
 
     this.frame = 0 // current frame of the animation
@@ -56,6 +57,7 @@ export default class FDG {
     this.pushGeometry = null
     this.text = null
     this.newNodes = []
+    this.nodeIsHovered = false
 
     this.initCamera()
     this.initPicker()
@@ -68,6 +70,7 @@ export default class FDG {
 
   initPicker () {
     this.lastHoveredNodeID = -1
+    this.lastSelectedNodeID = -1
     this.pickingScene = new THREE.Scene()
     this.pickingTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight)
     this.pickingTexture.texture.minFilter = THREE.LinearFilter
@@ -107,11 +110,13 @@ export default class FDG {
           mousePos: this.mousePos
         })
         this.nodes.material.uniforms.nodeIsHovered.value = 1.0
+        this.nodeIsHovered = true
       } else {
         this.app.emit('nodeMouseOut', {
           mousePos: this.mousePos
         })
         this.nodes.material.uniforms.nodeIsHovered.value = 0.0
+        this.nodeIsHovered = false
       }
 
       let hoveredArray = new Float32Array(this.nodeCount)
@@ -126,6 +131,59 @@ export default class FDG {
       this.nodes.geometry.attributes.isHovered.array = hoveredArray
       this.nodes.geometry.attributes.isHovered.needsUpdate = true
     }
+  }
+
+  onMouseUp () {
+    let mouseMoveVec = this.mousePos.clone().sub(this.lastMousePos)
+
+    // clicking on the same node twice deselects
+    if (this.lastSelectedNodeID === this.lastHoveredNodeID) {
+      this.movementPaused = false
+      this.lastSelectedNodeID = -1
+
+      this.app.emit('nodeDeselect', {})
+    } else {
+      if (mouseMoveVec.lengthSq() > 0) {
+        return
+      }
+
+      // pause movement on click
+      if (this.nodeIsHovered) {
+        this.lastSelectedNodeID = this.lastHoveredNodeID
+        this.movementPaused = true
+
+        if (typeof this.nodeData[this.lastHoveredNodeID] !== 'undefined') {
+          this.selectedNodeData = this.nodeData[this.lastHoveredNodeID]
+
+          this.app.emit('nodeSelect', {
+            nodeData: this.selectedNodeData,
+            mousePos: this.mousePos
+          })
+        }
+      } else {
+        this.movementPaused = false
+        this.lastSelectedNodeID = -1
+        this.app.emit('nodeDeselect', {})
+      }
+    }
+
+    this.nodes.material.uniforms.nodeIsSelected.value = this.lastSelectedNodeID === -1 ? 0.0 : 1.0
+
+    let selectedArray = new Float32Array(this.nodeCount)
+
+    for (let index = 0; index < selectedArray.length; index++) {
+      selectedArray[index] = 0.0
+      if (index === this.lastSelectedNodeID) {
+        selectedArray[index] = 1.0
+      }
+    }
+
+    this.nodes.geometry.attributes.isSelected.array = selectedArray
+    this.nodes.geometry.attributes.isSelected.needsUpdate = true
+  }
+
+  onMouseDown () {
+    this.lastMousePos = new THREE.Vector2(this.mousePos.x, this.mousePos.y)
   }
 
   /**
@@ -274,13 +332,14 @@ export default class FDG {
 
   update () {
     if (this.enabled) {
-      // picker
-      if (this.frame % 10 === 0.0) {
-        this.updatePicker()
-      }
       if (this.movementPaused) {
         return
       }
+
+      // picker
+      // if (this.frame % 10 === 0.0) {
+      this.updatePicker()
+      // }
 
       this.calculatePositions()
 
@@ -322,11 +381,13 @@ export default class FDG {
         this.nodes.geometry.attributes.position.array,
         this.nodes.geometry.attributes.color.array,
         this.pickingMesh.geometry.attributes.pickerColor,
-        this.nodes.geometry.attributes.isHovered
+        this.nodes.geometry.attributes.isHovered,
+        this.nodes.geometry.attributes.isSelected
       )
       this.nodes.geometry.attributes.position.needsUpdate = true
       this.nodes.geometry.attributes.color.needsUpdate = true
       this.nodes.geometry.attributes.isHovered.needsUpdate = true
+      this.nodes.geometry.attributes.isSelected.needsUpdate = true
       this.pickingMesh.geometry.attributes.pickerColor.needsUpdate = true
     }
   }
