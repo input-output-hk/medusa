@@ -27,7 +27,6 @@ const tree = require('./libs/features/tree')
 var GHRepo = config.GHRepo
 var GHBranch = config.GHBranch
 var GHOwner = config.GHOwner
-const GHFileLimit = 300
 
 let githubCliDotCom = new GitHubClient({
   baseUri: 'https://api.github.com',
@@ -563,6 +562,42 @@ const asyncForEach = async function (array, callback) {
   }
 }
 
+app.get('/api/addFileInfoHistoric', async (req, res) => {
+  if (req.query.repo) {
+    GHRepo = req.query.repo
+  }
+  if (req.query.branch) {
+    GHBranch = req.query.branch
+  }
+  if (req.query.owner) {
+    GHOwner = req.query.owner
+  }
+
+  // find next commit in db with no file info (firebase has no != equality operator)
+  let commitData = firebaseDB.collection(GHRepo)
+    .where('fileInfoAdded', '==', true)
+    .orderBy('index', 'asc')
+    .limit(1)
+
+  let snapshot = await commitData.get()
+
+  snapshot.forEach(async (doc) => {
+    let commitSnapshot = doc.data()
+
+    let commitDataNoFileInfo = firebaseDB.collection(GHRepo)
+      .where('index', '==', commitSnapshot.index - 1)
+      .limit(1)
+
+    let snapshotNoFileInfo = await commitDataNoFileInfo.get()
+
+    snapshotNoFileInfo.forEach((doc) => {
+      addFileInfoRoutine(doc.id, true)
+    })
+  })
+
+  res.send({ express: 'Updating commits for ' + GHOwner + ': ' + GHRepo + ': ' + GHBranch + '...' })
+})
+
 /**
  * Add file-level commit info
  */
@@ -661,7 +696,6 @@ const addFileInfoRoutine = async function (sha, runUpdateDB = false) {
 
 const saveFileInfoToDB = async function (path, commitDate, sha) {
   return new Promise(async (resolve, reject) => {
-    console.log('Adding file info for: ' + path)
     let pathHash = crypto.createHash('md5').update(path).digest('hex')
     let cacheKey = GHBranch + '_' + sha + '_' + pathHash
 
