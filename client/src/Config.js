@@ -9,7 +9,6 @@ const Config = {
     owner: 'input-output-hk',
     repo: 'cardano-sl',
     branch: 'develop',
-    accessToken: 'd9e4e66d62e22569b55b847242703b95d2e9db9e',
     commitHash: '', // hash of commit to load
     commitDate: '', // date to load
     loadLatest: true // load latest commit in db
@@ -39,6 +38,7 @@ const Config = {
     sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
     sphereRadius: 700, // radius of sphere if in sphere projection mode
     showFilePaths: true, // display filepath overlay on nodes
+    usePicker: true, // show file commit details on click
     colorCooldownSpeed: 0.05, // speed at which node colors cycle
     filePathCharLimit: 20, // speed at which node colors cycle
     cycleColors: false, // cycle colors based on file edit time from red to blue to white

@@ -22,6 +22,8 @@ import FDG from './libs/FDG'
 // CSS
 import './App.css'
 
+const crypto = require('crypto')
+
 class App extends mixin(EventEmitter, Component) {
   constructor (props) {
     super(props)
@@ -142,6 +144,7 @@ class App extends mixin(EventEmitter, Component) {
     // set firebase collection names
     this.repo = this.config.git.repo
     this.repoChanges = this.config.git.repo + '_changes'
+    this.repoFileInfo = this.config.git.repo + '_fileInfo'
 
     try {
       firebase.initializeApp(this.config.fireBase)
@@ -158,6 +161,7 @@ class App extends mixin(EventEmitter, Component) {
 
     this.docRef = this.firebaseDB.collection(this.repo)
     this.docRefChanges = this.firebaseDB.collection(this.repoChanges)
+    this.docRefFileInfo = this.firebaseDB.collection(this.repoFileInfo)
 
     this.anonymousSignin()
 
@@ -325,7 +329,11 @@ class App extends mixin(EventEmitter, Component) {
     })
 
     // call github API when selecting node
-    this.on('nodeSelect', function (data) {
+    this.on('nodeSelect', async function (data) {
+      if (!this.config.FDG.usePicker) {
+        return
+      }
+
       this.controls.enableDamping = false
       this.controls.enabled = false
 
@@ -353,66 +361,42 @@ class App extends mixin(EventEmitter, Component) {
         showFileInfo: true
       })
 
-      let commitDate = moment(this.state.currentCommit.date).format()
+      let pathHash = crypto.createHash('md5').update(data.nodeData.p).digest('hex')
+      let cacheKey = this.config.git.branch + '_' + this.state.currentCommitHash + '_' + pathHash
 
-      const query = `{
-        repository(owner: "${this.config.git.owner}", name: "${this.config.git.repo}") {
-          ref(qualifiedName: "${this.config.git.branch}") {
-            target {
-              ... on Commit {
-                history(first: 1, path: "${data.nodeData.p}", until: "${commitDate}") {
-                  nodes {
-                    author {
-                      user {
-                        login
-                      }
-                      name
-                      email
-                      date
-                      avatarUrl
-                    }
-                    message
-                    oid
-                    commitUrl
-                  }
-                }
-              }
-            }
-          }
-        }
-      }`
+      let fileInfo = this.docRefFileInfo.doc(cacheKey)
 
-      window.fetch('https://api.github.com/graphql', {
-        method: 'POST',
-        body: JSON.stringify({query}),
-        headers: {
-          'Authorization': `Bearer ${this.config.git.accessToken}`
-        }
-      })
-        .then(res => res.text())
-        .then((body) => {
-          let json = JSON.parse(body)
-          let fileCommitDetails = json.data.repository.ref.target.history.nodes[0]
+      let snapshot = await fileInfo.get()
 
-          let fileNameArr = data.nodeData.p.split('/')
-          let fileName = fileNameArr[fileNameArr.length - 1]
-
-          this.setState({
-            selectedFileCommitID: fileCommitDetails.oid,
-            selectedFileAuthorLogin: fileCommitDetails.author.user.login,
-            selectedFileAuthorEmail: fileCommitDetails.author.email,
-            selectedFileAuthorName: fileCommitDetails.author.name,
-            selectedFileAuthorImg: fileCommitDetails.author.avatarUrl,
-            selectedFileCommitURL: fileCommitDetails.commitUrl,
-            selectedFileDate: fileCommitDetails.author.date,
-            selectedFileDateRelative: moment(fileCommitDetails.author.date).fromNow(),
-            selectedFileMessage: fileCommitDetails.message,
-            selectedFileName: fileName,
-            showFileInfo: true,
-            loadingFileInfo: false
-          })
+      if (!snapshot.exists) {
+        this.controls.enableDamping = true
+        this.controls.enabled = true
+        this.setState({
+          showFileInfo: false,
+          loadingFileInfo: false
         })
-        .catch(error => console.error(error))
+        return
+      }
+
+      let fileCommitDetails = snapshot.data()
+
+      let fileNameArr = data.nodeData.p.split('/')
+      let fileName = fileNameArr[fileNameArr.length - 1]
+
+      this.setState({
+        selectedFileCommitID: fileCommitDetails.oid,
+        selectedFileAuthorLogin: fileCommitDetails.author.user.login,
+        selectedFileAuthorEmail: fileCommitDetails.author.email,
+        selectedFileAuthorName: fileCommitDetails.author.name,
+        selectedFileAuthorImg: fileCommitDetails.author.avatarUrl,
+        selectedFileCommitURL: fileCommitDetails.commitUrl,
+        selectedFileDate: fileCommitDetails.author.date,
+        selectedFileDateRelative: moment(fileCommitDetails.author.date).fromNow(),
+        selectedFileMessage: fileCommitDetails.message,
+        selectedFileName: fileName,
+        showFileInfo: true,
+        loadingFileInfo: false
+      })
     }.bind(this))
   }
 
@@ -713,16 +697,27 @@ class App extends mixin(EventEmitter, Component) {
         }
 
         let changedState = {}
-        let changes = JSON.parse(commit.changes)
+
         changedState.timestampToLoad = 0
         changedState.currentCommit = commit
         changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
         changedState.currentCommitHash = commit.sha
         changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
         changedState.currentMsg = commit.msg
-        changedState.currentAdded = isNaN(changes.a) ? Object.keys(changes.a).length : changes.a
-        changedState.currentChanged = isNaN(changes.c) ? changes.c.length : changes.c
-        changedState.currentRemoved = isNaN(changes.r) ? changes.r.length : changes.r
+
+        let changes
+        if (!commit.changeDetail) {
+          changes = JSON.parse(commit.changes)
+          changedState.currentAdded = isNaN(changes.a) ? Object.keys(changes.a).length : changes.a
+          changedState.currentChanged = isNaN(changes.c) ? changes.c.length : changes.c
+          changedState.currentRemoved = isNaN(changes.r) ? changes.r.length : changes.r
+        } else {
+          changes = JSON.parse(commit.changeDetail)
+          changedState.currentAdded = changes.a
+          changedState.currentChanged = changes.c
+          changedState.currentRemoved = changes.r
+        }
+
         changedState.currentCommitIndex = commit.index
 
         this.cameraAccommodateNodes()
@@ -735,6 +730,10 @@ class App extends mixin(EventEmitter, Component) {
               nodeCount: this.config.FDG.nodeCount
             })
             this.FDG.setFirstRun(false)
+            this.toggleSpherize()
+            setTimeout(() => {
+              this.toggleSpherize()
+            }, 1000)
           } else {
             this.FDG.refresh()
             this.FDG.init({
@@ -1106,7 +1105,7 @@ class App extends mixin(EventEmitter, Component) {
     return (
       <div className='gource-file-info-widget' style={{ left: this.state.fileInfoLocation.x + 30, top: this.state.fileInfoLocation.y - 50, display: this.state.showFileInfo ? 'block' : 'none' }}>
         <div className='file-info-loading' style={{ display: this.state.loadingFileInfo ? 'block' : 'none' }}>
-          <img width='70' src='assets/images/loading.svg' />
+          <img width='70' src='assets/images/loading.svg' alt='Loading' />
         </div>
         <div className='file-info-contents' style={{ display: this.state.loadingFileInfo ? 'none' : 'block' }}>
           <div className='file-info-gravatar'>

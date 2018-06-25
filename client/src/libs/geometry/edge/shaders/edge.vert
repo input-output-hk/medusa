@@ -33,9 +33,10 @@ void main() {
   float scaledTime = uTime * 0.0025;
   if (scaledTime < 1.) {
     vAlpha -= (1.0 - scaledTime);
+    dofAmount -= (1.0 - scaledTime);
   }
 
   vAlpha = mix(vAlpha, .15, dofAmount);
-
+  
   gl_Position = projectionMatrix * mvPosition;
 }

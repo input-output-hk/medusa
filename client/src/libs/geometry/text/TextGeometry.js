@@ -38,6 +38,10 @@ export default class TextGeometry {
       if (nodeData.hasOwnProperty(nodeId)) {
         const node = nodeData[nodeId]
 
+        if (node === null) {
+          continue
+        }
+
         let fileNameArray = node.p.split('/')
         let fileName = fileNameArray[fileNameArray.length - 1]
 

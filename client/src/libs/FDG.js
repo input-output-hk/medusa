@@ -322,8 +322,12 @@ export default class FDG {
     this.renderer.render(this.positionScene, this.quadCamera, this.outputPositionRenderTarget)
 
     this.nodes.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
-    this.pickingMesh.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+
     this.edges.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+
+    if (this.config.FDG.usePicker) {
+      this.pickingMesh.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
+    }
 
     if (this.config.FDG.showFilePaths) {
       this.text.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
@@ -337,9 +341,9 @@ export default class FDG {
       }
 
       // picker
-      // if (this.frame % 10 === 0.0) {
-      this.updatePicker()
-      // }
+      if (this.config.FDG.usePicker) {
+        this.updatePicker()
+      }
 
       this.calculatePositions()
 
