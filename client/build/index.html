@@ -63,7 +63,7 @@
           },
           camera: {
             fov: 45,
-            initPos: {x: 0, y: 0, z: 400},
+            initPos: {x: 0, y: 0, z: 1600},
             enableZoom: true // enable camera zoom on mousewheel/pinch gesture
           }
         }
@@ -73,6 +73,14 @@
           if (gource.canRun()) {
 
             gource.init(config).on('ready', function() {
+
+              gource.on('nodeMouseOver', function(data) {
+                document.querySelector('html').style.cursor = 'pointer'
+              })
+
+              gource.on('nodeMouseOut', function(data) {
+                document.querySelector('html').style.cursor = 'default'
+              })
               
               /**
                * Available methods

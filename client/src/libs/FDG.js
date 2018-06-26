@@ -120,13 +120,7 @@ export default class FDG {
       }
 
       let hoveredArray = new Float32Array(this.nodeCount)
-
-      for (let index = 0; index < hoveredArray.length; index++) {
-        hoveredArray[index] = 0.0
-        if (index === this.lastHoveredNodeID) {
-          hoveredArray[index] = 1.0
-        }
-      }
+      hoveredArray[this.lastHoveredNodeID] = 1.0
 
       this.nodes.geometry.attributes.isHovered.array = hoveredArray
       this.nodes.geometry.attributes.isHovered.needsUpdate = true
@@ -170,13 +164,7 @@ export default class FDG {
     this.nodes.material.uniforms.nodeIsSelected.value = this.lastSelectedNodeID === -1 ? 0.0 : 1.0
 
     let selectedArray = new Float32Array(this.nodeCount)
-
-    for (let index = 0; index < selectedArray.length; index++) {
-      selectedArray[index] = 0.0
-      if (index === this.lastSelectedNodeID) {
-        selectedArray[index] = 1.0
-      }
-    }
+    selectedArray[this.lastSelectedNodeID] = 1.0
 
     this.nodes.geometry.attributes.isSelected.array = selectedArray
     this.nodes.geometry.attributes.isSelected.needsUpdate = true
@@ -384,14 +372,10 @@ export default class FDG {
         this.nodeCount,
         this.nodes.geometry.attributes.position.array,
         this.nodes.geometry.attributes.color.array,
-        this.pickingMesh.geometry.attributes.pickerColor,
-        this.nodes.geometry.attributes.isHovered,
-        this.nodes.geometry.attributes.isSelected
+        this.pickingMesh.geometry.attributes.pickerColor
       )
       this.nodes.geometry.attributes.position.needsUpdate = true
       this.nodes.geometry.attributes.color.needsUpdate = true
-      this.nodes.geometry.attributes.isHovered.needsUpdate = true
-      this.nodes.geometry.attributes.isSelected.needsUpdate = true
       this.pickingMesh.geometry.attributes.pickerColor.needsUpdate = true
     }
   }

@@ -33,9 +33,7 @@ export default class NodeGeometry {
     nodeCount,
     positionArray,
     colorArray,
-    pickingColors,
-    isHovered,
-    isSelected
+    pickingColors
   ) {
     let pickColor = new THREE.Color(0x999999)
 
@@ -46,9 +44,6 @@ export default class NodeGeometry {
       pickingColors.array[i * 3] = pickColor.r
       pickingColors.array[i * 3 + 1] = pickColor.g
       pickingColors.array[i * 3 + 2] = pickColor.b
-
-      isHovered.array[i] = 0
-      isSelected.array[i] = 0
 
       if (!node) {
         positionArray[i * 3] = 9999999
@@ -146,9 +141,7 @@ export default class NodeGeometry {
       nodeCount,
       positionArray,
       colorArray,
-      pickingColors,
-      isHovered,
-      isSelected
+      pickingColors
     )
 
     let position = new THREE.BufferAttribute(positionArray, 3)
