@@ -85,8 +85,8 @@ export default class FDG {
 
     this.renderer.readRenderTargetPixels(
       this.pickingTexture,
-      this.mousePos.x * window.devicePixelRatio,
-      this.pickingTexture.height - this.mousePos.y * window.devicePixelRatio,
+      this.mousePos.x,
+      this.pickingTexture.height - this.mousePos.y,
       1,
       1,
       pixelBuffer
