@@ -137,7 +137,7 @@ export default class FDG {
 
       this.app.emit('nodeDeselect', {})
     } else {
-      if (mouseMoveVec.lengthSq() > 0) {
+      if (mouseMoveVec.lengthSq() > 200) {
         return
       }
 
