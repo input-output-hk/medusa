@@ -22,8 +22,6 @@ import FDG from './libs/FDG'
 // CSS
 import './App.css'
 
-const crypto = require('crypto')
-
 class App extends mixin(EventEmitter, Component) {
   constructor (props) {
     super(props)
@@ -361,42 +359,49 @@ class App extends mixin(EventEmitter, Component) {
         showFileInfo: true
       })
 
-      let pathHash = crypto.createHash('md5').update(data.nodeData.p).digest('hex')
-      let cacheKey = this.config.git.branch + '_' + this.state.currentCommitHash + '_' + pathHash
+      let commitDate = moment(this.state.currentCommit.date).format()
 
-      let fileInfo = this.docRefFileInfo.doc(cacheKey)
+      let uri = 'https://us-central1-webgl-gource-1da99.cloudfunctions.net/github-fileInfo?repo=' + this.config.git.repo +
+      '&branch=' + this.config.git.branch +
+      '&owner=' + this.config.git.owner +
+      '&path=' + data.nodeData.p +
+      '&date=' + commitDate
 
-      let snapshot = await fileInfo.get()
+      uri = uri.replace('+', '%2B')
 
-      if (!snapshot.exists) {
-        this.controls.enableDamping = true
-        this.controls.enabled = true
-        this.setState({
-          showFileInfo: false,
-          loadingFileInfo: false
-        })
-        return
-      }
-
-      let fileCommitDetails = snapshot.data()
-
-      let fileNameArr = data.nodeData.p.split('/')
-      let fileName = fileNameArr[fileNameArr.length - 1]
-
-      this.setState({
-        selectedFileCommitID: fileCommitDetails.oid,
-        selectedFileAuthorLogin: fileCommitDetails.author.user.login,
-        selectedFileAuthorEmail: fileCommitDetails.author.email,
-        selectedFileAuthorName: fileCommitDetails.author.name,
-        selectedFileAuthorImg: fileCommitDetails.author.avatarUrl,
-        selectedFileCommitURL: fileCommitDetails.commitUrl,
-        selectedFileDate: fileCommitDetails.author.date,
-        selectedFileDateRelative: moment(fileCommitDetails.author.date).fromNow(),
-        selectedFileMessage: fileCommitDetails.message,
-        selectedFileName: fileName,
-        showFileInfo: true,
-        loadingFileInfo: false
+      window.fetch(uri, {
+        method: 'POST'
       })
+        .then(res => res.text())
+        .then((body) => {
+          let fileCommitDetails = JSON.parse(body)
+
+          let fileNameArr = data.nodeData.p.split('/')
+          let fileName = fileNameArr[fileNameArr.length - 1]
+
+          this.setState({
+            selectedFileCommitID: fileCommitDetails.oid,
+            selectedFileAuthorLogin: fileCommitDetails.author.user.login,
+            selectedFileAuthorEmail: fileCommitDetails.author.email,
+            selectedFileAuthorName: fileCommitDetails.author.name,
+            selectedFileAuthorImg: fileCommitDetails.author.avatarUrl,
+            selectedFileCommitURL: fileCommitDetails.commitUrl,
+            selectedFileDate: fileCommitDetails.author.date,
+            selectedFileDateRelative: moment(fileCommitDetails.author.date).fromNow(),
+            selectedFileMessage: fileCommitDetails.message,
+            selectedFileName: fileName,
+            showFileInfo: true,
+            loadingFileInfo: false
+          })
+        })
+        .catch(() => {
+          this.controls.enableDamping = true
+          this.controls.enabled = true
+          this.setState({
+            showFileInfo: false,
+            loadingFileInfo: false
+          })
+        })
     }.bind(this))
   }
 
@@ -714,7 +719,7 @@ class App extends mixin(EventEmitter, Component) {
         } else {
           changes = JSON.parse(commit.changeDetail)
           changedState.currentAdded = changes.a
-          changedState.currentChanged = changes.c
+          changedState.currentChanged = changes.c + changes.rn
           changedState.currentRemoved = changes.r
         }
 

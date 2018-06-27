@@ -329,7 +329,7 @@ export default class FDG {
       }
 
       // picker
-      if (this.config.FDG.usePicker) {
+      if (this.config.FDG.usePicker && this.frame % 10 === 0) {
         this.updatePicker()
       }
 

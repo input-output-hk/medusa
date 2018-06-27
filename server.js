@@ -4,8 +4,6 @@ const fetch = require('node-fetch')
 
 const config = require('./config')
 
-const crypto = require('crypto')
-
 const app = express()
 const port = process.env.PORT || 5000
 
@@ -43,10 +41,6 @@ let removedPaths = []
 let nodes = {}
 let latestCommit = null
 let previousNodeData = {}
-
-const pp = function (variable) {
-  console.log(JSON.stringify(variable, null, 2))
-}
 
 const clearNodeUpdatedFlag = function () {
   for (const id in nodes) {
@@ -141,7 +135,7 @@ const addNode = function ({
   return nodes[id]
 }
 
-const updateRoutine = async function (indexToLoad = null, recurse = true, addFileInfo = true) {
+const updateRoutine = async function (indexToLoad = null, recurse = true) {
   console.log('Running update routine...')
 
   return new Promise((resolve, reject) => {
@@ -495,7 +489,7 @@ const updateRoutine = async function (indexToLoad = null, recurse = true, addFil
                       if (!latestCommit) {
                         docRef.set(saveData, { merge: true }).then(() => {
                           if (currentPage > 0 && recurse) {
-                            updateRoutine(null, true, true)
+                            updateRoutine()
                           } else {
                             resolve()
                           }
@@ -519,13 +513,8 @@ const updateRoutine = async function (indexToLoad = null, recurse = true, addFil
                         }
 
                         docRefChanges.set(changeData, { merge: true }).then(async () => {
-                          // add file info
-                          if (addFileInfo) {
-                            await addFileInfoRoutine(commitDetail.sha)
-                          }
-
                           if (currentPage > 0 && recurse) {
-                            updateRoutine(null, true, true)
+                            updateRoutine()
                           } else {
                             resolve()
                           }
@@ -555,228 +544,6 @@ app.get('/api/updateDB', (req, res) => {
   updateRoutine()
   res.send({ express: 'Updating commits for ' + GHOwner + ': ' + GHRepo + ': ' + GHBranch + '...' })
 })
-
-const asyncForEach = async function (array, callback) {
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array)
-  }
-}
-
-app.get('/api/addFileInfoHistoric', async (req, res) => {
-  if (req.query.repo) {
-    GHRepo = req.query.repo
-  }
-  if (req.query.branch) {
-    GHBranch = req.query.branch
-  }
-  if (req.query.owner) {
-    GHOwner = req.query.owner
-  }
-
-  // find next commit in db with no file info (firebase has no != equality operator)
-  let commitData = firebaseDB.collection(GHRepo)
-    .where('fileInfoAdded', '==', true)
-    .orderBy('index', 'asc')
-    .limit(1)
-
-  let snapshot = await commitData.get()
-
-  snapshot.forEach(async (doc) => {
-    let commitSnapshot = doc.data()
-
-    let commitDataNoFileInfo = firebaseDB.collection(GHRepo)
-      .where('index', '==', commitSnapshot.index - 1)
-      .limit(1)
-
-    let snapshotNoFileInfo = await commitDataNoFileInfo.get()
-
-    snapshotNoFileInfo.forEach((doc) => {
-      addFileInfoRoutine(doc.id, true)
-    })
-  })
-
-  res.send({ express: 'Updating commits for ' + GHOwner + ': ' + GHRepo + ': ' + GHBranch + '...' })
-})
-
-/**
- * Add file-level commit info
- */
-app.get('/api/addFileInfo', (req, res) => {
-  if (req.query.repo) {
-    GHRepo = req.query.repo
-  }
-  if (req.query.branch) {
-    GHBranch = req.query.branch
-  }
-  if (req.query.owner) {
-    GHOwner = req.query.owner
-  }
-
-  if (!req.query.sha) {
-    res.send({ express: 'commit SHA required' })
-  }
-
-  addFileInfoRoutine(req.query.sha, true)
-
-  res.send({ express: 'Adding file info for ' + GHOwner + ': ' + GHRepo + ': ' + GHBranch + '...' })
-})
-
-const addFileInfoRoutine = async function (sha, runUpdateDB = false) {
-  return new Promise(async (resolve, reject) => {
-    console.log('Adding file info for commit: ' + sha)
-
-    // load commit from firebase
-    let commitData = firebaseDB.collection(GHRepo).doc(sha)
-    let snapshot = await commitData.get()
-    let commitSnapshot = snapshot.data()
-
-    if (commitSnapshot.fileInfoAdded) {
-      console.log('File info already exists for: ' + sha)
-      resolve()
-      return
-    }
-
-    // lookup commit via github API
-    githubCliDotCom.fetchCommitBySHA({sha: sha, owner: GHOwner, repository: GHRepo}).then(commitDetail => {
-      let commitDate = moment(commitDetail.commit.author.date).format()
-
-      let filePaths = []
-
-      // get tree for commit
-      githubCliDotCom.fetchTreeRecursive({sha: sha, owner: GHOwner, repository: GHRepo})
-        .then(async treeData => {
-          for (const key in treeData.tree) {
-            if (treeData.tree.hasOwnProperty(key)) {
-              const treeNode = treeData.tree[key]
-              filePaths.push(treeNode.path)
-            }
-          }
-
-          let encounteredError = false
-
-          await asyncForEach(filePaths, async (filePath) => {
-            try {
-              await saveFileInfoToDB(filePath, commitDate, sha)
-            } catch (error) {
-              console.log(error)
-              encounteredError = true
-            }
-          })
-
-          // if we encountered an error, run through files again to add missing info
-          if (encounteredError) {
-            addFileInfoRoutine(sha)
-          } else {
-            // update completed successfully
-            console.log('Added file info for commit: ' + sha)
-
-            // update fileInfoAdded flag
-            firebaseDB.collection(GHRepo).doc(sha).set({
-              fileInfoAdded: true
-            }, { merge: true })
-
-            // update commit details (required to clean up inconsistencies in historical data)
-            if (runUpdateDB === true) {
-              // set latestCommit to commit before the one we want to update
-              await updateRoutine(commitSnapshot.index - 1, false, false)
-              resolve()
-            } else {
-              resolve()
-            }
-          }
-        })
-    })
-      .catch((error) => {
-        // if connection error, run routine again
-        console.log('Error: ' + error)
-        addFileInfoRoutine(sha)
-      })
-  })
-}
-
-const saveFileInfoToDB = async function (path, commitDate, sha) {
-  return new Promise(async (resolve, reject) => {
-    let pathHash = crypto.createHash('md5').update(path).digest('hex')
-    let cacheKey = GHBranch + '_' + sha + '_' + pathHash
-
-    // check if file info already exists
-    let commitData = firebaseDB.collection(GHRepo + '_fileInfo').doc(cacheKey)
-    let snapshot = await commitData.get()
-
-    if (snapshot.exists) {
-      console.log('File info already exists for ' + path + ' on commit: ' + sha)
-      resolve()
-      return
-    }
-
-    const query = `{
-      repository(owner: "${GHOwner}", name: "${GHRepo}") {
-        ref(qualifiedName: "${GHBranch}") {
-          target {
-            ... on Commit {
-              history(first: 1, path: "${path}", until: "${commitDate}") {
-                nodes {
-                  author {
-                    user {
-                      login
-                    }
-                    name
-                    email
-                    date
-                    avatarUrl
-                  }
-                  message
-                  oid
-                  commitUrl
-                }
-              }
-            }
-          }
-        }
-      }
-    }`
-
-    const accessToken = process.env.TOKEN_GITHUB_DOT_COM
-
-    fetch('https://api.github.com/graphql', {
-      method: 'POST',
-      body: JSON.stringify({query}),
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    })
-      .then(res => res.text())
-      .then((body) => {
-        let json = JSON.parse(body)
-
-        let docRef = firebaseDB.collection(GHRepo + '_fileInfo').doc(cacheKey)
-
-        if (typeof json.data === 'undefined') {
-          pp(json)
-          pp(path)
-          pp(query)
-          process.exit()
-        }
-
-        let saveData = json.data.repository.ref.target.history.nodes[0]
-        // node could not be found, exit gracefully
-        if (typeof saveData === 'undefined') {
-          resolve()
-        }
-
-        saveData.path = path
-        saveData.sha = sha
-
-        docRef.set(saveData, { merge: true }).then(() => {
-          console.log('Added file info for ' + path + ' on commit: ' + sha)
-          resolve()
-        })
-      })
-      .catch((error) => {
-        reject(new Error(error))
-      })
-  })
-}
 
 app.get('/api/removeCommit', (req, res) => {
   let sha = req.query.sha
