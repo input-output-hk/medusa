@@ -381,7 +381,7 @@ class App extends mixin(EventEmitter, Component) {
 
           this.setState({
             selectedFileCommitID: fileCommitDetails.oid,
-            selectedFileAuthorLogin: fileCommitDetails.author.user.login,
+            selectedFileAuthorLogin: fileCommitDetails.author.user !== null ? fileCommitDetails.author.user.login : fileCommitDetails.author.email,
             selectedFileAuthorEmail: fileCommitDetails.author.email,
             selectedFileAuthorName: fileCommitDetails.author.name,
             selectedFileAuthorImg: fileCommitDetails.author.avatarUrl,
@@ -394,7 +394,7 @@ class App extends mixin(EventEmitter, Component) {
             loadingFileInfo: false
           })
         })
-        .catch(() => {
+        .catch((error) => {
           this.controls.enableDamping = true
           this.controls.enabled = true
           this.setState({
