@@ -337,6 +337,8 @@ class App extends mixin(EventEmitter, Component) {
 
       // check dist of popup from screen edge
       let fileInfoLocation = data.mousePos.clone()
+      fileInfoLocation.x += window.scrollX
+      fileInfoLocation.y += window.scrollY
       let distFromRightEdge = this.canvas.width - data.mousePos.x
       if (distFromRightEdge < 400) {
         fileInfoLocation.x -= 390
@@ -394,7 +396,7 @@ class App extends mixin(EventEmitter, Component) {
             loadingFileInfo: false
           })
         })
-        .catch((error) => {
+        .catch(() => {
           this.controls.enableDamping = true
           this.controls.enabled = true
           this.setState({

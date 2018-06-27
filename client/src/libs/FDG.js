@@ -83,10 +83,12 @@ export default class FDG {
 
     let pixelBuffer = new Uint8Array(4)
 
+    let canvasOffset = this.renderer.domElement.getBoundingClientRect()
+
     this.renderer.readRenderTargetPixels(
       this.pickingTexture,
-      this.mousePos.x,
-      this.pickingTexture.height - this.mousePos.y,
+      this.mousePos.x - canvasOffset.left,
+      this.pickingTexture.height - (this.mousePos.y - canvasOffset.top),
       1,
       1,
       pixelBuffer
