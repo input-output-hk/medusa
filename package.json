@@ -7,16 +7,15 @@
     "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
   },
   "dependencies": {
-    "crypto": "^1.0.1",
     "express": "^4.16.2",
-    "firebase-admin": "5.12.0",
-    "moment": "^2.22.1",
+    "firebase-admin": "5.12.1",
+    "moment": "^2.22.2",
     "node-fetch": "^2.1.1",
-    "nodemon": "^1.17.3",
-    "ws": "^5.1.1"
+    "nodemon": "^1.17.5",
+    "ws": "^5.2.1"
   },
   "devDependencies": {
-    "concurrently": "^3.5.0",
+    "concurrently": "^3.6.0",
     "standard": "^11.0.1"
   }
 }
