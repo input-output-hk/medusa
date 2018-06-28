@@ -361,7 +361,7 @@ class App extends mixin(EventEmitter, Component) {
         showFileInfo: true
       })
 
-      let commitDate = moment(this.state.currentCommit.date).format()
+      let commitDate = moment(this.state.currentCommit.committerDate).format()
 
       let uri = 'https://us-central1-webgl-gource-1da99.cloudfunctions.net/github-fileInfo?repo=' + this.config.git.repo +
       '&branch=' + this.config.git.branch +
@@ -708,6 +708,7 @@ class App extends mixin(EventEmitter, Component) {
         changedState.timestampToLoad = 0
         changedState.currentCommit = commit
         changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
+        changedState.committerDate = commit.committerDate ? moment.unix(commit.committerDate / 1000).format('MM/DD/YYYY HH:mm:ss') : changedState.currentDate
         changedState.currentCommitHash = commit.sha
         changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
         changedState.currentMsg = commit.msg

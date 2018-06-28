@@ -227,15 +227,13 @@ const updateRoutine = async function (indexToLoad = null, recurse = true) {
 
                   // get date as timestamp in MS
                   let commitDateObj = moment(commitDetail.commit.author.date)
+                  let committerDateObj = moment(commitDetail.commit.committer.date)
 
                   clearNodeUpdatedFlag()
 
                   githubCliDotCom.fetchTreeRecursive({sha: commit.sha, owner: GHOwner, repository: GHRepo})
                     .then(treeData => {
-                      // clear node if we are over the github file limit
-                    // if (commitDetail.files.length === GHFileLimit) {
                       nodes = {}
-                      // }
 
                       // add root node
                       addNode({
@@ -312,7 +310,6 @@ const updateRoutine = async function (indexToLoad = null, recurse = true) {
                           }
                         }
                       }
-                      // }
 
                       // run through removedPaths array and delete
                       for (const id in nodes) {
@@ -476,6 +473,7 @@ const updateRoutine = async function (indexToLoad = null, recurse = true) {
                         email: commitDetail.commit.author.email,
                         author: commitDetail.commit.author.name,
                         date: commitDateObj.valueOf(),
+                        committerDate: committerDateObj.valueOf(),
                         msg: commitDetail.commit.message,
                         changes: JSON.stringify({ a: addedCount, c: modifiedCount, r: removedCount, rn: renamedCount }),
                         changeDetail: JSON.stringify({ a: addedCount, c: modifiedCount, r: removedCount, rn: renamedCount }),
@@ -508,6 +506,7 @@ const updateRoutine = async function (indexToLoad = null, recurse = true) {
                           email: commitDetail.commit.author.email,
                           author: commitDetail.commit.author.name,
                           date: commitDateObj.valueOf(),
+                          committerDate: committerDateObj.valueOf(),
                           msg: commitDetail.commit.message,
                           index: currentCommitIndex
                         }
@@ -583,10 +582,8 @@ const loadLatestCommit = function (indexToLoad = null) {
         latestCommit.sha = doc.id
         let nodeData = JSON.parse(latestCommit.nodes)[0]
 
-        // nodes = {}
         previousNodeData = {}
         nodeData.forEach((node) => {
-          // nodes[node.id] = node
           previousNodeData[node.id] = node
         })
 
