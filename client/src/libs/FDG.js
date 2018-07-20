@@ -319,7 +319,7 @@ export default class FDG {
       this.pickingMesh.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
     }
 
-    if (this.config.FDG.showFilePaths) {
+    if (this.config.FDG.showFilePaths && this.text) {
       this.text.material.uniforms.positionTexture.value = this.outputPositionRenderTarget.texture
     }
   }
