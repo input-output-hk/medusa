@@ -35,7 +35,7 @@
             autoPlay: false,
             delayAmount: 1000, // time in between new commits being added to the graph
             sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
-            usePicker: false, // show file commit details on click
+            usePicker: true, // show file commit details on click
             sphereRadius: 500, // radius of sphere if in sphere projection mode
             showFilePaths: true, // display filepath overlay on nodes
             colorCooldownSpeed: 0.05, // speed at which node colors cycle
@@ -83,11 +83,11 @@
               gource.on('nodeMouseOut', function(data) {
                 document.querySelector('html').style.cursor = 'default'
               })
-              
+
               /**
                * Available methods
                */
-              
+
               // document.addEventListener('click', () => {
               //   gource.destroy()
               // })
@@ -101,38 +101,37 @@
               //      }
               //    })
               //  })
-              
+
               // gource.getFirstCommit().then(data => {
               //   console.log(data)
               // })
-              
+
               // gource.getlastCommit().then(data => {
               //   console.log(data)
               // })
-              
+
               // gource.on('commitChanged', (data) => {
               //   console.log(data)
               // })
-              
+
               // gource.setDate('2018-01-01')
-              
+
               // gource.setSphereView(true)
-              
+
               // gource.setPlay(true)
-              
+
               // document.addEventListener('click', () => {
               //   gource.goToPrev()
               // })
-              
+
               // document.addEventListener('click', () => {
               //   gource.goToNext()
               // })
-              
+
             })
           }
-          
+
         }
     </script>
-  <script type="text/javascript" src="/static/js/gource.main.js"></script></body>
+  <script type="text/javascript" src="/client/build/static/js/gource.main.js"></script></body>
 </html>
-          
