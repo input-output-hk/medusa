@@ -135,19 +135,29 @@ const addNode = function ({
   return nodes[id]
 }
 
-const updateRoutine = async function (indexToLoad = null, recurse = true) {
+const updateRoutine = async function (recurse = true, forceCommitIndex = null) {
   console.log('Running update routine...')
 
   return new Promise((resolve, reject) => {
     getCommitTotal().then(() => {
     // lookup latest commit in db and load latest nodes/edges structure
-      loadLatestCommit(indexToLoad).then(() => {
+      loadLatestCommit().then(() => {
         if (latestCommit === null && commitTotal === 0) { // nothing in db
           currentCommitIndex = 0
           currentPage = 0
         } else {
-          currentCommitIndex = latestCommit.index + 1
-          currentPage = commitTotal - currentCommitIndex
+          if (forceCommitIndex !== null) {
+            currentPage = commitTotal - forceCommitIndex
+          } else {
+            currentCommitIndex = latestCommit.index + 1
+            currentPage = commitTotal - currentCommitIndex
+          }
+        }
+
+        if (currentPage === 0) {
+          console.log('No new commits to add')
+          resolve()
+          return
         }
 
         // fetch next commit
@@ -159,8 +169,8 @@ const updateRoutine = async function (indexToLoad = null, recurse = true) {
                 let snapshot = await commitData.get()
 
                 if (latestCommit && latestCommit.sha === commit.sha) {
-                  console.log('No new commits to add')
-                  recurse = false
+                  updateRoutine(true, currentCommitIndex + 1)
+                  console.log('incrementing commit index')
                   resolve()
                   return
                 }
@@ -562,16 +572,11 @@ app.get('/api/removeCommit', (req, res) => {
   res.send({ express: 'Commit ' + sha + ' removed from firestore' })
 })
 
-const loadLatestCommit = function (indexToLoad = null) {
+const loadLatestCommit = function () {
   return new Promise((resolve, reject) => {
     let docRef = firebaseDB.collection(GHRepo)
 
-    let commitData
-    if (indexToLoad !== null) {
-      commitData = docRef.where('index', '==', indexToLoad).limit(1)
-    } else {
-      commitData = docRef.orderBy('index', 'desc').limit(1)
-    }
+    let commitData = docRef.orderBy('index', 'desc').limit(1)
 
     commitData.get().then(snapshot => {
       if (snapshot.empty) {
