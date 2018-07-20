@@ -7,7 +7,7 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="shortcut icon" href="/favicon.ico">
     <title>WebGL Gource</title>
-  <link href="./static/css/gource.main.css" rel="stylesheet"></head>
+  <link href="/static/css/gource.main.css" rel="stylesheet"></head>
   <body>
     <noscript>
       You need to enable JavaScript to run this app.
@@ -35,6 +35,7 @@
             autoPlay: false,
             delayAmount: 1000, // time in between new commits being added to the graph
             sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
+            usePicker: false, // show file commit details on click
             sphereRadius: 500, // radius of sphere if in sphere projection mode
             showFilePaths: true, // display filepath overlay on nodes
             colorCooldownSpeed: 0.05, // speed at which node colors cycle
@@ -64,7 +65,7 @@
           },
           camera: {
             fov: 45,
-            initPos: {x: 0, y: 0, z: 400},
+            initPos: {x: 0, y: 0, z: 1600},
             enableZoom: true // enable camera zoom on mousewheel/pinch gesture
           }
         }
@@ -90,6 +91,8 @@
               // document.addEventListener('click', () => {
               //   gource.destroy()
               // })
+
+              // gource.loadCommit('18b737fa3bf08d2dc3e5faa6ecee60262fb3af8c')
 
               // document.addEventListener('click', () => {
               //    gource.setConfig({
@@ -130,6 +133,6 @@
           
         }
     </script>
-  <script type="text/javascript" src="./static/js/gource.main.js"></script></body>
+  <script type="text/javascript" src="/static/js/gource.main.js"></script></body>
 </html>
           

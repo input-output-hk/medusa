@@ -68,6 +68,18 @@ const canRun = function () {
 // ----------------------------------------------
 
 /**
+ * Load a commit from commit hash
+ *
+ * @param {string} hash
+ */
+const loadCommit = function (hash) {
+  if (!Component) {
+    return
+  }
+  Component.loadCommit(hash)
+}
+
+/**
  * Set date to load commits from, if date is later
  * than the latest commit date, the latest commit
  * will be loaded
@@ -195,5 +207,6 @@ export {
   getFirstCommit,
   getlastCommit,
   setConfig,
-  destroy
+  destroy,
+  loadCommit
 }
