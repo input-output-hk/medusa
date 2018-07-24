@@ -39,6 +39,7 @@ const Config = {
     sphereRadius: 700, // radius of sphere if in sphere projection mode
     showFilePaths: true, // display filepath overlay on nodes
     usePicker: false, // show file commit details on click
+    pickerLoadingPath: '/assets/images/loading.svg', // show file commit details on click
     colorCooldownSpeed: 0.05, // speed at which node colors cycle
     filePathCharLimit: 20, // speed at which node colors cycle
     cycleColors: false, // cycle colors based on file edit time from red to blue to white

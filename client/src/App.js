@@ -1113,7 +1113,7 @@ class App extends mixin(EventEmitter, Component) {
     return (
       <div className='gource-file-info-widget' style={{ left: this.state.fileInfoLocation.x + 30, top: this.state.fileInfoLocation.y - 50, display: this.state.showFileInfo ? 'block' : 'none' }}>
         <div className='file-info-loading' style={{ display: this.state.loadingFileInfo ? 'block' : 'none' }}>
-          <img width='70' src='assets/images/loading.svg' alt='Loading' />
+          <img width='70' src={this.config.FDG.pickerLoadingPath} alt='Loading' />
         </div>
         <div className='file-info-contents' style={{ display: this.state.loadingFileInfo ? 'none' : 'block' }}>
           <div className='file-info-gravatar'>
