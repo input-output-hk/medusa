@@ -135,7 +135,7 @@ const addNode = function ({
   return nodes[id]
 }
 
-const updateRoutine = async function (recurse = true, forceCommitIndex = null) {
+const updateRoutine = async function (forceCommitIndex = null) {
   console.log('Running update routine...')
 
   return new Promise((resolve, reject) => {
@@ -496,7 +496,7 @@ const updateRoutine = async function (recurse = true, forceCommitIndex = null) {
 
                       if (!latestCommit) {
                         docRef.set(saveData, { merge: true }).then(() => {
-                          if (currentPage > 0 && recurse) {
+                          if (currentPage > 0) {
                             updateRoutine()
                           } else {
                             resolve()
@@ -522,7 +522,7 @@ const updateRoutine = async function (recurse = true, forceCommitIndex = null) {
                         }
 
                         docRefChanges.set(changeData, { merge: true }).then(async () => {
-                          if (currentPage > 0 && recurse) {
+                          if (currentPage > 0) {
                             updateRoutine()
                           } else {
                             resolve()

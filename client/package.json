@@ -1,8 +1,8 @@
 {
   "name": "webgl-gource",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description" : "3D WebGL Git Repository Visualization",
   "author": "Scott Darby <scott.darby@iohk.io>",
-  "private": true,
   "proxy": "http://localhost:5000/",
   "browserify": {
     "transform": [
