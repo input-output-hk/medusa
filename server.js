@@ -154,6 +154,10 @@ const updateRoutine = async function (forceCommitIndex = null) {
           }
         }
 
+        if (currentPage < 0) {
+          currentPage = 0
+        }
+
         if (currentPage === 0) {
           console.log('No new commits to add')
           resolve()
