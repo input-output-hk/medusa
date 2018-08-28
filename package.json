@@ -1,10 +1,10 @@
 {
   "name": "webgl-gource",
   "version": "1.0.0",
-  "description" : "3D WebGL Git Repository Visualization",
+  "description": "3D WebGL Git Repository Visualization",
   "author": "Scott Darby <scott.darby@iohk.io>",
   "license": "ISC",
-  "main" : "client/build/static/js/gource.main.js",
+  "main": "client/build/static/js/gource.main.js",
   "scripts": {
     "client": "cd client && yarn start",
     "server": "nodemon server.js",
@@ -12,14 +12,14 @@
   },
   "dependencies": {
     "express": "^4.16.2",
-    "firebase-admin": "5.12.1",
+    "firebase-admin": "6.0.0",
     "moment": "^2.22.2",
-    "node-fetch": "^2.1.1",
-    "nodemon": "^1.17.5",
-    "ws": "^5.2.1"
+    "node-fetch": "^2.2.0",
+    "nodemon": "^1.18.3",
+    "ws": "^6.0.0"
   },
   "devDependencies": {
-    "concurrently": "^3.6.0",
+    "concurrently": "^4.0.1",
     "standard": "^11.0.1"
   }
 }

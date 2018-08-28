@@ -17,6 +17,8 @@ admin.initializeApp({
 })
 
 const firebaseDB = admin.firestore()
+const settings = {timestampsInSnapshots: true}
+firebaseDB.settings(settings)
 
 // github API
 const GitHubClient = require('./libs/GitHubClient.js').GitHubClient

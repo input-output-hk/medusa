@@ -150,7 +150,7 @@ class App extends mixin(EventEmitter, Component) {
       const settings = {timestampsInSnapshots: true}
       firebase.firestore().settings(settings)
 
-      // await firebase.firestore().enablePersistence()
+      await firebase.firestore().enablePersistence()
     } catch (error) {
       console.log(error)
     }
