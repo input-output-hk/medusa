@@ -175,7 +175,7 @@ const updateRoutine = async function (forceCommitIndex = null) {
                 let snapshot = await commitData.get()
 
                 if (latestCommit && latestCommit.sha === commit.sha) {
-                  updateRoutine(true, currentCommitIndex + 1)
+                  updateRoutine(currentCommitIndex + 1)
                   console.log('incrementing commit index')
                   resolve()
                   return
