@@ -144,9 +144,9 @@ const updateRoutine = async function (forceCommitIndex = null) {
     getCommitTotal().then(() => {
     // lookup latest commit in db and load latest nodes/edges structure
       loadLatestCommit().then(() => {
-        if (latestCommit === null && commitTotal === 0) { // nothing in db
+        if (latestCommit === null) { // nothing in db
           currentCommitIndex = 0
-          currentPage = 0
+          currentPage = commitTotal
         } else {
           if (forceCommitIndex !== null) {
             currentPage = commitTotal - forceCommitIndex
