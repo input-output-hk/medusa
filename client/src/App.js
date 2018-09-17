@@ -12,7 +12,7 @@ import 'firebase/auth'
 import MD5 from './libs/MD5'
 
 // Post
-import { EffectComposer, ShaderPass, RenderPass } from './libs/post/EffectComposer'
+import { EffectComposer, ShaderPass, RenderPass, UnrealBloomPass } from './libs/post/EffectComposer'
 import Vignette from './libs/post/Vignette'
 
 // Libs
@@ -21,6 +21,12 @@ import FDG from './libs/FDG'
 
 // CSS
 import './App.css'
+
+// Components
+import FileInfo from './components/FileInfo'
+import Sidebar from './components/Sidebar'
+import Controls from './components/Controls'
+import CommitInfo from './components/CommitInfo'
 
 class App extends mixin(EventEmitter, Component) {
   constructor (props) {
@@ -187,7 +193,13 @@ class App extends mixin(EventEmitter, Component) {
   initPost () {
     this.composer = new EffectComposer(this.renderer)
     this.renderPass = new RenderPass(this.scene, this.camera)
+    // this.renderPass.renderToScreen = true
     this.composer.addPass(this.renderPass)
+
+    // res, strength, radius, threshold
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
+    // this.bloomPass.renderToScreen = true
+    this.composer.addPass(this.bloomPass)
 
     this.setPostSettings()
   }
@@ -474,7 +486,7 @@ class App extends mixin(EventEmitter, Component) {
     this.canvas = document.querySelector('#' + this.config.scene.canvasID)
 
     this.renderer = new THREE.WebGLRenderer({
-      antialias: this.config.scene.antialias,
+      antialias: false,
       canvas: this.canvas
     })
   }
@@ -1023,140 +1035,68 @@ class App extends mixin(EventEmitter, Component) {
     return snapshot.docs[0].data()
   }
 
-  sideBar () {
-    if (this.config.display.showSidebar) {
-      return (
-        <ol className='gource-sidebar'>
-          {this.state.sideBarCommits.map((commit) =>
-            <li key={commit.sha}
-              className={commit.index === this.state.sidebarCurrentCommitIndex ? 'current' : ''}
-              onClick={() => { this.loadCommit(commit.sha) }}>
-              <div className='sidebar-gravatar'>
-                <img src={commit.gravatar} width='40' height='40' alt='' />
-              </div>
-              <div className='sidebar-details'>
-                <p>
-                  <span className='sidebar-author'>{commit.author}</span> <span className='sidebar-date' title={commit.dateLong}>{commit.dateShort}</span>
-                  <a className='sidebar-github-view' target='_blank' title='View Commit on GitHub' href={'https://github.com/' + this.config.git.owner + '/' + this.config.git.repo + '/commit/' + commit.sha}>
-                  View on GitHub
-                  </a>
-                </p>
-                <p>
-                  <span className='sidebar-message'>
-                    {commit.msg}
-                  </span>
-                </p>
-              </div>
-            </li>
-          )}
-        </ol>
-      )
-    }
-  }
-
   UI () {
     if (!this.config.display.showUI) {
       return (
         <div className='gource-ui'>
-          {this.sideBar()}
+          <Sidebar
+            config={this.config}
+            sideBarCommits={this.state.sideBarCommits}
+            sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
+            loadCommit={this.loadCommit.bind(this)}
+          />
         </div>
       )
     }
 
     return (
       <div className='gource-ui'>
-        {this.sideBar()}
-        <div className='info'>
-          <div className='currentAdded'><span>Files Added:</span> <b>{this.state.currentAdded}</b></div>
-          <div className='currentChanged'><span>Files Changed:</span> <b>{this.state.currentChanged}</b></div>
-          <div className='currentRemoved'><span>Files Removed:</span> <b>{this.state.currentRemoved}</b></div>
-          <div className='currentAuthor'><span>Author:</span> <b>{this.state.currentAuthor}</b></div>
-          <div className='currentMsg'><span>Message:</span> <b>{this.state.currentMsg}</b></div>
-          <div className='currentDate'><span>Commit Date:</span> <b>{this.state.currentDate}</b></div>
-          <div className='currentCommitHash'><span>Commit Hash:</span> <b>{this.state.currentCommitHash}</b></div>
-        </div>
-        <div className='gource-controls'>
-          <button className='previousCommit' onClick={this.goToPrev.bind(this)}>&lt; Prev</button>
-          <button className='nextCommit' onClick={this.goToNext.bind(this)}>Next &gt;</button>
-          <label>
-              Play:
-            <input
-              name='play'
-              type='checkbox'
-              checked={this.state.play}
-              onChange={this.togglePlay.bind(this)} />
-          </label>
-          <label>
-              Commit:
-            <input
-              ref={input => {
-                this.commitInput = input
-              }}
-              name='commitInput'
-              type='text' />
-            <button onClick={() => { this.loadCommit(this.commitInput.value.trim()) }}>Go</button>
-          </label>
-          <label>
-              Sphere Projection:
-            <input
-              name='spherize'
-              type='checkbox'
-              checked={this.state.spherize}
-              onChange={this.toggleSpherize.bind(this)} />
-          </label>
-        </div>
+        <Sidebar
+          config={this.config}
+          sideBarCommits={this.state.sideBarCommits}
+          sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
+          loadCommit={this.loadCommit.bind(this)}
+        />
+        <CommitInfo
+          currentAdded={this.state.currentAdded}
+          currentChanged={this.state.currentChanged}
+          currentRemoved={this.state.currentRemoved}
+          currentAuthor={this.state.currentAuthor}
+          currentMsg={this.state.currentMsg}
+          currentDate={this.state.currentDate}
+          currentCommitHash={this.state.currentCommitHash}
+        />
+        <Controls
+          config={this.config}
+          play={this.state.play}
+          spherize={this.state.spherize}
+          toggleSpherize={this.toggleSpherize.bind(this)}
+          loadCommit={this.loadCommit.bind(this)}
+          goToPrev={this.goToPrev.bind(this)}
+          goToNext={this.goToNext.bind(this)}
+          togglePlay={this.togglePlay.bind(this)}
+        />
       </div>
     )
   }
-
-  fileInfoWidget () {
-    return (
-      <div className='gource-file-info-widget' style={{ left: this.state.fileInfoLocation.x + 30, top: this.state.fileInfoLocation.y - 50, display: this.state.showFileInfo ? 'block' : 'none' }}>
-        <div className='file-info-loading' style={{ display: this.state.loadingFileInfo ? 'block' : 'none' }}>
-          <img width='70' src={this.config.FDG.pickerLoadingPath} alt='Loading' />
-        </div>
-        <div className='file-info-contents' style={{ display: this.state.loadingFileInfo ? 'none' : 'block' }}>
-          <div className='file-info-gravatar'>
-            <img src={this.state.selectedFileAuthorImg} width='40' height='40' alt='' />
-          </div>
-          <div className='file-info-details'>
-            <div className='file-info-author-name'>
-              <p>
-                <a href={'https://github.com/' + this.config.git.owner + '/' + this.config.git.repo + '/commits?author=' + this.state.selectedFileAuthorLogin}
-                  target='_blank'
-                  title={'View all commits by ' + this.state.selectedFileAuthorName}
-                >
-                  {this.state.selectedFileAuthorName}
-                </a> {this.state.selectedFileDateRelative}
-              </p>
-            </div>
-
-            <div className='file-info-name'>
-              <p>{this.state.selectedFileName}</p>
-            </div>
-            <div className='file-info-message'>
-              <p>{this.state.selectedFileMessage}</p>
-            </div>
-            <div className='file-info-links'>
-              <a className='' href={'https://github.com/' + this.config.git.owner + '/' + this.config.git.repo + '/blob/' + this.state.selectedFileCommitID + '/' + this.state.selectedFilePath}
-                target='_blank'
-                title='View file on GitHub'
-              >View file</a>&nbsp;|&nbsp;
-              <a href={this.state.selectedFileCommitURL}
-                target='_blank'
-                title='View full commit on GitHub'
-              >View commit</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   render () {
     return (
       <div className='App'>
-        {this.fileInfoWidget()}
+        <FileInfo
+          fileInfoLocation={this.state.fileInfoLocation}
+          showFileInfo={this.state.showFileInfo}
+          loadingFileInfo={this.state.loadingFileInfo}
+          selectedFileAuthorImg={this.state.selectedFileAuthorImg}
+          selectedFileAuthorLogin={this.state.selectedFileAuthorLogin}
+          selectedFileAuthorName={this.state.selectedFileAuthorName}
+          selectedFileDateRelative={this.state.selectedFileDateRelative}
+          selectedFilePath={this.state.selectedFilePath}
+          selectedFileName={this.state.selectedFileName}
+          selectedFileMessage={this.state.selectedFileMessage}
+          selectedFileCommitID={this.state.selectedFileCommitID}
+          selectedFileCommitURL={this.state.selectedFileCommitURL}
+          config={this.config}
+        />
         {this.UI()}
         <canvas width={this.config.scene.width} height={this.config.scene.height} id={this.config.scene.canvasID} />
       </div>
