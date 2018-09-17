@@ -90,6 +90,11 @@ class App extends mixin(EventEmitter, Component) {
     this.loadCommitHash = this.config.git.commitHash
   }
 
+  async setDateRange () {
+    await this.getFirstCommit()
+    await this.getLastCommit()
+  }
+
   setTimestampToLoad () {
     let timestampToLoad = 0
     if (typeof URLSearchParams !== 'undefined') {
@@ -331,6 +336,11 @@ class App extends mixin(EventEmitter, Component) {
 
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
 
+    this.on('ready', () => {
+      this.getFirstCommit()
+      this.getLastCommit()
+    })
+
     this.on('nodeDeselect', function (data) {
       this.controls.enabled = true
       this.controls.enableDamping = true
@@ -520,7 +530,6 @@ class App extends mixin(EventEmitter, Component) {
    * Get commit data
    */
   async callAPI () {
-    console.log('test')
     // only call this method if tab in focus
     let animID = this.callAPI
     if (this.currentFrame === this.prevAPICallFrame) {
@@ -1028,14 +1037,23 @@ class App extends mixin(EventEmitter, Component) {
     let ref = this.firebaseDB.collection(this.repoChanges)
     let commits = ref.orderBy('date', 'asc').limit(1)
     let snapshot = await commits.get()
-    return snapshot.docs[0].data()
+    let firstCommit = snapshot.docs[0].data()
+
+    this.minDate = firstCommit.date
+
+    return firstCommit
   }
 
-  async getlastCommit () {
+  async getLastCommit () {
     let ref = this.firebaseDB.collection(this.repoChanges)
     let commits = ref.orderBy('date', 'desc').limit(1)
     let snapshot = await commits.get()
-    return snapshot.docs[0].data()
+
+    let lastCommit = snapshot.docs[0].data()
+
+    this.maxDate = lastCommit.date
+
+    return lastCommit
   }
 
   UI () {
@@ -1060,7 +1078,8 @@ class App extends mixin(EventEmitter, Component) {
         <DatePicker
           selected={this.state.currentDateObject}
           onSelect={this.setDate.bind(this)}
-
+          minDate={moment(this.minDate)}
+          maxDate={moment(this.maxDate)}
         />
 
         <Controls
