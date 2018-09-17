@@ -27,6 +27,8 @@ import FileInfo from './components/FileInfo'
 import Sidebar from './components/Sidebar'
 import Controls from './components/Controls'
 import CommitInfo from './components/CommitInfo'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 
 class App extends mixin(EventEmitter, Component) {
   constructor (props) {
@@ -48,7 +50,7 @@ class App extends mixin(EventEmitter, Component) {
     this.mousePos = new THREE.Vector2() // keep track of mouse position
     this.mouseDelta = new THREE.Vector2() // keep track of mouse position
 
-    let timestampToLoad = this.setTimestampToLoad() // should a specific timestamp be loaded
+    this.timestampToLoad = this.setTimestampToLoad() // should a specific timestamp be loaded
 
     this.commitsToProcess = [] // list of commits to process
     this.nodes = {} // node data
@@ -59,6 +61,7 @@ class App extends mixin(EventEmitter, Component) {
     this.state = {
       play: this.config.FDG.autoPlay,
       currentDate: null,
+      currentDateObject: moment(),
       currentCommitHash: '',
       spherize: this.config.FDG.sphereProject,
       currentCommit: null,
@@ -67,7 +70,6 @@ class App extends mixin(EventEmitter, Component) {
       currentAdded: null,
       currentChanged: null,
       currentRemoved: null,
-      timestampToLoad: timestampToLoad,
       currentCommitIndex: -1,
       sideBarCommits: [],
       sidebarCurrentCommitIndex: -1,
@@ -121,17 +123,16 @@ class App extends mixin(EventEmitter, Component) {
    *
    * @param {string} date
    */
-  setDate (dateString) {
-    let date = moment(dateString).valueOf()
+  async setDate (dateString) {
+    this.timestampToLoad = moment(dateString).valueOf()
+
     this.setState({
-      timestampToLoad: date
+      currentDateObject: dateString
     })
-    if (!this.state.play) {
-      this.callAPI()
-    } else {
+    if (this.state.play) {
       this.setPlay(false)
-      this.callAPI()
     }
+    this.callAPI()
   }
 
   /**
@@ -519,6 +520,7 @@ class App extends mixin(EventEmitter, Component) {
    * Get commit data
    */
   async callAPI () {
+    console.log('test')
     // only call this method if tab in focus
     let animID = this.callAPI
     if (this.currentFrame === this.prevAPICallFrame) {
@@ -555,10 +557,10 @@ class App extends mixin(EventEmitter, Component) {
     } else if (this.loadNextCommit) { // load next commit
       commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
       this.direction = 'next'
-    } else if (this.config.git.loadLatest && !this.state.timestampToLoad) {
+    } else if (this.config.git.loadLatest && !this.timestampToLoad) {
       commits = this.docRef.orderBy('index', 'desc').limit(1)
-    } else if (this.state.timestampToLoad) {
-      commits = this.docRef.where('date', '>=', this.state.timestampToLoad).limit(1)
+    } else if (this.timestampToLoad) {
+      commits = this.docRef.where('date', '>=', this.timestampToLoad).limit(1)
     } else {
       commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
       this.direction = 'next'
@@ -575,14 +577,14 @@ class App extends mixin(EventEmitter, Component) {
 
     let snapshotOptions = {}
 
-    if (this.state.timestampToLoad) {
+    if (this.timestampToLoad) {
       snapshotOptions.includeMetadataChanges = true
     }
 
     commits.onSnapshot(snapshotOptions,
       async function (querySnapshot) {
         // if loading from a particular date, disable local storage cache
-        if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
+        if (this.timestampToLoad && querySnapshot.metadata.fromCache) {
           return
         }
 
@@ -621,7 +623,7 @@ class App extends mixin(EventEmitter, Component) {
         }
 
         // if no results found for the passed date, load latest commit
-        if (this.state.timestampToLoad && snapshots.length === 0) {
+        if (this.timestampToLoad && snapshots.length === 0) {
           commits = this.docRef.orderBy('index', 'desc').limit(1)
           let snapshot = await commits.get()
           snapshots.push(snapshot)
@@ -717,9 +719,10 @@ class App extends mixin(EventEmitter, Component) {
 
         let changedState = {}
 
-        changedState.timestampToLoad = 0
+        this.timestampToLoad = 0
         changedState.currentCommit = commit
         changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
+        changedState.currentDateObject = moment(moment.unix(commit.date / 1000))
         changedState.committerDate = commit.committerDate ? moment.unix(commit.committerDate / 1000).format('MM/DD/YYYY HH:mm:ss') : changedState.currentDate
         changedState.currentCommitHash = commit.sha
         changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
@@ -838,12 +841,12 @@ class App extends mixin(EventEmitter, Component) {
     // this.sidebarRunCount = 0
 
     let snapshotOptions = {}
-    if (this.state.timestampToLoad) {
+    if (this.timestampToLoad) {
       snapshotOptions.includeMetadataChanges = true
     }
 
     commitsAbove.onSnapshot(snapshotOptions, function (querySnapshot) {
-      if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
+      if (this.timestampToLoad && querySnapshot.metadata.fromCache) {
         return
       }
 
@@ -859,7 +862,7 @@ class App extends mixin(EventEmitter, Component) {
       })
 
       commitsBelow.onSnapshot(function (querySnapshot) {
-        if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
+        if (this.timestampToLoad && querySnapshot.metadata.fromCache) {
           return
         }
 
@@ -884,7 +887,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   sortCommitsSidebar (currentCommitIndex) {
-    /* if (this.sidebarRunCount > 0 && this.state.timestampToLoad === 0) {
+    /* if (this.sidebarRunCount > 0 && this.timestampToLoad === 0) {
       return
     }
 
@@ -1044,6 +1047,8 @@ class App extends mixin(EventEmitter, Component) {
             sideBarCommits={this.state.sideBarCommits}
             sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
             loadCommit={this.loadCommit.bind(this)}
+            goToPrev={this.goToPrev.bind(this)}
+            goToNext={this.goToNext.bind(this)}
           />
         </div>
       )
@@ -1051,12 +1056,29 @@ class App extends mixin(EventEmitter, Component) {
 
     return (
       <div className='gource-ui'>
+
+        <DatePicker
+          selected={this.state.currentDateObject}
+          onSelect={this.setDate.bind(this)}
+
+        />
+
+        <Controls
+          config={this.config}
+          setPlay={this.setPlay}
+          spherize={this.state.spherize}
+          setSphereView={this.setSphereView}
+        />
+
         <Sidebar
           config={this.config}
           sideBarCommits={this.state.sideBarCommits}
           sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
           loadCommit={this.loadCommit.bind(this)}
+          goToPrev={this.goToPrev.bind(this)}
+          goToNext={this.goToNext.bind(this)}
         />
+
         <CommitInfo
           currentAdded={this.state.currentAdded}
           currentChanged={this.state.currentChanged}
@@ -1066,16 +1088,7 @@ class App extends mixin(EventEmitter, Component) {
           currentDate={this.state.currentDate}
           currentCommitHash={this.state.currentCommitHash}
         />
-        <Controls
-          config={this.config}
-          play={this.state.play}
-          spherize={this.state.spherize}
-          toggleSpherize={this.toggleSpherize.bind(this)}
-          loadCommit={this.loadCommit.bind(this)}
-          goToPrev={this.goToPrev.bind(this)}
-          goToNext={this.goToNext.bind(this)}
-          togglePlay={this.togglePlay.bind(this)}
-        />
+
       </div>
     )
   }

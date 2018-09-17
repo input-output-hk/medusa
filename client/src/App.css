@@ -13,47 +13,6 @@ canvas#stage {
   z-index: 0;
 }
 
-#gource-root .info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  color: #eee;
-  padding: 1em;
-  z-index: 1;
-  font-size: 11px;
-}
-
-#gource-root .info div {
-  display: inline-block;
-  margin: 0 1em 1em 1em;
-}
-
-#gource-root .gource-controls {
-  position: absolute;
-  font-size: 12px;
-  top: 0;
-  left: 0;
-  width: 100%;
-  color: #eee;
-  padding: 1em;
-  z-index: 1;
-}
-
-#gource-root .gource-controls label {
-  display: inline-block;
-  margin: 0 1em 1em 0;
-}
-
-#gource-root .gource-controls label input[type='checkbox'] {
-  vertical-align: middle;
-}
-
-#gource-root .gource-controls button {
-  display: inline-block;
-  margin: 0 1em 1em 0;
-}
-
 #gource-root .gource-sidebar {
   list-style: none;
   position: fixed;
@@ -215,4 +174,8 @@ canvas#stage {
 
 #gource-root .hidden {
   display: none;
+}
+
+.gource-wrap {
+  width: 380px;
 }

@@ -1772,6 +1772,10 @@ class-utils@^0.3.5:
     isobject "^3.0.0"
     static-extend "^0.1.1"
 
+classnames@^2.2.5:
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
+
 clean-css@4.2.x:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.2.1.tgz#2d411ef76b8569b6d0c84068dabe85b0aa5e5c17"
@@ -3482,13 +3486,6 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-gitlog@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/gitlog/-/gitlog-3.1.2.tgz#169105f05ca174155bf42fb8a870bbf5251455c5"
-  dependencies:
-    debug "^3.1.0"
-    lodash.assign "^4.2.0"
-
 glob-base@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/glob-base/-/glob-base-0.3.0.tgz#dbb164f6221b1c0b1ccf82aea328b497df0ea3c4"
@@ -4734,10 +4731,6 @@ jest@22.4.3:
     import-local "^1.0.0"
     jest-cli "^22.4.3"
 
-jquery@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
-
 js-base64@^2.1.9:
   version "2.4.9"
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.4.9.tgz#748911fb04f48a60c4771b375cac45a80df11c03"
@@ -5015,10 +5008,6 @@ locate-path@^2.0.0:
 lodash._reinterpolate@~3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/lodash._reinterpolate/-/lodash._reinterpolate-3.0.0.tgz#0ccf2d89166af03b3663c796538b75ac6e114d9d"
-
-lodash.assign@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/lodash.assign/-/lodash.assign-4.2.0.tgz#0d99f3ccd7a6d261d19bdaeb9245005d285808e7"
 
 lodash.camelcase@^4.3.0:
   version "4.3.0"
@@ -5946,6 +5935,10 @@ pn@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/pn/-/pn-1.1.0.tgz#e2f4cef0e219f463c179ab37463e4e1ecdccbafb"
 
+popper.js@^1.14.1:
+  version "1.14.4"
+  resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.14.4.tgz#8eec1d8ff02a5a3a152dd43414a15c7b79fd69b6"
+
 portfinder@^1.0.9:
   version "1.0.17"
   resolved "https://registry.yarnpkg.com/portfinder/-/portfinder-1.0.17.tgz#a8a1691143e46c4735edefcf4fbcccedad26456a"
@@ -6291,10 +6284,6 @@ promise-polyfill@7.1.2:
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/promise-polyfill/-/promise-polyfill-7.1.2.tgz#ab05301d8c28536301622d69227632269a70ca3b"
 
-promise-polyfill@^8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/promise-polyfill/-/promise-polyfill-8.1.0.tgz#30059da54d1358ce905ac581f287e184aedf995d"
-
 promise@8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/promise/-/promise-8.0.1.tgz#e45d68b00a17647b6da711bf85ed6ed47208f450"
@@ -6307,7 +6296,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@^15.5.10, prop-types@^15.6.0:
+prop-types@^15.5.10, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2:
   version "15.6.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
   dependencies:
@@ -6455,6 +6444,15 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
+react-datepicker@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/react-datepicker/-/react-datepicker-1.6.0.tgz#6b7a87e949f3bbd94872554be6a0119bd908a987"
+  dependencies:
+    classnames "^2.2.5"
+    prop-types "^15.6.0"
+    react-onclickoutside "^6.7.1"
+    react-popper "^0.9.1"
+
 react-dev-utils@^5.0.1:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-5.0.2.tgz#7bb68d2c4f6ffe7ed1184c5b0124fcad692774d2"
@@ -6497,6 +6495,17 @@ react-jsx-parser@^1.3.2:
   dependencies:
     acorn-jsx "^4.1.1"
     react "^16.4.0"
+
+react-onclickoutside@^6.7.1:
+  version "6.7.1"
+  resolved "https://registry.yarnpkg.com/react-onclickoutside/-/react-onclickoutside-6.7.1.tgz#6a5b5b8b4eae6b776259712c89c8a2b36b17be93"
+
+react-popper@^0.9.1:
+  version "0.9.5"
+  resolved "https://registry.yarnpkg.com/react-popper/-/react-popper-0.9.5.tgz#02a24ef3eec33af9e54e8358ab70eb0e331edd05"
+  dependencies:
+    popper.js "^1.14.1"
+    prop-types "^15.6.1"
 
 react@^16.3.2, react@^16.4.0:
   version "16.4.2"
@@ -7572,9 +7581,9 @@ three-orbit-controls@^82.1.0:
   version "82.1.0"
   resolved "https://registry.yarnpkg.com/three-orbit-controls/-/three-orbit-controls-82.1.0.tgz#11a7f33d0a20ecec98f098b37780f6537374fab4"
 
-three@^0.95.0:
-  version "0.95.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.95.0.tgz#b60ea076ba17df9faba9e855b86ab3f541289abf"
+three@^0.96.0:
+  version "0.96.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.96.0.tgz#6f48bb9e321506906ae4708bda69b0ffa808ee7f"
 
 throat@^4.0.0:
   version "4.1.0"
