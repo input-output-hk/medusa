@@ -64,7 +64,8 @@ const Config = {
     autoRotateSpeed: 0.3 // speed of auto rotation
   },
   post: {
-    vignette: true
+    vignette: true,
+    bloom: true // post-processing bloom effect
   },
   camera: {
     fov: 60,

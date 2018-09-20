@@ -28,7 +28,19 @@ import Sidebar from './components/Sidebar'
 import Controls from './components/Controls'
 import CommitInfo from './components/CommitInfo'
 import DatePicker from 'react-datepicker'
+
+// Slider
+import Slider, { createSliderWithTooltip } from 'rc-slider'
+import 'rc-slider/assets/index.css'
+
+// Datepicker
 import 'react-datepicker/dist/react-datepicker.css'
+
+const SliderWithTooltip = createSliderWithTooltip(Slider)
+
+function dateSliderTooltipFormatter (v) {
+  return `${moment(v).format('DD.MM.YYYY')}`
+}
 
 class App extends mixin(EventEmitter, Component) {
   constructor (props) {
@@ -126,13 +138,31 @@ class App extends mixin(EventEmitter, Component) {
    * than the latest commit date, the latest commit
    * will be loaded
    *
-   * @param {string} date
+   * @param {moment} dateObject
    */
-  async setDate (dateString) {
-    this.timestampToLoad = moment(dateString).valueOf()
+  async setDate (dateObject) {
+    this.timestampToLoad = dateObject.valueOf()
 
     this.setState({
-      currentDateObject: dateString
+      currentDateObject: dateObject
+    })
+
+    if (this.state.play) {
+      this.setPlay(false)
+    }
+    this.callAPI()
+  }
+
+  /**
+   * Set timestamp to load commits from
+   *
+   * @param {string} timestamp
+   */
+  async setTimestamp (timestamp) {
+    this.timestampToLoad = timestamp
+
+    this.setState({
+      currentDateObject: moment(timestamp)
     })
     if (this.state.play) {
       this.setPlay(false)
@@ -199,18 +229,18 @@ class App extends mixin(EventEmitter, Component) {
   initPost () {
     this.composer = new EffectComposer(this.renderer)
     this.renderPass = new RenderPass(this.scene, this.camera)
-    // this.renderPass.renderToScreen = true
     this.composer.addPass(this.renderPass)
-
-    // res, strength, radius, threshold
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
-    // this.bloomPass.renderToScreen = true
-    this.composer.addPass(this.bloomPass)
 
     this.setPostSettings()
   }
 
   setPostSettings () {
+    if (this.config.post.bloom) {
+      // res, strength, radius, threshold
+      this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
+      this.composer.addPass(this.bloomPass)
+    }
+
     if (this.config.post.vignette) {
       if (this.vignettePass) {
         this.vignettePass.enabled = true
@@ -1056,24 +1086,24 @@ class App extends mixin(EventEmitter, Component) {
     return lastCommit
   }
 
-  UI () {
-    if (!this.config.display.showUI) {
-      return (
-        <div className='gource-ui'>
-          <Sidebar
-            config={this.config}
-            sideBarCommits={this.state.sideBarCommits}
-            sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
-            loadCommit={this.loadCommit.bind(this)}
-            goToPrev={this.goToPrev.bind(this)}
-            goToNext={this.goToNext.bind(this)}
-          />
-        </div>
-      )
-    }
+  onDateSliderChange (timestamp) {
+    this.setState({
+      currentDateObject: moment(timestamp)
+    })
+  }
 
+  UI () {
     return (
       <div className='gource-ui'>
+
+        <SliderWithTooltip
+          tipFormatter={dateSliderTooltipFormatter}
+          min={moment(this.minDate).valueOf()}
+          max={moment(this.maxDate).valueOf()}
+          onAfterChange={this.setTimestamp.bind(this)}
+          onChange={this.onDateSliderChange.bind(this)}
+          value={this.state.currentDateObject.valueOf()}
+        />
 
         <DatePicker
           selected={this.state.currentDateObject}
@@ -1084,9 +1114,9 @@ class App extends mixin(EventEmitter, Component) {
 
         <Controls
           config={this.config}
-          setPlay={this.setPlay}
+          setPlay={this.setPlay.bind(this)}
           spherize={this.state.spherize}
-          setSphereView={this.setSphereView}
+          setSphereView={this.setSphereView.bind(this)}
         />
 
         <Sidebar
@@ -1111,6 +1141,7 @@ class App extends mixin(EventEmitter, Component) {
       </div>
     )
   }
+
   render () {
     return (
       <div className='App'>
