@@ -15,6 +15,7 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="gource-root"></div>
+    <button id="opener" style="position:fixed;bottom:0;right:0;z-index:99999">opener</button>
       <script>
 
         config = {
@@ -70,6 +71,21 @@
             fov: 45,
             initPos: {x: 0, y: 0, z: 1600},
             enableZoom: true // enable camera zoom on mousewheel/pinch gesture
+          }
+        }
+
+        opengource = {
+          display: {
+            showUI: false,
+            showSidebar: false
+          },
+          camera: {
+            enableZoom: false,
+            initPos: { x: 0, y: 0, z: 1600 }
+          },
+          FDG: {
+            usePicker: false,
+            showFilePaths: false
           }
         }
 
@@ -132,10 +148,14 @@
               // })
 
             })
+
+            var opener = document.getElementById('opener');
+            opener.onclick = function(){
+              alert("fds");
+              gource.setConfig(opengource);
+            };
+
           }
-
-
-
         }
     </script>
   </body>
