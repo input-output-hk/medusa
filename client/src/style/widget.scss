@@ -1,0 +1,13 @@
+.UI-sidebar{
+  .card{
+    .card-header{margin-left: $spacer;margin-right: -1.6 * $spacer;
+      .close{margin:-5px -17px 0 0}
+    }
+  }
+  .card.closed{
+    .inner{display: none}
+    .card-header{
+      .close{transform: rotate(90deg)}
+    }
+  }
+}

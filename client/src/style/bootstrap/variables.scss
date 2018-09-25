@@ -1,0 +1,24 @@
+@import './colors.scss';
+@import './fonts.scss';
+
+$grid-columns:24;
+
+$card-border-color:  rgba($lighter,0.7);
+$card-cap-bg: transparent;
+$card-bg: rgba($lighter,0.7);
+
+$list-group-bg: $lighter;
+$list-group-border-color: $lighter;
+$list-group-hover-bg: $lighter;
+$breadcrumb-bg: $gray-700;
+$close-color: $white;
+$close-text-shadow: none;
+$pre-color: inherit;
+$border-radius-sm: 0;
+$border-radius-lg: 0;
+$border-radius: 0;
+
+$card-spacer-y:                     .75rem;
+$card-spacer-x:                     1rem;
+
+///

@@ -19,22 +19,27 @@ import Vignette from './libs/post/Vignette'
 import Config from './Config'
 import FDG from './libs/FDG'
 
-// CSS
-import './App.css'
-
 // Components
 import FileInfo from './components/FileInfo'
-import Sidebar from './components/Sidebar'
+import CommitList from './components/CommitList'
 import Controls from './components/Controls'
+import Sidebar from './components/Sidebar'
+import Legend from './components/Legend'
+import Content from './components/Content'
+import Head from './components/Head'
+import About from './components/About'
+import Milestones from './components/Milestones'
 import CommitInfo from './components/CommitInfo'
+import Widget from './components/Widget'
 import DatePicker from 'react-datepicker'
 
 // Slider
 import Slider, { createSliderWithTooltip } from 'rc-slider'
-import 'rc-slider/assets/index.css'
 
-// Datepicker
-import 'react-datepicker/dist/react-datepicker.css'
+// Styles
+import './style/gource.scss'
+import FullscreenClose from './style/images/close-fullscreen.svg'
+
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -1092,54 +1097,134 @@ class App extends mixin(EventEmitter, Component) {
     })
   }
 
+            //
+            // <Controls
+            //   config={this.config}
+            //   setPlay={this.setPlay.bind(this)}
+            //   spherize={this.state.spherize}
+            //   setSphereView={this.setSphereView.bind(this)}
+            // />
+
+            //
+            // if ($('#gource-box').hasClass('fullscreen')) {
+            // 									gource.setConfig({
+            // 										camera: {
+            // 											enableZoom: true
+            // 										},
+            // 										FDG: {
+            // 											usePicker: true, // show file commit details on click
+            // 											showFilePaths: true
+            // 										}
+            // 									});
+            // 								} else {
+            // 									gource.setConfig({
+            // 										camera: {
+            // 											enableZoom: false
+            // 										},
+            // 										FDG: {
+            // 											usePicker: false, // show file commit details on click
+            // 											showFilePaths: false
+            // 										}
+            // 									});
+            // 								}
+            //
+
+
   UI () {
-    return (
-      <div className='gource-ui'>
 
-        <SliderWithTooltip
-          tipFormatter={dateSliderTooltipFormatter}
-          min={moment(this.minDate).valueOf()}
-          max={moment(this.maxDate).valueOf()}
-          onAfterChange={this.setTimestamp.bind(this)}
-          onChange={this.onDateSliderChange.bind(this)}
-          value={this.state.currentDateObject.valueOf()}
-        />
 
-        <DatePicker
-          selected={this.state.currentDateObject}
-          onSelect={this.setDate.bind(this)}
-          minDate={moment(this.minDate)}
-          maxDate={moment(this.maxDate)}
-        />
+    const ToggleFullscreenObj = {
+      open:{
+        display: {
+					showUI: true,
+					showSidebar: true
+				},
+        camera: {
+          enableZoom: true
+        },
+        FDG: {
+          usePicker: true,
+          showFilePaths: true
+        }
+      },
+      close:{
+        display: {
+					showUI: false,
+					showSidebar: false
+				},
+        camera: {
+          enableZoom: false,
+          initPos: { x: 0, y: 0, z: 1600 }
+        },
+        FDG: {
+          usePicker: false,
+          showFilePaths: false
+        }
+      }
+    }
+    if (this.config.display.showUI) {
+      return (
+        <div className="Gource-UI">
+          <Sidebar config={this.config}>
 
-        <Controls
-          config={this.config}
-          setPlay={this.setPlay.bind(this)}
-          spherize={this.state.spherize}
-          setSphereView={this.setSphereView.bind(this)}
-        />
+            <Head slug={"head"} />
 
-        <Sidebar
-          config={this.config}
-          sideBarCommits={this.state.sideBarCommits}
-          sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
-          loadCommit={this.loadCommit.bind(this)}
-          goToPrev={this.goToPrev.bind(this)}
-          goToNext={this.goToNext.bind(this)}
-        />
+            <About title={"About"} slug={"about"} />
 
-        <CommitInfo
-          currentAdded={this.state.currentAdded}
-          currentChanged={this.state.currentChanged}
-          currentRemoved={this.state.currentRemoved}
-          currentAuthor={this.state.currentAuthor}
-          currentMsg={this.state.currentMsg}
-          currentDate={this.state.currentDate}
-          currentCommitHash={this.state.currentCommitHash}
-        />
+            <CommitList
+              title={"Commit list"}
+              slug={"commit-list"}
+              config={this.config}
+              sideBarCommits={this.state.sideBarCommits}
+              sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
+              loadCommit={this.loadCommit.bind(this)}
+              goToPrev={this.goToPrev.bind(this)}
+              goToNext={this.goToNext.bind(this)}
+              currentAdded={this.state.currentAdded}
+              currentChanged={this.state.currentChanged}
+              currentRemoved={this.state.currentRemoved}
+              currentAuthor={this.state.currentAuthor}
+              currentMsg={this.state.currentMsg}
+              currentDate={this.state.currentDate}
+              currentCommitHash={this.state.currentCommitHash}
+            />
 
-      </div>
-    )
+            <Milestones />
+
+            <Widget
+              title={"Browse by day"}
+              slug={"browse-day"}
+            >
+              <DatePicker
+                inline
+                selected={this.state.currentDateObject}
+                onSelect={this.setDate.bind(this)}
+                minDate={moment(this.minDate)}
+                maxDate={moment(this.maxDate)}
+              />
+            </Widget>
+
+          </Sidebar>
+          <Content>
+            <div className="controls top">
+            <button onClick={() => this.setConfig(ToggleFullscreenObj.open)}>test</button>
+            <button ref="btn" onClick={() => this.setConfig(ToggleFullscreenObj.close)} className="close-fullscreen"><img src={FullscreenClose} alt="" /></button>
+              <SliderWithTooltip
+                tipFormatter={dateSliderTooltipFormatter}
+                min={moment(this.minDate).valueOf()}
+                max={moment(this.maxDate).valueOf()}
+                onAfterChange={this.setTimestamp.bind(this)}
+                onChange={this.onDateSliderChange.bind(this)}
+                value={this.state.currentDateObject.valueOf()}
+              />
+            </div>
+
+            <Legend />
+
+          </Content>
+        </div>
+      )
+    }
   }
 
   render () {

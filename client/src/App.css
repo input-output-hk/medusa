@@ -13,7 +13,7 @@ canvas#stage {
   z-index: 0;
 }
 
-#gource-root .gource-sidebar {
+#gource-root .commits {
   list-style: none;
   position: fixed;
   color: #fff;
@@ -21,54 +21,54 @@ canvas#stage {
   text-align: left;
 }
 
-#gource-root .gource-sidebar p {
+#gource-root .commits p {
   margin: 0 0 0.8em;
 }
 
-#gource-root .gource-sidebar li {
+#gource-root .commits li {
   padding: 0.7em 1em 0 1em;
   margin: 1em 0;
   border: 1px solid transparent;
   height: 4.3em;
 }
 
-#gource-root .gource-sidebar li:hover {
+#gource-root .commits li:hover {
   cursor: pointer;
   border: 1px solid #eeeeee;
   border-radius: 44px;
-  
+
 }
 
-#gource-root .gource-sidebar li > div {
+#gource-root .commits li > div {
   display: inline-block;
   vertical-align: top;
 }
 
-#gource-root .gource-sidebar li.current {
+#gource-root .commits li.current {
   border: 1px solid #832dc4;
   border-radius: 44px;
 }
 
-#gource-root .gource-sidebar .sidebar-gravatar {
+#gource-root .commits .sidebar-gravatar {
   margin-right: 0.7em;
 }
 
-#gource-root .gource-sidebar .sidebar-gravatar img {
+#gource-root .commits .sidebar-gravatar img {
   border-top-left-radius: 50% 50%;
   border-top-right-radius: 50% 50%;
   border-bottom-right-radius: 50% 50%;
   border-bottom-left-radius: 50% 50%;
 }
 
-#gource-root .gource-sidebar .sidebar-author {
+#gource-root .commits .author {
   font-weight: bold;
 }
 
-#gource-root .gource-sidebar .sidebar-date {
+#gource-root .commits .date {
   color: #eee;
 }
 
-#gource-root .sidebar-message {
+#gource-root .message {
   display: block;
   width: 270px;
   white-space: nowrap;
@@ -76,17 +76,17 @@ canvas#stage {
   text-overflow: ellipsis;
 }
 
-#gource-root .sidebar-message a {
+#gource-root .message a {
   color: #fff;
   text-decoration: none;
 }
 
-#gource-root .sidebar-message a:hover {
+#gource-root .message a:hover {
   color: #fff;
   text-decoration: underline;
 }
 
-#gource-root .sidebar-github-view {
+#gource-root .github-view {
   color: #fff;
   text-decoration: none;
   margin-top: 0.3em;
@@ -95,7 +95,7 @@ canvas#stage {
   float: right;
 }
 
-#gource-root .sidebar-github-view:hover {
+#gource-root .github-view:hover {
   text-decoration: underline;
 }
 
