@@ -72,8 +72,10 @@
     "glslify-loader": "^1.0.2",
     "node-sass": "^4.9.3",
     "raw-loader": "^0.5.1",
+    "react-fontawesome": "^1.6.1",
     "sass-loader": "^7.1.0",
     "scss": "^0.2.4",
+    "simple-line-icons": "^2.4.1",
     "standard": "^11.0.1"
   },
   "jest": {

@@ -24,6 +24,7 @@ import FileInfo from './components/FileInfo'
 import CommitList from './components/CommitList'
 import Controls from './components/Controls'
 import Sidebar from './components/Sidebar'
+import Calendar from './components/Calendar'
 import Legend from './components/Legend'
 import Content from './components/Content'
 import Head from './components/Head'
@@ -32,6 +33,7 @@ import Milestones from './components/Milestones'
 import CommitInfo from './components/CommitInfo'
 import Widget from './components/Widget'
 import DatePicker from 'react-datepicker'
+import Smallogo from './style/images/logo-xs.svg'
 
 // Slider
 import Slider, { createSliderWithTooltip } from 'rc-slider'
@@ -1162,16 +1164,26 @@ class App extends mixin(EventEmitter, Component) {
         }
       }
     }
+
+
     if (this.config.display.showUI) {
       return (
         <div className="Gource-UI">
           <Sidebar config={this.config}>
 
-            <Head slug={"head"} />
+            <Head
+              slug={"head"}
+              icon={<button className="bg-transparent border-0 text-primary pt-2 pb-1"><img src={Smallogo} alt="" /></button>}
+            />
 
-            <About title={"About"} slug={"about"} />
+            <About
+              title={"About"}
+              slug={"about"}
+              icon={<button className="bg-transparent border-0 text-primary pt-1 pb-1"><span className="icon-info"></span></button>}
+            />
 
             <CommitList
+              icon={<button className="bg-transparent border-0 text-primary pt-1 pb-1"><span className="icon-clock"></span></button>}
               title={"Commit list"}
               slug={"commit-list"}
               config={this.config}
@@ -1192,6 +1204,7 @@ class App extends mixin(EventEmitter, Component) {
             <Milestones />
 
             <Widget
+              icon={<button className="bg-transparent border-0 text-primary pt-1 pb-1"><span className="icon-calendar"></span></button>}
               title={"Browse by day"}
               slug={"browse-day"}
             >
@@ -1207,16 +1220,29 @@ class App extends mixin(EventEmitter, Component) {
           </Sidebar>
           <Content>
             <div className="controls top">
-            <button onClick={() => this.setConfig(ToggleFullscreenObj.open)}>test</button>
-            <button ref="btn" onClick={() => this.setConfig(ToggleFullscreenObj.close)} className="close-fullscreen"><img src={FullscreenClose} alt="" /></button>
-              <SliderWithTooltip
-                tipFormatter={dateSliderTooltipFormatter}
-                min={moment(this.minDate).valueOf()}
-                max={moment(this.maxDate).valueOf()}
-                onAfterChange={this.setTimestamp.bind(this)}
-                onChange={this.onDateSliderChange.bind(this)}
-                value={this.state.currentDateObject.valueOf()}
-              />
+
+              <button ref="btn" onClick={() => this.setConfig(ToggleFullscreenObj.close)} className="close-fullscreen"><img src={FullscreenClose} alt="" /></button>
+
+              <Controls>
+                <SliderWithTooltip
+                  tipFormatter={dateSliderTooltipFormatter}
+                  min={moment(this.minDate).valueOf()}
+                  max={moment(this.maxDate).valueOf()}
+                  onAfterChange={this.setTimestamp.bind(this)}
+                  onChange={this.onDateSliderChange.bind(this)}
+                  value={this.state.currentDateObject.valueOf()}
+                />
+                <button className="next border-0 bg-transparent"><span className="icon-control-forward text-secondary"></span></button>
+                <DatePicker
+                  customInput={<Calendar />}
+                  selected={this.state.currentDateObject}
+                  onSelect={this.setDate.bind(this)}
+                  minDate={moment(this.minDate)}
+                  maxDate={moment(this.maxDate)}
+                />
+              </Controls>
+
+
             </div>
 
             <Legend />

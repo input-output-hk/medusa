@@ -1,5 +1,13 @@
 
 .Gource-UI {
+  .commit-list{
+    .message { display: block; width: auto;margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      a { color: #fff; text-decoration: none}
+      a:hover { color: #fff; text-decoration: underline}
+    }
+  }
+
+  /*
   .commits { list-style: none; color: #fff; font-size: 0.7em; text-align: left;padding:0}
   .commits p { margin: 0 0 0.8em}
   .commits li { padding: 0.7em 1em 0 1em; margin: 1em 0; border: 1px solid transparent; height: 4.3em}
@@ -11,13 +19,18 @@
   .commits .author { font-weight: bold}
   .commits .date { color: #eee}
 
-  .commit-list .message { display: block; width: 265px;margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis}
-  .commit-list .message a { color: #fff; text-decoration: none}
-  .commit-list .message a:hover { color: #fff; text-decoration: underline}
-
   .github-view { color: #fff; text-decoration: none; margin-top: 0.3em; display: block; font-size: 0.8em; float: right}
   .github-view:hover { text-decoration: underline}
+  */
 }
+@media (max-width: 767px) {
+  .Gource-UI {
+    .commit-list{
+      .gravatar{float:right;display:none}
+    }
+  }
+}
+
 .App{
   .gource-file-info-widget { position: absolute; background: rgba(33, 34, 62, 0.9); border: 1px solid #832dc4; border-radius: 3px; padding: 1em; min-width: 321px; min-height: 86px}
   .gource-file-info-widget:hover { cursor: default}

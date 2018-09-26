@@ -25,7 +25,7 @@ export default class CommitList extends Component {
   render () {
     if (this.props.config.display.showSidebar) {
       return (
-        <Widget title={this.props.title} slug={this.props.slug} list={"true"}>
+        <Widget title={this.props.title} slug={this.props.slug} icon={this.props.icon} test={this.props.test} list={"true"}>
 
           <ul className="list-group list-group-flush">
             {this.props.sideBarCommits.map((commit) =>
@@ -33,10 +33,10 @@ export default class CommitList extends Component {
                 className={commit.index === this.props.sidebarCurrentCommitIndex ? 'list-group-item bg-transparent current' : 'list-group-item bg-transparent'}
                 onClick={() => { this.props.loadCommit(commit.sha) }}>
                 <div className="row">
-                  <div className="col-4">
+                  <div className="col-24 col-md-5 col-xl-4 gravatar">
                     <img src={commit.gravatar} className="rounded-circle" width='40' height='40' alt='' />
                   </div>
-                  <div className="col-20">
+                  <div className="col-24 col-md-19 col-xl-20">
                     <h5 className="m-0">{commit.author}</h5>
                     <small>
                       <span className='date' title={commit.dateLong}>{commit.dateShort}</span>, &nbsp;
