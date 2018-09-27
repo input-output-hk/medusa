@@ -30,7 +30,6 @@ import Content from './components/Content'
 import Head from './components/Head'
 import About from './components/About'
 import Milestones from './components/Milestones'
-import CommitInfo from './components/CommitInfo'
 import Widget from './components/Widget'
 import DatePicker from 'react-datepicker'
 import Smallogo from './style/images/logo-xs.svg'
@@ -103,7 +102,9 @@ class App extends mixin(EventEmitter, Component) {
       fileInfoLocation: {x: 0, y: 0},
       showFileInfo: false,
       loadingFileInfo: true,
-      dateRangeLoaded: false
+      dateRangeLoaded: false,
+      showUI: this.config.display.showUI,
+      showSidebar: this.config.display.showSidebar
     }
 
     this.loadCommitHash = this.config.git.commitHash
@@ -879,7 +880,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async populateSideBar (currentCommitIndex) {
-    if (!this.config.display.showSidebar) {
+    if (!this.state.showSidebar) {
       return
     }
 
@@ -1042,10 +1043,19 @@ class App extends mixin(EventEmitter, Component) {
     this.setControlsSettings()
     this.setPostSettings()
     this.setCameraSettings()
+    this.setDisplayConfig()
 
     if (this.FDG && this.FDG.active === true) {
       this.FDG.triggerUpdate()
     }
+  }
+
+  setDisplayConfig () {
+    console.log('setDisplayConfig')
+    this.setState({
+      showUI: this.config.display.showUI,
+      showSidebar: this.config.display.showSidebar
+    })
   }
 
   destroy () {
@@ -1164,7 +1174,7 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
 
-    if (this.config.display.showUI) {
+    if (this.state.showUI) {
       return (
         <div className='Gource-UI'>
           <Sidebar config={this.config}>
