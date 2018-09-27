@@ -1,0 +1,21 @@
+.UI-content{
+  .controls{
+    text-align: center;
+    button,.rc-slider{display: inline-block;vertical-align: middle;}
+    .rc-slider{width:75%;margin-right: 30px}
+    .playpause,.calendar{font-size:160%}
+    .slider > div{
+      display: inline-block;
+    }
+  }
+}
+@media (max-width:991px) {
+  .UI-content{
+    .controls{
+      .rc-slider{width:60%;margin-right: 30px}
+    }
+    .slider > div{
+      display: block;
+    }
+  }
+}
