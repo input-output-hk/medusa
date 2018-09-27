@@ -15,7 +15,7 @@
     .rc-slider-dot { position: absolute;   bottom: -2px;   margin-left: -4px;   width: 8px;   height: 8px;   border: 2px solid $secondary;   background-color: #fff;   cursor: pointer;   border-radius: 50%;   vertical-align: middle; }
     .rc-slider-dot-active { border-color: #96dbfa; }
     .rc-slider-disabled { background-color: $secondary; }
-    .rc-slider-disabled .rc-slider-track { background-color: #ccc; }
+    .rc-slider-disabled .rc-slider-track { background-color: $secondary; }
     .rc-slider-disabled .rc-slider-handle,
     .rc-slider-disabled .rc-slider-dot { border-color: #ccc;   box-shadow: none;   background-color: #fff;   cursor: not-allowed; }
     .rc-slider-disabled .rc-slider-mark-text,
@@ -53,8 +53,8 @@ div{
   .rc-slider-tooltip * { box-sizing: border-box;   -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
   .rc-slider-tooltip-hidden { display: none; }
   .rc-slider-tooltip-placement-top { padding: 4px 0 8px 0; }
-  .rc-slider-tooltip-inner { padding: 6px 2px;   min-width: 24px;   height: 24px;   font-size: 12px;   line-height: 1;   color: #fff;   text-align: center;   text-decoration: none;   background-color: #6c6c6c;   border-radius: 6px;   box-shadow: 0 0 4px #d9d9d9; }
+  .rc-slider-tooltip-inner { padding:10px 15px;   min-width: 24px;   height: 34px;   font-size: 12px;   line-height: 1;   color: #fff;   text-align: center;   text-decoration: none;   background-color: transparent; border-bottom:1px solid $secondary;   border-radius: 0px;   box-shadow: 0 0 0 transparent; }
   .rc-slider-tooltip-arrow { position: absolute;   width: 0;   height: 0;   border-color: transparent;   border-style: solid; }
-  .rc-slider-tooltip-placement-top .rc-slider-tooltip-arrow { bottom: 4px;   left: 50%;   margin-left: -4px;   border-width: 4px 4px 0;   border-top-color: #6c6c6c; }
+  .rc-slider-tooltip-placement-top .rc-slider-tooltip-arrow { bottom: 4px;   left: 50%;   margin-left: -4px;   border-width: 4px 4px 0;   border-top-color: $secondary; }
 
 }

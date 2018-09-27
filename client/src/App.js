@@ -1223,7 +1223,7 @@ class App extends mixin(EventEmitter, Component) {
 
               <button ref="btn" onClick={() => this.setConfig(ToggleFullscreenObj.close)} className="close-fullscreen"><img src={FullscreenClose} alt="" /></button>
 
-              <Controls>
+              <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 <SliderWithTooltip
                   tipFormatter={dateSliderTooltipFormatter}
                   min={moment(this.minDate).valueOf()}
@@ -1232,9 +1232,10 @@ class App extends mixin(EventEmitter, Component) {
                   onChange={this.onDateSliderChange.bind(this)}
                   value={this.state.currentDateObject.valueOf()}
                 />
-                <button className="next border-0 bg-transparent"><span className="icon-control-forward text-secondary"></span></button>
+                <button onClick={this.state.goToNext} className="next border-0 bg-transparent"><span className="icon-control-forward text-secondary"></span></button>
                 <DatePicker
                   customInput={<Calendar />}
+                  popperPlacement='bottom-end'
                   selected={this.state.currentDateObject}
                   onSelect={this.setDate.bind(this)}
                   minDate={moment(this.minDate)}

@@ -1,6 +1,12 @@
 {
-  "main.css": "static/css/gource.main.css",
-  "main.css.map": "static/css/gource.main.css.map",
   "main.js": "static/js/gource.main.js",
-  "main.js.map": "static/js/gource.main.js.map"
+  "main.js.map": "static/js/gource.main.js.map",
+  "static/media/close-fullscreen.svg": "static/media/gource.close-fullscreen.svg",
+  "static/media/close-side.svg": "static/media/gource.close-side.svg",
+  "static/media/leg-cold.svg": "static/media/gource.leg-cold.svg",
+  "static/media/leg-commited.svg": "static/media/gource.leg-commited.svg",
+  "static/media/leg-new.svg": "static/media/gource.leg-new.svg",
+  "static/media/logo-xs.svg": "static/media/gource.logo-xs.svg",
+  "static/media/logo.svg": "static/media/gource.logo.svg",
+  "static/media/widget-close.svg": "static/media/gource.widget-close.svg"
 }

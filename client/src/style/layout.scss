@@ -15,7 +15,7 @@ body {
 
   .UI-content { width: 100%;     padding: 20px;     min-height: 100vh;     transition: all 0.3s;
     .close-fullscreen{margin:0px 0 0 0px;background: $light;width:80px;height:80px;position: absolute;z-index: 9;border-radius:100px;top:-25px;right:-25px;border:0}
-    .controls.top{margin:70px 0px;pointer-events: auto;}
+    .controls.top{margin:50px 0px;pointer-events: auto;}
   }
   //.dropdown-toggle::after { display: block;     position: absolute;     top: 50%;     right: 20px;     transform: translateY(-50%); }
 }
