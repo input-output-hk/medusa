@@ -1,7 +1,7 @@
 // 3rd Party
 import React, { Component } from 'react'
 import * as THREE from 'three'
-import OrbitContructor from 'three-orbit-controls'
+import OrbitConstructor from 'three-orbit-controls'
 import deepAssign from 'deep-assign'
 import EventEmitter from 'eventemitter3'
 import mixin from 'mixin'
@@ -39,7 +39,6 @@ import Slider, { createSliderWithTooltip } from 'rc-slider'
 // Styles
 import './style/gource.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
-
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -101,7 +100,8 @@ class App extends mixin(EventEmitter, Component) {
       selectedFileMessage: '',
       fileInfoLocation: {x: 0, y: 0},
       showFileInfo: false,
-      loadingFileInfo: true
+      loadingFileInfo: true,
+      dateRangeLoaded: false
     }
 
     this.loadCommitHash = this.config.git.commitHash
@@ -110,6 +110,9 @@ class App extends mixin(EventEmitter, Component) {
   async setDateRange () {
     await this.getFirstCommit()
     await this.getLastCommit()
+    this.setState({
+      dateRangeLoaded: true
+    })
   }
 
   setTimestampToLoad () {
@@ -265,7 +268,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   initControls () {
-    this.OrbitControls = OrbitContructor(THREE)
+    this.OrbitControls = OrbitConstructor(THREE)
     this.controls = new this.OrbitControls(this.camera, this.renderer.domElement)
     this.setControlsSettings()
   }
@@ -372,8 +375,7 @@ class App extends mixin(EventEmitter, Component) {
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
 
     this.on('ready', () => {
-      this.getFirstCommit()
-      this.getLastCommit()
+      this.setDateRange()
     })
 
     this.on('nodeDeselect', function (data) {
@@ -1097,48 +1099,45 @@ class App extends mixin(EventEmitter, Component) {
     })
   }
 
-            //
-            // <Controls
-            //   config={this.config}
-            //   setPlay={this.setPlay.bind(this)}
-            //   spherize={this.state.spherize}
-            //   setSphereView={this.setSphereView.bind(this)}
-            // />
+  //
+  // <Controls
+  //   config={this.config}
+  //   setPlay={this.setPlay.bind(this)}
+  //   spherize={this.state.spherize}
+  //   setSphereView={this.setSphereView.bind(this)}
+  // />
 
-            //
-            // if ($('#gource-box').hasClass('fullscreen')) {
-            // 									gource.setConfig({
-            // 										camera: {
-            // 											enableZoom: true
-            // 										},
-            // 										FDG: {
-            // 											usePicker: true, // show file commit details on click
-            // 											showFilePaths: true
-            // 										}
-            // 									});
-            // 								} else {
-            // 									gource.setConfig({
-            // 										camera: {
-            // 											enableZoom: false
-            // 										},
-            // 										FDG: {
-            // 											usePicker: false, // show file commit details on click
-            // 											showFilePaths: false
-            // 										}
-            // 									});
-            // 								}
-            //
-
+  //
+  // if ($('#gource-box').hasClass('fullscreen')) {
+  // 									gource.setConfig({
+  // 										camera: {
+  // 											enableZoom: true
+  // 										},
+  // 										FDG: {
+  // 											usePicker: true, // show file commit details on click
+  // 											showFilePaths: true
+  // 										}
+  // 									});
+  // 								} else {
+  // 									gource.setConfig({
+  // 										camera: {
+  // 											enableZoom: false
+  // 										},
+  // 										FDG: {
+  // 											usePicker: false, // show file commit details on click
+  // 											showFilePaths: false
+  // 										}
+  // 									});
+  // 								}
+  //
 
   UI () {
-
-
     const ToggleFullscreenObj = {
-      open:{
+      open: {
         display: {
-					showUI: true,
-					showSidebar: true
-				},
+          showUI: true,
+          showSidebar: true
+        },
         camera: {
           enableZoom: true
         },
@@ -1147,11 +1146,11 @@ class App extends mixin(EventEmitter, Component) {
           showFilePaths: true
         }
       },
-      close:{
+      close: {
         display: {
-					showUI: false,
-					showSidebar: false
-				},
+          showUI: false,
+          showSidebar: false
+        },
         camera: {
           enableZoom: false,
           initPos: { x: 0, y: 0, z: 1600 }
@@ -1164,16 +1163,17 @@ class App extends mixin(EventEmitter, Component) {
     }
     if (this.config.display.showUI) {
       return (
-        <div className="Gource-UI">
+        <div className='Gource-UI'>
           <Sidebar config={this.config}>
 
-            <Head slug={"head"} />
 
-            <About title={"About"} slug={"about"} />
+            <Head slug={'head'} />
+
+            <About title={'About'} slug={'about'} />
 
             <CommitList
-              title={"Commit list"}
-              slug={"commit-list"}
+              title={'Commit list'}
+              slug={'commit-list'}
               config={this.config}
               sideBarCommits={this.state.sideBarCommits}
               sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
@@ -1192,8 +1192,8 @@ class App extends mixin(EventEmitter, Component) {
             <Milestones />
 
             <Widget
-              title={"Browse by day"}
-              slug={"browse-day"}
+              title={'Browse by day'}
+              slug={'browse-day'}
             >
               <DatePicker
                 inline
@@ -1206,23 +1206,31 @@ class App extends mixin(EventEmitter, Component) {
 
           </Sidebar>
           <Content>
-            <div className="controls top">
-            <button onClick={() => this.setConfig(ToggleFullscreenObj.open)}>test</button>
-            <button ref="btn" onClick={() => this.setConfig(ToggleFullscreenObj.close)} className="close-fullscreen"><img src={FullscreenClose} alt="" /></button>
-              <SliderWithTooltip
-                tipFormatter={dateSliderTooltipFormatter}
-                min={moment(this.minDate).valueOf()}
-                max={moment(this.maxDate).valueOf()}
-                onAfterChange={this.setTimestamp.bind(this)}
-                onChange={this.onDateSliderChange.bind(this)}
-                value={this.state.currentDateObject.valueOf()}
-              />
+            <div className='controls top'>
+              <button onClick={() => this.setConfig(ToggleFullscreenObj.open)}>test</button>
+              <button ref='btn' onClick={() => this.setConfig(ToggleFullscreenObj.close)} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button>
+              {this.slider()}
             </div>
 
             <Legend />
 
           </Content>
         </div>
+      )
+    }
+  }
+
+  slider () {
+    if (this.state.dateRangeLoaded) {
+      return (
+        <SliderWithTooltip
+          tipFormatter={dateSliderTooltipFormatter}
+          min={moment(this.minDate).valueOf()}
+          max={moment(this.maxDate).valueOf()}
+          onAfterChange={this.setTimestamp.bind(this)}
+          onChange={this.onDateSliderChange.bind(this)}
+          value={this.state.currentDateObject.valueOf()}
+        />
       )
     }
   }

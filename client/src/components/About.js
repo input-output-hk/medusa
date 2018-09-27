@@ -5,7 +5,7 @@ export default class About extends Component {
   render () {
     return (
       <Widget title={this.props.title}>
-          <p>Gource is a real-time visualisation of the Cardano project. It acts like &quot;living artwork&quot; where you can view the entire project history.
+        <p>Gource is a real-time visualisation of the Cardano project. It acts like &quot;living artwork&quot; where you can view the entire project history.
           Explore the enormous engineering work going on behind the scenes along with the active involvement of the community.</p>
       </Widget>
     )

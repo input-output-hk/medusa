@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-
+import Widget from '../components/Widget'
 export default class Interface extends Component {
   render () {
     return (
