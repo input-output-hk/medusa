@@ -21,12 +21,11 @@ export default class Controls extends Component {
   //   </div>
   // </div>
 
-
   render () {
     return (
-      <div className="slider">
-        <button className="playpause border-0 bg-transparent d-block d-md-inline-block"><span className="icon-control-play text-secondary"></span></button>
-        <button className="prev border-0 bg-transparent"><span className="icon-control-rewind text-secondary"></span></button>
+      <div className='slider'>
+        <button className='playpause border-0 bg-transparent d-block d-md-inline-block'><span className='icon-control-play text-secondary' /></button>
+        <button className='prev border-0 bg-transparent'><span className='icon-control-rewind text-secondary' /></button>
         {this.props.children}
       </div>
     )

@@ -9,12 +9,12 @@ export default class Head extends Component {
     const title = 'github.com/' + Config.git.owner + '/' + Config.git.owner
     return (
       <Widget slug={this.props.slug} icon={this.props.icon}>
-        <div className="row">
-          <div className="col-9 col-sm-9 col-md-7 col-xl-6">
-            <a href={link} title={title} target='_blank'><img src={Logo} alt="" /></a>
+        <div className='row'>
+          <div className='col-9 col-sm-9 col-md-7 col-xl-6'>
+            <a href={link} title={title} target='_blank'><img src={Logo} alt='' /></a>
           </div>
-          <div className="col-15 col-sm-15 col-md-17 col-xl-18">
-            <h2 className="m-0 pt-3">GOURCE</h2>
+          <div className='col-15 col-sm-15 col-md-17 col-xl-18'>
+            <h2 className='m-0 pt-3'>GOURCE</h2>
             <small>Github project activity</small>
           </div>
         </div>
