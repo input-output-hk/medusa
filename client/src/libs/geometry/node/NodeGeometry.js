@@ -7,14 +7,20 @@ import FragmentShader from './shaders/node.frag'
 import VertexShader from './shaders/node.vert'
 import PickFragmentShader from './shaders/pick.frag'
 
+// images
+import spriteFile from '../../../assets/images/dot.png'
+import spriteBlurFile from '../../../assets/images/dot-blur.png'
+import spriteUpdatedFile from '../../../assets/images/dot-concentric.png'
+
 export default class NodeGeometry {
   constructor (config) {
     this.config = config
     this.nodeCount = config.FDG.nodeCount
     this.textureHelper = new TextureHelper()
-    this.sprite = new THREE.TextureLoader().load(this.config.FDG.nodeSpritePath)
-    this.spriteBlur = new THREE.TextureLoader().load(this.config.FDG.nodeSpritePathBlur)
-    this.uSprite = new THREE.TextureLoader().load(this.config.FDG.nodeUpdatedSpritePath)
+
+    this.sprite = new THREE.TextureLoader().load(spriteFile)
+    this.spriteBlur = new THREE.TextureLoader().load(spriteBlurFile)
+    this.uSprite = new THREE.TextureLoader().load(spriteUpdatedFile)
     this.decayTime = 0.0
     this.material = null
     this.pickingMaterial = null
