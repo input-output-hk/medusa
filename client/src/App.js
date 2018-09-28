@@ -1,7 +1,7 @@
 // 3rd Party
 import React, { Component } from 'react'
 import * as THREE from 'three'
-import OrbitContructor from 'three-orbit-controls'
+import OrbitConstructor from 'three-orbit-controls'
 import deepAssign from 'deep-assign'
 import EventEmitter from 'eventemitter3'
 import mixin from 'mixin'
@@ -30,7 +30,6 @@ import Content from './components/Content'
 import Head from './components/Head'
 import About from './components/About'
 import Milestones from './components/Milestones'
-import CommitInfo from './components/CommitInfo'
 import Widget from './components/Widget'
 import DatePicker from 'react-datepicker'
 import Smallogo from './style/images/logo-xs.svg'
@@ -41,7 +40,6 @@ import Slider, { createSliderWithTooltip } from 'rc-slider'
 // Styles
 import './style/gource.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
-
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -103,7 +101,10 @@ class App extends mixin(EventEmitter, Component) {
       selectedFileMessage: '',
       fileInfoLocation: {x: 0, y: 0},
       showFileInfo: false,
-      loadingFileInfo: true
+      loadingFileInfo: true,
+      dateRangeLoaded: false,
+      showUI: this.config.display.showUI,
+      showSidebar: this.config.display.showSidebar
     }
 
     this.loadCommitHash = this.config.git.commitHash
@@ -112,6 +113,9 @@ class App extends mixin(EventEmitter, Component) {
   async setDateRange () {
     await this.getFirstCommit()
     await this.getLastCommit()
+    this.setState({
+      dateRangeLoaded: true
+    })
   }
 
   setTimestampToLoad () {
@@ -267,7 +271,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   initControls () {
-    this.OrbitControls = OrbitContructor(THREE)
+    this.OrbitControls = OrbitConstructor(THREE)
     this.controls = new this.OrbitControls(this.camera, this.renderer.domElement)
     this.setControlsSettings()
   }
@@ -374,8 +378,7 @@ class App extends mixin(EventEmitter, Component) {
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
 
     this.on('ready', () => {
-      this.getFirstCommit()
-      this.getLastCommit()
+      this.setDateRange()
     })
 
     this.on('nodeDeselect', function (data) {
@@ -877,7 +880,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async populateSideBar (currentCommitIndex) {
-    if (!this.config.display.showSidebar) {
+    if (!this.state.showSidebar) {
       return
     }
 
@@ -1040,10 +1043,19 @@ class App extends mixin(EventEmitter, Component) {
     this.setControlsSettings()
     this.setPostSettings()
     this.setCameraSettings()
+    this.setDisplayConfig()
 
     if (this.FDG && this.FDG.active === true) {
       this.FDG.triggerUpdate()
     }
+  }
+
+  setDisplayConfig () {
+    console.log('setDisplayConfig')
+    this.setState({
+      showUI: this.config.display.showUI,
+      showSidebar: this.config.display.showSidebar
+    })
   }
 
   destroy () {
@@ -1099,48 +1111,45 @@ class App extends mixin(EventEmitter, Component) {
     })
   }
 
-            //
-            // <Controls
-            //   config={this.config}
-            //   setPlay={this.setPlay.bind(this)}
-            //   spherize={this.state.spherize}
-            //   setSphereView={this.setSphereView.bind(this)}
-            // />
+  //
+  // <Controls
+  //   config={this.config}
+  //   setPlay={this.setPlay.bind(this)}
+  //   spherize={this.state.spherize}
+  //   setSphereView={this.setSphereView.bind(this)}
+  // />
 
-            //
-            // if ($('#gource-box').hasClass('fullscreen')) {
-            // 									gource.setConfig({
-            // 										camera: {
-            // 											enableZoom: true
-            // 										},
-            // 										FDG: {
-            // 											usePicker: true, // show file commit details on click
-            // 											showFilePaths: true
-            // 										}
-            // 									});
-            // 								} else {
-            // 									gource.setConfig({
-            // 										camera: {
-            // 											enableZoom: false
-            // 										},
-            // 										FDG: {
-            // 											usePicker: false, // show file commit details on click
-            // 											showFilePaths: false
-            // 										}
-            // 									});
-            // 								}
-            //
-
+  //
+  // if ($('#gource-box').hasClass('fullscreen')) {
+  // 									gource.setConfig({
+  // 										camera: {
+  // 											enableZoom: true
+  // 										},
+  // 										FDG: {
+  // 											usePicker: true, // show file commit details on click
+  // 											showFilePaths: true
+  // 										}
+  // 									});
+  // 								} else {
+  // 									gource.setConfig({
+  // 										camera: {
+  // 											enableZoom: false
+  // 										},
+  // 										FDG: {
+  // 											usePicker: false, // show file commit details on click
+  // 											showFilePaths: false
+  // 										}
+  // 									});
+  // 								}
+  //
 
   UI () {
-
-
     const ToggleFullscreenObj = {
-      open:{
+      open: {
         display: {
-					showUI: true,
-					showSidebar: true
-				},
+          showUI: true,
+          showSidebar: true
+        },
         camera: {
           enableZoom: true
         },
@@ -1149,11 +1158,11 @@ class App extends mixin(EventEmitter, Component) {
           showFilePaths: true
         }
       },
-      close:{
+      close: {
         display: {
-					showUI: false,
-					showSidebar: false
-				},
+          showUI: false,
+          showSidebar: false
+        },
         camera: {
           enableZoom: false,
           initPos: { x: 0, y: 0, z: 1600 }
@@ -1165,27 +1174,28 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
 
-
-    if (this.config.display.showUI) {
+    if (this.state.showUI) {
       return (
-        <div className="Gource-UI">
+        <div className='Gource-UI'>
           <Sidebar config={this.config}>
 
             <Head
-              slug={"head"}
-              icon={<button className="bg-transparent border-0 text-primary pt-2 pb-1"><img src={Smallogo} alt="" /></button>}
+              slug={'head'}
+              icon={<button className='bg-transparent border-0 text-primary pt-2 pb-1'><img src={Smallogo} alt='' /></button>}
             />
 
             <About
-              title={"About"}
-              slug={"about"}
-              icon={<button className="bg-transparent border-0 text-primary pt-1 pb-1"><span className="icon-info"></span></button>}
+              title={'About'}
+              slug={'about'}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-info' /></button>}
             />
 
+            <About title={'About'} slug={'about'} />
+
             <CommitList
-              icon={<button className="bg-transparent border-0 text-primary pt-1 pb-1"><span className="icon-clock"></span></button>}
-              title={"Commit list"}
-              slug={"commit-list"}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-clock' /></button>}
+              title={'Commit list'}
+              slug={'commit-list'}
               config={this.config}
               sideBarCommits={this.state.sideBarCommits}
               sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
@@ -1204,9 +1214,9 @@ class App extends mixin(EventEmitter, Component) {
             <Milestones />
 
             <Widget
-              icon={<button className="bg-transparent border-0 text-primary pt-1 pb-1"><span className="icon-calendar"></span></button>}
-              title={"Browse by day"}
-              slug={"browse-day"}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-calendar' /></button>}
+              title={'Browse by day'}
+              slug={'browse-day'}
             >
               <DatePicker
                 inline
@@ -1219,20 +1229,15 @@ class App extends mixin(EventEmitter, Component) {
 
           </Sidebar>
           <Content>
-            <div className="controls top">
+            <div className='controls top'>
 
-              <button ref="btn" onClick={() => this.setConfig(ToggleFullscreenObj.close)} className="close-fullscreen"><img src={FullscreenClose} alt="" /></button>
+              <button ref='btn' onClick={() => this.setConfig(ToggleFullscreenObj.close)} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button>
 
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
-                <SliderWithTooltip
-                  tipFormatter={dateSliderTooltipFormatter}
-                  min={moment(this.minDate).valueOf()}
-                  max={moment(this.maxDate).valueOf()}
-                  onAfterChange={this.setTimestamp.bind(this)}
-                  onChange={this.onDateSliderChange.bind(this)}
-                  value={this.state.currentDateObject.valueOf()}
-                />
+                {this.slider()}
+
                 <button onClick={this.state.goToNext} className="next border-0 bg-transparent"><span className="icon-control-forward text-secondary"></span></button>
+
                 <DatePicker
                   customInput={<Calendar />}
                   popperPlacement='bottom-end'
@@ -1242,7 +1247,6 @@ class App extends mixin(EventEmitter, Component) {
                   maxDate={moment(this.maxDate)}
                 />
               </Controls>
-
 
             </div>
 
@@ -1254,9 +1258,26 @@ class App extends mixin(EventEmitter, Component) {
     }
   }
 
+  slider () {
+    if (this.state.dateRangeLoaded) {
+      return (
+        <SliderWithTooltip
+          tipFormatter={dateSliderTooltipFormatter}
+          min={moment(this.minDate).valueOf()}
+          max={moment(this.maxDate).valueOf()}
+          onAfterChange={this.setTimestamp.bind(this)}
+          onChange={this.onDateSliderChange.bind(this)}
+          value={this.state.currentDateObject.valueOf()}
+        />
+      )
+    }
+  }
+
   render () {
+    const cls = (this.config.display.showUI) ? 'showing-UI App' : 'App'
+
     return (
-      <div className='App'>
+      <div className={`${cls} ${`bsnoclash`}`}>
         <FileInfo
           fileInfoLocation={this.state.fileInfoLocation}
           showFileInfo={this.state.showFileInfo}

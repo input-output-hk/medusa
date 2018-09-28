@@ -163,12 +163,12 @@ module.exports = {
           },
           // SASS integration
           {
-              test: /\.scss$/,
-              use: [
-                  "style-loader", // creates style nodes from JS strings
-                  "css-loader", // translates CSS into CommonJS
-                  "sass-loader" // compiles Sass to CSS, using Node Sass by default
-              ]
+            test: /\.scss$/,
+            use: [
+              'style-loader', // creates style nodes from JS strings
+              'css-loader', // translates CSS into CommonJS
+              'sass-loader' // compiles Sass to CSS, using Node Sass by default
+            ]
           },
           // "postcss" loader applies autoprefixer to our CSS.
           // "css" loader resolves paths in CSS and adds assets as dependencies.

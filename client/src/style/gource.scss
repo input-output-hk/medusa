@@ -1,6 +1,9 @@
 $simple-line-font-path: "/node_modules/simple-line-icons/fonts/";
-
-@import './bootstrap/imports.scss';
+@import './colors.scss';
+@import './fonts.scss';
+.bsnoclash{
+  @import './bootstrap/imports.scss';
+}
 @import './node_modules/simple-line-icons/scss/simple-line-icons.scss';
 @import './reset.scss';
 @import './layout.scss';

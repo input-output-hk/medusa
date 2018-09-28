@@ -43,7 +43,7 @@ const cssFilename = 'static/css/gource.[name].css'
 // To have this structure working with relative paths, we have to use custom options.
 const extractTextPluginOptions = shouldUseRelativeAssetPaths
   ? // Making sure that the publicPath goes back to to build folder.
-    { publicPath: Array(cssFilename.split('/').length).join('../') }
+  { publicPath: Array(cssFilename.split('/').length).join('../') }
   : {}
 
 // This is the production configuration.
@@ -160,9 +160,20 @@ module.exports = {
             loader: require.resolve('babel-loader'),
             options: {
 
-              compact: true
+              compact: false
             }
           },
+
+          // SASS integration
+          {
+            test: /\.scss$/,
+            use: [
+              'style-loader', // creates style nodes from JS strings
+              'css-loader', // translates CSS into CommonJS
+              'sass-loader' // compiles Sass to CSS, using Node Sass by default
+            ]
+          },
+
           // The notation here is somewhat confusing.
           // "postcss" loader applies autoprefixer to our CSS.
           // "css" loader resolves paths in CSS and adds assets as dependencies.

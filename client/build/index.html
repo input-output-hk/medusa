@@ -6,13 +6,16 @@
     <meta name="theme-color" content="#000000">
     <link rel="manifest" href="/manifest.json">
     <link rel="shortcut icon" href="/favicon.ico">
+    <!--link rel="stylesheet" href="./assets/css/bootstrap.min.css"-->
+    <!--link rel="stylesheet" href="./assets/css/font-awesome.min.css"-->
     <title>WebGL Gource</title>
-  <link href="/gource/client/build/assets/css/gource.main.css" rel="stylesheet"></head>
+  </head>
   <body>
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="gource-root"></div>
+    <button id="opener" style="position:fixed;bottom:0;right:0;z-index:99999">opener</button>
       <script>
 
         config = {
@@ -35,7 +38,7 @@
             autoPlay: false,
             delayAmount: 1000, // time in between new commits being added to the graph
             sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
-            usePicker: false, // show file commit details on click
+            usePicker: true, // show file commit details on click
             pickerLoadingPath: '/assets/images/loading.svg', // show file commit details on click
             sphereRadius: 500, // radius of sphere if in sphere projection mode
             showFilePaths: true, // display filepath overlay on nodes
@@ -71,6 +74,21 @@
           }
         }
 
+        opengource = {
+          display: {
+            showUI: false,
+            showSidebar: false
+          },
+          camera: {
+            enableZoom: false,
+            initPos: { x: 0, y: 0, z: 1600 }
+          },
+          FDG: {
+            usePicker: false,
+            showFilePaths: false
+          }
+        }
+
         window.onload = function() {
 
           if (gource.canRun()) {
@@ -89,13 +107,13 @@
                * Available methods
                */
 
-              // document.addEventListener('click', () => {
+              // document.addEventListener('click', function() {
               //   gource.destroy()
               // })
 
               // gource.loadCommit('18b737fa3bf08d2dc3e5faa6ecee60262fb3af8c')
 
-              // document.addEventListener('click', () => {
+              // document.addEventListener('click', function() {
               //    gource.setConfig({
               //     FDG: {
               //       showFilePaths: false
@@ -103,15 +121,15 @@
               //    })
               //  })
 
-              // gource.getFirstCommit().then(data => {
+              //  gource.getFirstCommit().then(function(data) {
+              //    console.log(data)
+              //  })
+
+              // gource.getlastCommit().then(function(data) {
               //   console.log(data)
               // })
 
-              // gource.getlastCommit().then(data => {
-              //   console.log(data)
-              // })
-
-              // gource.on('commitChanged', (data) => {
+              // gource.on('commitChanged', function(data) {
               //   console.log(data)
               // })
 
@@ -121,19 +139,24 @@
 
               // gource.setPlay(true)
 
-              // document.addEventListener('click', () => {
+              // document.addEventListener('click', function() {
               //   gource.goToPrev()
               // })
 
-              // document.addEventListener('click', () => {
+              // document.addEventListener('click', function() {
               //   gource.goToNext()
               // })
 
             })
-          }
 
+            // var opener = document.getElementById('opener');
+            // opener.onclick = function(){
+            //   alert("fds");
+            //   gource.setConfig(opengource);
+            // };
+
+          }
         }
     </script>
-    
-  <script type="text/javascript" src="/gource/client/build/static/js/gource.main.js"></script></body>
+  <script type="text/javascript" src="/static/js/gource.main.js"></script></body>
 </html>
