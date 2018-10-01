@@ -356,6 +356,7 @@ export default class FDG {
       this.scene.add(this.edges)
     } else {
       this.edgeGeometry.setUpdated(this.nodeData, this.nodeCount, this.edges.geometry.attributes.updated.array, this.edgeData)
+      this.edges.geometry.setDrawRange(0, this.nodeData.length * 4)
       this.edges.geometry.attributes.position.needsUpdate = true
       this.edges.geometry.attributes.texLocation.needsUpdate = true
       this.edges.geometry.attributes.updated.needsUpdate = true
@@ -376,8 +377,10 @@ export default class FDG {
         this.nodes.geometry.attributes.color.array,
         this.pickingMesh.geometry.attributes.pickerColor
       )
+      this.nodes.geometry.setDrawRange(0, this.nodeData.length)
       this.nodes.geometry.attributes.position.needsUpdate = true
       this.nodes.geometry.attributes.color.needsUpdate = true
+      this.pickingMesh.geometry.setDrawRange(0, this.nodeData.length)
       this.pickingMesh.geometry.attributes.pickerColor.needsUpdate = true
     }
   }
@@ -544,6 +547,9 @@ export default class FDG {
       this.pushMesh = new THREE.Points(this.pushGeometry, this.pushMaterial)
       this.pushScene.add(this.pushMesh)
     }
+
+    this.pullMesh.geometry.setDrawRange(0, this.nodeData.length * 2)
+    this.pushMesh.geometry.setDrawRange(0, this.nodeData.length * 2)
 
     this.pullGeometry.attributes.position.needsUpdate = true
     this.pullGeometry.attributes.texLocation.needsUpdate = true
