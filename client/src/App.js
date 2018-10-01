@@ -1045,6 +1045,8 @@ class App extends mixin(EventEmitter, Component) {
     this.setCameraSettings()
     this.setDisplayConfig()
 
+    this.resize()
+
     if (this.FDG && this.FDG.active === true) {
       this.FDG.triggerUpdate()
     }
