@@ -40,6 +40,7 @@ import Slider, { createSliderWithTooltip } from 'rc-slider'
 // Styles
 import './style/gource.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
+import urlNext from './style/images/control-next.svg'
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -1163,6 +1164,9 @@ class App extends mixin(EventEmitter, Component) {
           showUI: false,
           showSidebar: false
         },
+        scene: {
+          fullScreen: false,
+        },
         camera: {
           enableZoom: false,
           initPos: { x: 0, y: 0, z: 1600 }
@@ -1190,8 +1194,6 @@ class App extends mixin(EventEmitter, Component) {
               icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-info' /></button>}
             />
 
-            <About title={'About'} slug={'about'} />
-
             <CommitList
               icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-clock' /></button>}
               title={'Commit list'}
@@ -1211,7 +1213,6 @@ class App extends mixin(EventEmitter, Component) {
               currentCommitHash={this.state.currentCommitHash}
             />
 
-            <Milestones />
 
             <Widget
               icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-calendar' /></button>}
@@ -1236,7 +1237,7 @@ class App extends mixin(EventEmitter, Component) {
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}
 
-                <button onClick={this.state.goToNext} className="next border-0 bg-transparent"><span className="icon-control-forward text-secondary"></span></button>
+                <button onClick={this.state.goToNext} className="next border-0 bg-transparent"><img src={urlNext} alt="&raquo;" /></button>
 
                 <DatePicker
                   customInput={<Calendar />}

@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import urlCal from '../style/images/control-calendar.svg'
 
 export default class Calendar extends Component {
   render () {
@@ -6,7 +7,7 @@ export default class Calendar extends Component {
       <button
         className='calendar border-0 bg-transparent'
         onClick={this.props.onClick}>
-        <span className='icon-calendar text-secondary' />
+        <img src={urlCal} alt="" />
       </button>
     )
   }

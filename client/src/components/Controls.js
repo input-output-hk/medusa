@@ -1,4 +1,7 @@
 import React, { Component } from 'react'
+import urlPlay from '../style/images/control-play.svg'
+import urlPause from '../style/images/control-pause.svg'
+import urlPrev from '../style/images/control-prev.svg'
 
 export default class Controls extends Component {
 
@@ -31,12 +34,12 @@ export default class Controls extends Component {
   // </div>
 
   render () {
-    const playpause = (this.props.state.play) ? <button onClick={() => { this.props.setPlay(false) }} className="playpause border-0 bg-transparent"><span className="icon-control-pause text-secondary"></span></button> : <button onClick={() => { this.props.setPlay(true) }} className="playpause border-0 bg-transparent"><span className="icon-control-play text-secondary"></span></button>
+    const playpause = (this.props.state.play) ? <button onClick={() => { this.props.setPlay(false) }} className="playpause border-0 bg-transparent"><img src={urlPause} alt="Pause" /></button> : <button onClick={() => { this.props.setPlay(true) }} className="playpause border-0 bg-transparent"><img src={urlPlay} alt="Play" /></button>
     //console.log(this.props.state.play);
     return (
       <div className="slider">
         <div className="text-center d-block d-md-inline-block">{playpause}</div>
-        <button onClick={this.props.goToPrev} className="prev border-0 bg-transparent"><span className="icon-control-rewind text-secondary"></span></button>
+        <button onClick={this.props.goToPrev} className="prev border-0 bg-transparent"><img src={urlPrev} alt="&laquo;" /></button>
         {this.props.children}
       </div>
     )

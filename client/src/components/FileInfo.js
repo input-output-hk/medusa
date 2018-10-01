@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
-
+import loadingImg from '../assets/images/loading.svg'
 export default class FileInfo extends Component {
   render () {
     return (
       <div className='gource-file-info-widget' style={{ left: this.props.fileInfoLocation.x + 30, top: this.props.fileInfoLocation.y - 50, display: this.props.showFileInfo ? 'block' : 'none' }}>
         <div className='file-info-loading' style={{ display: this.props.loadingFileInfo ? 'block' : 'none' }}>
-          <img width='70' src={this.props.config.FDG.pickerLoadingPath} alt='Loading' />
+          <img width='70' src={loadingImg} alt='Loading' />
         </div>
         <div className='file-info-contents' style={{ display: this.props.loadingFileInfo ? 'none' : 'block' }}>
           <div className='file-info-gravatar'>

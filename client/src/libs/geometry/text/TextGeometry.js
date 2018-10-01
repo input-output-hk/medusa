@@ -9,11 +9,14 @@ import VertexShader from './shaders/text.vert'
 // font
 import UbuntuMono from './fonts/UbuntuMono'
 
+// images
+import fontImgFile from '../../../assets/images/UbuntuMono.png'
+
 export default class TextGeometry {
   constructor (config) {
     this.config = config
     this.textureHelper = new TextureHelper()
-    this.font = UbuntuMono(this.config.FDG.fontTexturePath)
+    this.font = UbuntuMono(fontImgFile)
     this.fontSize = 15
     this.kerning = 1.5
     this.textureSize = 1024 // size of the font texture (aspect 1:1)

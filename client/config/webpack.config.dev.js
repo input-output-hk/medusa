@@ -141,13 +141,18 @@ module.exports = {
           // smaller than specified limit in bytes as data URLs to avoid requests.
           // A missing `test` is equivalent to a match.
           {
-            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.svg$/],
             loader: require.resolve('url-loader'),
             options: {
               limit: 10000,
               name: 'static/media/gource.[name].[hash:8].[ext]'
             }
           },
+          {
+              test: /\.(eot|svg|ttf|woff|woff2)$/,
+              loader: 'file?name=node_modules/simple-line-icons/fonts/[name].[ext]'
+          },
+
           // Process JS with Babel.
           {
             test: /\.(js|jsx|mjs)$/,

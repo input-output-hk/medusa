@@ -9,7 +9,7 @@ export default class Legend extends Component {
       <div className='legend'>
         <div className='inner'>
           <ul className='nolist'>
-            <li><img src={Commited} alt='' /> Commited file</li>
+            <li><img src={Commited} alt='' /> Committed file</li>
             <li><img src={Updated} alt='' /> Updated file</li>
             <li><img src={Cold} alt='' /> Cold file</li>
           </ul>
