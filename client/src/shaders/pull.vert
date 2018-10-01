@@ -2,7 +2,6 @@ uniform sampler2D positionTexture;
 
 attribute vec4 texLocation;
 
-
 varying vec3 vForce;
 
 void main() {

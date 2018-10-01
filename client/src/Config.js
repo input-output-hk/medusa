@@ -28,7 +28,7 @@ const Config = {
     useChangesDB: true // in play mode only load in data which has changed
   },
   FDG: {
-    nodeCount: 4096, // max number of nodes the scene can contain
+    nodeCount: 3000, // max number of nodes the scene can contain
     autoPlay: true,
     delayAmount: 1000, // time in between new commits being added to the graph
     sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false

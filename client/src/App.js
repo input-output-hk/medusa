@@ -246,11 +246,11 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   setPostSettings () {
-    if (this.config.post.bloom) {
-      // res, strength, radius, threshold
-      this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
-      this.composer.addPass(this.bloomPass)
-    }
+    // if (this.config.post.bloom) {
+    //   // res, strength, radius, threshold
+    //   this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
+    //   this.composer.addPass(this.bloomPass)
+    // }
 
     if (this.config.post.vignette) {
       if (this.vignettePass) {
