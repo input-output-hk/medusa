@@ -15,8 +15,11 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="gource-root"></div>
-    <button id="opener" style="position:fixed;bottom:0;right:0;z-index:99999">opener</button>
+    <a id="opener" href="?gource=fullscreen"  style="position:fixed;bottom:0;right:0;z-index:99999">opener XX</a>
       <script>
+
+
+
 
         config = {
           git: {
@@ -28,7 +31,7 @@
             loadLatest: true // load latest commit in db
           },
           display: {
-            showUI: true,
+            showUI: false,
             showSidebar: true
           },
           FDG: {
@@ -55,7 +58,7 @@
             ]
           },
           scene: {
-            fullScreen: true,
+            fullScreen: false,
             width: 800,
             height: 600,
             bgColor: 0x121327,
@@ -76,8 +79,8 @@
 
         opengource = {
           display: {
-            showUI: false,
-            showSidebar: false
+            showUI: true,
+            showSidebar: true
           },
           camera: {
             enableZoom: false,
@@ -115,8 +118,10 @@
 
               // document.addEventListener('click', function() {
               //    gource.setConfig({
-              //     FDG: {
-              //       showFilePaths: false
+              //     scene: {
+              //       fullScreen: false,
+              //       width: 800,
+              //       height: 600
               //      }
               //    })
               //  })
@@ -149,11 +154,11 @@
 
             })
 
-            // var opener = document.getElementById('opener');
-            // opener.onclick = function(){
-            //   alert("fds");
-            //   gource.setConfig(opengource);
-            // };
+            var opener = document.getElementById('opener');
+            opener.onclick = function(e){
+              //e.preventDefault();
+              //gource.setConfig(opengource);
+            };
 
           }
         }

@@ -2,6 +2,7 @@ import * as THREE from 'three'
 
 import Detector from './libs/Detector'
 
+
 const detector = new Detector()
 
 const Config = {
@@ -16,7 +17,50 @@ const Config = {
   display: {
     showUI: true,
     showSidebar: true,
-    sidebarCommitLimit: 5
+    sidebarCommitLimit: 5,
+    showClose: true,
+  },
+  client:{
+    url: ''
+  },
+  widget:{
+    head: {
+      title: 'GOURCE',
+      subtitle: 'Github project activity',
+      slug: 'head',
+      content: '',
+    },
+    about: {
+      title: 'About',
+      slug: 'about',
+      content: '',
+    },
+    commitList: {
+      title: 'Commit List',
+      slug: 'commit-list'
+    },
+    milestones: {
+      title: 'Milestones',
+      slug: 'milestones'
+    },
+    calendar: {
+      title: 'Calendar',
+      slug: 'calendar'
+    }
+  },
+  legend:{
+    commited: {
+      title: 'Commited file',
+      icon: ''
+    },
+    updated: {
+      title: 'Updated file',
+      icon: ''
+    },
+    cold: {
+      title: 'Cold file',
+      icon: ''
+    }
   },
   fireBase: {
     apiKey: 'AIzaSyCwfdzrjQ5GRqyz-napBM29T7Zel_6KIUY',
@@ -28,7 +72,7 @@ const Config = {
     useChangesDB: true // in play mode only load in data which has changed
   },
   FDG: {
-    nodeCount: 4096, // max number of nodes the scene can contain
+    nodeCount: 3000, // max number of nodes the scene can contain
     autoPlay: true,
     delayAmount: 1000, // time in between new commits being added to the graph
     sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
@@ -65,6 +109,7 @@ const Config = {
   camera: {
     fov: 60,
     initPos: {x: 0, y: 0, z: 800},
+    zPosMinimized: 1600,
     enableZoom: true // enable camera zoom on mousewheel/pinch gesture
   },
   dev: {

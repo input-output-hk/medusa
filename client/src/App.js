@@ -11,6 +11,9 @@ import 'firebase/firestore'
 import 'firebase/auth'
 import MD5 from './libs/MD5'
 
+import { browserHistory } from 'react-router';
+
+
 // Post
 import { EffectComposer, ShaderPass, RenderPass, UnrealBloomPass } from './libs/post/EffectComposer'
 import Vignette from './libs/post/Vignette'
@@ -41,6 +44,10 @@ import Slider, { createSliderWithTooltip } from 'rc-slider'
 import './style/gource.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
 import urlNext from './style/images/control-next.svg'
+
+import { IconContext } from "react-icons";
+import { FaChevronRight } from 'react-icons/fa'
+
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -236,6 +243,57 @@ class App extends mixin(EventEmitter, Component) {
     this.initFDG()
     this.addEvents()
     this.animate()
+
+    const ToggleFullscreenObj = {
+      open: {
+        display: {
+          showUI: true,
+          showSidebar: true
+        },
+        scene: {
+          fullScreen: true,
+        },
+        camera: {
+          enableZoom: true
+        },
+        FDG: {
+          usePicker: true,
+          showFilePaths: true
+        }
+      },
+      close: {
+        display: {
+          showUI: false,
+          showSidebar: false
+        },
+        scene: {
+          fullScreen: false,
+          width: this.config.scene.width,
+          height: this.config.scene.height
+        },
+        camera: {
+          enableZoom: false,
+          initPos: { x: 0, y: 0, z: this.config.scene.zPosMinimized }
+        },
+        FDG: {
+          usePicker: false,
+          showFilePaths: false
+        }
+      }
+    }
+
+
+    if (typeof URLSearchParams !== 'undefined') {
+      let urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('gource')) {
+        let value = urlParams.get('gource')
+        if(value == 'fullscreen'){
+          this.setConfig(ToggleFullscreenObj.open)
+        }
+      }
+    }
+
+
   }
 
   initPost () {
@@ -247,11 +305,11 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   setPostSettings () {
-    if (this.config.post.bloom) {
-      // res, strength, radius, threshold
-      this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
-      this.composer.addPass(this.bloomPass)
-    }
+    // if (this.config.post.bloom) {
+    //   // res, strength, radius, threshold
+    //   this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
+    //   this.composer.addPass(this.bloomPass)
+    // }
 
     if (this.config.post.vignette) {
       if (this.vignettePass) {
@@ -1046,6 +1104,8 @@ class App extends mixin(EventEmitter, Component) {
     this.setCameraSettings()
     this.setDisplayConfig()
 
+    this.resize()
+
     if (this.FDG && this.FDG.active === true) {
       this.FDG.triggerUpdate()
     }
@@ -1112,44 +1172,15 @@ class App extends mixin(EventEmitter, Component) {
     })
   }
 
-  //
-  // <Controls
-  //   config={this.config}
-  //   setPlay={this.setPlay.bind(this)}
-  //   spherize={this.state.spherize}
-  //   setSphereView={this.setSphereView.bind(this)}
-  // />
-
-  //
-  // if ($('#gource-box').hasClass('fullscreen')) {
-  // 									gource.setConfig({
-  // 										camera: {
-  // 											enableZoom: true
-  // 										},
-  // 										FDG: {
-  // 											usePicker: true, // show file commit details on click
-  // 											showFilePaths: true
-  // 										}
-  // 									});
-  // 								} else {
-  // 									gource.setConfig({
-  // 										camera: {
-  // 											enableZoom: false
-  // 										},
-  // 										FDG: {
-  // 											usePicker: false, // show file commit details on click
-  // 											showFilePaths: false
-  // 										}
-  // 									});
-  // 								}
-  //
-
   UI () {
     const ToggleFullscreenObj = {
       open: {
         display: {
           showUI: true,
           showSidebar: true
+        },
+        scene: {
+          fullScreen: true,
         },
         camera: {
           enableZoom: true
@@ -1166,10 +1197,12 @@ class App extends mixin(EventEmitter, Component) {
         },
         scene: {
           fullScreen: false,
+          width: this.config.scene.width,
+          height: this.config.scene.height
         },
         camera: {
           enableZoom: false,
-          initPos: { x: 0, y: 0, z: 1600 }
+          initPos: { x: 0, y: 0, z: this.config.scene.zPosMinimized }
         },
         FDG: {
           usePicker: false,
@@ -1178,26 +1211,60 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
 
+    const closeFullscreenFunc = () => {
+      this.setConfig(ToggleFullscreenObj.close)
+      if (typeof URLSearchParams !== 'undefined') {
+        let urlParams = new URLSearchParams(window.location.search)
+        if (urlParams.has('gource')) {
+          window.history.replaceState({}, "", "/")
+        }
+      }
+    }
+    //Your initialization
+    //https://github.com/ReactTraining/react-router/issues/3554
+    // browserHistory.listen( location =>  {
+    //  this.setConfig({client.url = })
+    // });
+
+
+    const closeFullscreenButton = (this.config.display.showClose) ? <button ref='btn' onClick={closeFullscreenFunc} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button> : ''
+
+    //const parsed = qs.parse(location.search)
+    //console.log(parsed)
+    //
+    // if (typeof URLSearchParams !== 'undefined') {
+    //   let urlParams = new URLSearchParams(window.location.search)
+    //   if (urlParams.has('gource')) {
+    //     let value = urlParams.get('gource')
+    //     if(value == 'fullscreen'){
+    //       this.setConfig(ToggleFullscreenObj.open)
+    //     }
+    //   }
+    // }
+    //
+
     if (this.state.showUI) {
       return (
         <div className='Gource-UI'>
           <Sidebar config={this.config}>
 
             <Head
+              config={this.config}
               slug={'head'}
               icon={<button className='bg-transparent border-0 text-primary pt-2 pb-1'><img src={Smallogo} alt='' /></button>}
             />
 
             <About
-              title={'About'}
-              slug={'about'}
+              config={this.config}
+              title={this.config.widget.about.title}
+              slug={this.config.widget.about.slug}
               icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-info' /></button>}
             />
 
             <CommitList
               icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-clock' /></button>}
-              title={'Commit list'}
-              slug={'commit-list'}
+              title={this.config.widget.commitList.title}
+              slug={this.config.widget.commitList.slug}
               config={this.config}
               sideBarCommits={this.state.sideBarCommits}
               sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
@@ -1216,8 +1283,8 @@ class App extends mixin(EventEmitter, Component) {
 
             <Widget
               icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-calendar' /></button>}
-              title={'Browse by day'}
-              slug={'browse-day'}
+              title={this.config.widget.calendar.title}
+              slug={this.config.widget.calendar.slug}
             >
               <DatePicker
                 inline
@@ -1232,12 +1299,14 @@ class App extends mixin(EventEmitter, Component) {
           <Content>
             <div className='controls top'>
 
-              <button ref='btn' onClick={() => this.setConfig(ToggleFullscreenObj.close)} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button>
+
+
+              {closeFullscreenButton}
 
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}
 
-                <button onClick={this.state.goToNext} className="next border-0 bg-transparent"><img src={urlNext} alt="&raquo;" /></button>
+                <button onClick={this.state.goToNext} className="next border-0 bg-transparent"><FaChevronRight /></button>
 
                 <DatePicker
                   customInput={<Calendar />}
@@ -1251,7 +1320,7 @@ class App extends mixin(EventEmitter, Component) {
 
             </div>
 
-            <Legend />
+            <Legend config={this.config} />
 
           </Content>
         </div>
