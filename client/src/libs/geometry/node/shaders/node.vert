@@ -16,7 +16,6 @@ attribute vec4 color;
 varying vec4 vColor;
 varying vec3 vPickerColor;
 varying float vDecay;
-varying float vActive;
 varying float vDist;
 varying float vDistSq;
 varying float vSpriteMix;
@@ -35,54 +34,42 @@ void main() {
     vIsHovered = isHovered;
     vIsSelected = isSelected;
 
-    // if color is black, node is inactive
-    if (vColor.r == 0.) {
+    vec3 currentPosition = texture2D(positionTexture, position.xy).xyz;
 
-        vActive = 0.;
-
-        gl_PointSize = 0.;
-        gl_Position = vec4(0.);
-
-    } else {
-
-        vActive = 1.;
-
-        vec3 currentPosition = texture2D(positionTexture, position.xy).xyz;
-
-        if (id == 0.0) {
-            currentPosition = vec3(0.);
-        }
-
-        vec4 mvPosition = modelViewMatrix * vec4(currentPosition, 1.);
-
-        if (vColor.a == 0.) {
-            vDecay = 2. - (decayTime * 0.05);
-            vDecay = max(0.0, vDecay);
-        }
-        
-        float decayScale = scale * ((vDecay * 0.75) + 1.0);
-
-        vDist = decayScale / length(mvPosition.xyz);
-        vDistSq = decayScale / dot(mvPosition.xyz, mvPosition.xyz);
-
-        float dofAmount = map(camDistToCenter, 0., 1000., 1., 0.);
-
-        vSpriteMix = (1.0 - clamp(pow(vDistSq, 4.0), 0.0, 1.0)) * dofAmount;
-
-        float scaledTime = uTime * 0.005;
-        if (scaledTime < 1.) {
-            vSpriteMix += (1.0 - scaledTime);
-        }
-
-        vSpriteMix = clamp(vSpriteMix, 0., 1.);
-
-        if (nodeIsHovered == 1.0) {
-            vSpriteMix = clamp( (1.0 - isHovered) * (dofAmount * 2.0), 0.0, 1.0);
-        }
-
-        vSpriteMix *= (1.0 - isSelected);
-
-        gl_PointSize = vDist;
-        gl_Position = projectionMatrix * mvPosition;
+    if (id == 0.0) {
+        currentPosition = vec3(0.);
     }
+
+    vec4 mvPosition = modelViewMatrix * vec4(currentPosition, 1.);
+
+    if (vColor.a == 0.) {
+        vDecay = 2. - (decayTime * 0.05);
+        vDecay = max(0.0, vDecay);
+    }
+
+    float decayScale = scale * ((vDecay * 0.75) + 1.0);
+
+    vDist = decayScale / length(mvPosition.xyz);
+    vDistSq = decayScale / dot(mvPosition.xyz, mvPosition.xyz);
+
+    float dofAmount = map(camDistToCenter, 0., 1000., 1., 0.);
+
+    vSpriteMix = (1.0 - clamp(pow(vDistSq, 4.0), 0.0, 1.0)) * dofAmount;
+
+    float scaledTime = uTime * 0.005;
+    if (scaledTime < 1.) {
+        vSpriteMix += (1.0 - scaledTime);
+    }
+
+    vSpriteMix = clamp(vSpriteMix, 0., 1.);
+
+    if (nodeIsHovered == 1.0) {
+        vSpriteMix = clamp( (1.0 - isHovered) * (dofAmount * 2.0), 0.0, 1.0);
+    }
+
+    vSpriteMix *= (1.0 - isSelected);
+
+    gl_PointSize = vDist;
+    gl_Position = projectionMatrix * mvPosition;
+
 }

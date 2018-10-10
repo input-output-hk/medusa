@@ -93,6 +93,8 @@ export default class EdgeGeometry {
 
     this.edges = new THREE.LineSegments(this.geometry, this.material)
 
+    this.edges.geometry.setDrawRange(0, nodeData.length * 4)
+
     return this.edges
   }
 

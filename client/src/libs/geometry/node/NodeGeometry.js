@@ -241,6 +241,10 @@ export default class NodeGeometry {
 
     this.pickingMesh = new THREE.Points(this.pickingGeometry, this.pickingMaterial)
     this.nodes = new THREE.Points(this.geometry, this.material)
+
+    this.nodes.geometry.setDrawRange(0, nodeData.length)
+    this.pickingMesh.geometry.setDrawRange(0, nodeData.length)
+
     return this.nodes
   }
 

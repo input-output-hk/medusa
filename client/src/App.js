@@ -11,8 +11,7 @@ import 'firebase/firestore'
 import 'firebase/auth'
 import MD5 from './libs/MD5'
 
-import { browserHistory } from 'react-router';
-
+import { BrowserRouter, Link, Route } from 'react-router-dom'
 
 // Post
 import { EffectComposer, ShaderPass, RenderPass, UnrealBloomPass } from './libs/post/EffectComposer'
@@ -1221,11 +1220,7 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
     //Your initialization
-    //https://github.com/ReactTraining/react-router/issues/3554
-    // browserHistory.listen( location =>  {
-    //  this.setConfig({client.url = })
-    // });
-
+    //console.log(BrowserRouter)
 
     const closeFullscreenButton = (this.config.display.showClose) ? <button ref='btn' onClick={closeFullscreenFunc} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button> : ''
 
@@ -1300,8 +1295,9 @@ class App extends mixin(EventEmitter, Component) {
             <div className='controls top'>
 
 
-
+              <BrowserRouter>
               {closeFullscreenButton}
+              </BrowserRouter>
 
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}

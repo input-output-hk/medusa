@@ -4,3 +4,8 @@
     .inner{background: rgba(20,20,40,0.5);padding:15px 50px 20px 20px;border:1px solid rgba(135,45,200,0.35);border-bottom: 0}
   }
 }
+@media (max-width: 767px) {
+  .UI-content{
+    .legend{display: none; }
+  }
+}

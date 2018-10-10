@@ -1,9 +1,10 @@
 .UI-content{
   .controls{
+
     text-align: center;
-    button,.rc-slider{display: inline-block;vertical-align: middle;}
-    .rc-slider{width:75%;margin:0 20px}
-    .playpause,.calendar{font-size:160%}
+    button,.rc-slider{display: inline-block;vertical-align: bottom;color:rgba($secondary,0.8);}
+    .rc-slider{width:75%;margin:0 20px;}
+    .playpause,.calendar{font-size:130%}
     .slider > div{
       display: inline-block;
     }
@@ -17,5 +18,13 @@
     .slider > div{
       display: block;width: 100%
     }
+  }
+}
+@media (max-width: 767px) {
+  .UI-content{
+    .rc-slider{
+      display:none !important
+    }
+    button.prev,button.next{font-size: 150%;width:50px;margin:10px 20px}
   }
 }
