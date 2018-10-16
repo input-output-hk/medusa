@@ -1,7 +1,5 @@
 import * as THREE from 'three'
-
 import Detector from './libs/Detector'
-
 
 const detector = new Detector()
 
@@ -18,12 +16,12 @@ const Config = {
     showUI: true,
     showSidebar: true,
     sidebarCommitLimit: 5,
-    showClose: true,
+    showClose: true
   },
-  client:{
+  client: {
     url: ''
   },
-  widget:{
+  widget: {
     head: {
       title: 'GOURCE',
       subtitle: 'Github project activity',
@@ -49,9 +47,9 @@ const Config = {
       slug: 'calendar'
     }
   },
-  legend:{
-    commited: {
-      title: 'Commited file',
+  legend: {
+    committed: {
+      title: 'Committed file',
       icon: ''
     },
     updated: {

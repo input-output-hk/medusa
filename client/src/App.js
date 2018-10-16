@@ -11,10 +11,19 @@ import 'firebase/firestore'
 import 'firebase/auth'
 import MD5 from './libs/MD5'
 
-import { BrowserRouter, Link, Route } from 'react-router-dom'
+import {
+  BrowserRouter
+  // Link,
+  // Route
+} from 'react-router-dom'
 
 // Post
-import { EffectComposer, ShaderPass, RenderPass, UnrealBloomPass } from './libs/post/EffectComposer'
+import {
+  EffectComposer,
+  ShaderPass,
+  RenderPass
+  // UnrealBloomPass
+} from './libs/post/EffectComposer'
 import Vignette from './libs/post/Vignette'
 
 // Libs
@@ -42,7 +51,7 @@ import Slider, { createSliderWithTooltip } from 'rc-slider'
 // Styles
 import './style/gource.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
-import urlNext from './style/images/control-next.svg'
+// import urlNext from './style/images/control-next.svg'k
 
 import { FaPlay, FaPause, IconContext, FaChevronRight, FaCalendar, FaClock, FaInfoCircle, FaStar } from 'react-icons/fa'
 
@@ -248,7 +257,7 @@ class App extends mixin(EventEmitter, Component) {
           showSidebar: true
         },
         scene: {
-          fullScreen: true,
+          fullScreen: true
         },
         camera: {
           enableZoom: true
@@ -279,18 +288,15 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
 
-
     if (typeof URLSearchParams !== 'undefined') {
       let urlParams = new URLSearchParams(window.location.search)
       if (urlParams.has('gource')) {
         let value = urlParams.get('gource')
-        if(value == 'fullscreen'){
+        if (value === 'fullscreen') {
           this.setConfig(ToggleFullscreenObj.open)
         }
       }
     }
-
-
   }
 
   initPost () {
@@ -1177,7 +1183,7 @@ class App extends mixin(EventEmitter, Component) {
           showSidebar: true
         },
         scene: {
-          fullScreen: true,
+          fullScreen: true
         },
         camera: {
           enableZoom: true
@@ -1213,7 +1219,7 @@ class App extends mixin(EventEmitter, Component) {
       if (typeof URLSearchParams !== 'undefined') {
         let urlParams = new URLSearchParams(window.location.search)
         if (urlParams.has('gource')) {
-          window.history.replaceState({}, "", "/")
+          window.history.replaceState({}, '', '/')
         }
       }
     }
@@ -1292,15 +1298,14 @@ class App extends mixin(EventEmitter, Component) {
           <Content>
             <div className='controls top'>
 
-
               <BrowserRouter>
-              {closeFullscreenButton}
+                {closeFullscreenButton}
               </BrowserRouter>
 
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}
 
-                <button onClick={this.state.goToNext} className="next border-0 bg-transparent"><FaChevronRight /></button>
+                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><FaChevronRight /></button>
 
                 <DatePicker
                   customInput={<Calendar />}

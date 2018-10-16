@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
-import { IconContext } from "react-icons";
-import { FaCalendar } from 'react-icons/fa';
+import { FaCalendar } from 'react-icons/fa'
 
 export default class Calendar extends Component {
   render () {
