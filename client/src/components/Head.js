@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import Widget from '../components/Widget'
 import Logo from '../style/images/logo.svg'
 import Config from '../Config'
-import renderHTML from 'react-render-html'
 
 export default class Head extends Component {
   render () {

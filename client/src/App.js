@@ -11,10 +11,19 @@ import 'firebase/firestore'
 import 'firebase/auth'
 import MD5 from './libs/MD5'
 
-import { BrowserRouter, Link, Route } from 'react-router-dom'
+import {
+  BrowserRouter
+  // Link,
+  // Route
+} from 'react-router-dom'
 
 // Post
-import { EffectComposer, ShaderPass, RenderPass, UnrealBloomPass } from './libs/post/EffectComposer'
+import {
+  EffectComposer,
+  ShaderPass,
+  RenderPass
+  // UnrealBloomPass
+} from './libs/post/EffectComposer'
 import Vignette from './libs/post/Vignette'
 
 // Libs
@@ -31,7 +40,7 @@ import Legend from './components/Legend'
 import Content from './components/Content'
 import Head from './components/Head'
 import About from './components/About'
-import Milestones from './components/Milestones'
+// import Milestones from './components/Milestones'
 import Widget from './components/Widget'
 import DatePicker from 'react-datepicker'
 import Smallogo from './style/images/logo-xs.svg'
@@ -42,11 +51,10 @@ import Slider, { createSliderWithTooltip } from 'rc-slider'
 // Styles
 import './style/gource.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
-import urlNext from './style/images/control-next.svg'
+// import urlNext from './style/images/control-next.svg'k
 
-import { IconContext } from "react-icons";
+// import { IconContext } from 'react-icons'
 import { FaChevronRight } from 'react-icons/fa'
-
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -250,7 +258,7 @@ class App extends mixin(EventEmitter, Component) {
           showSidebar: true
         },
         scene: {
-          fullScreen: true,
+          fullScreen: true
         },
         camera: {
           enableZoom: true
@@ -281,18 +289,15 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
 
-
     if (typeof URLSearchParams !== 'undefined') {
       let urlParams = new URLSearchParams(window.location.search)
       if (urlParams.has('gource')) {
         let value = urlParams.get('gource')
-        if(value == 'fullscreen'){
+        if (value === 'fullscreen') {
           this.setConfig(ToggleFullscreenObj.open)
         }
       }
     }
-
-
   }
 
   initPost () {
@@ -1179,7 +1184,7 @@ class App extends mixin(EventEmitter, Component) {
           showSidebar: true
         },
         scene: {
-          fullScreen: true,
+          fullScreen: true
         },
         camera: {
           enableZoom: true
@@ -1215,17 +1220,17 @@ class App extends mixin(EventEmitter, Component) {
       if (typeof URLSearchParams !== 'undefined') {
         let urlParams = new URLSearchParams(window.location.search)
         if (urlParams.has('gource')) {
-          window.history.replaceState({}, "", "/")
+          window.history.replaceState({}, '', '/')
         }
       }
     }
-    //Your initialization
-    //console.log(BrowserRouter)
+    // Your initialization
+    // console.log(BrowserRouter)
 
     const closeFullscreenButton = (this.config.display.showClose) ? <button ref='btn' onClick={closeFullscreenFunc} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button> : ''
 
-    //const parsed = qs.parse(location.search)
-    //console.log(parsed)
+    // const parsed = qs.parse(location.search)
+    // console.log(parsed)
     //
     // if (typeof URLSearchParams !== 'undefined') {
     //   let urlParams = new URLSearchParams(window.location.search)
@@ -1275,7 +1280,6 @@ class App extends mixin(EventEmitter, Component) {
               currentCommitHash={this.state.currentCommitHash}
             />
 
-
             <Widget
               icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-calendar' /></button>}
               title={this.config.widget.calendar.title}
@@ -1294,15 +1298,14 @@ class App extends mixin(EventEmitter, Component) {
           <Content>
             <div className='controls top'>
 
-
               <BrowserRouter>
-              {closeFullscreenButton}
+                {closeFullscreenButton}
               </BrowserRouter>
 
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}
 
-                <button onClick={this.state.goToNext} className="next border-0 bg-transparent"><FaChevronRight /></button>
+                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><FaChevronRight /></button>
 
                 <DatePicker
                   customInput={<Calendar />}
