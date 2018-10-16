@@ -28,12 +28,12 @@ const Config = {
       title: 'GOURCE',
       subtitle: 'Github project activity',
       slug: 'head',
-      content: '',
+      content: 'Introduction',
     },
     about: {
       title: 'About',
       slug: 'about',
-      content: '',
+      content: 'Custom about content',
     },
     commitList: {
       title: 'Commit List',
@@ -41,7 +41,8 @@ const Config = {
     },
     milestones: {
       title: 'Milestones',
-      slug: 'milestones'
+      slug: 'milestones',
+      content: '<ul><li>dsadas</li></ul>',
     },
     calendar: {
       title: 'Calendar',

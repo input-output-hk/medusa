@@ -44,9 +44,7 @@ import './style/gource.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
 import urlNext from './style/images/control-next.svg'
 
-import { IconContext } from "react-icons";
-import { FaChevronRight } from 'react-icons/fa'
-
+import { FaPlay, FaPause, IconContext, FaChevronRight, FaCalendar, FaClock, FaInfoCircle, FaStar } from 'react-icons/fa'
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -1219,45 +1217,30 @@ class App extends mixin(EventEmitter, Component) {
         }
       }
     }
-    //Your initialization
-    //console.log(BrowserRouter)
 
+    const playpause = (this.state.play) ? <button onClick={() => { this.setPlay(false) }} className="playpause border-0 bg-transparent"><FaPause /></button> : <button onClick={() => { this.setPlay(true) }} className="playpause border-0 bg-transparent"><FaPlay /></button>
     const closeFullscreenButton = (this.config.display.showClose) ? <button ref='btn' onClick={closeFullscreenFunc} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button> : ''
-
-    //const parsed = qs.parse(location.search)
-    //console.log(parsed)
-    //
-    // if (typeof URLSearchParams !== 'undefined') {
-    //   let urlParams = new URLSearchParams(window.location.search)
-    //   if (urlParams.has('gource')) {
-    //     let value = urlParams.get('gource')
-    //     if(value == 'fullscreen'){
-    //       this.setConfig(ToggleFullscreenObj.open)
-    //     }
-    //   }
-    // }
-    //
 
     if (this.state.showUI) {
       return (
         <div className='Gource-UI'>
-          <Sidebar config={this.config}>
+          <Sidebar
+          config={this.config}
+          currentDate={this.state.currentDate}
+          >
 
             <Head
               config={this.config}
-              slug={'head'}
               icon={<button className='bg-transparent border-0 text-primary pt-2 pb-1'><img src={Smallogo} alt='' /></button>}
             />
 
             <About
               config={this.config}
-              title={this.config.widget.about.title}
-              slug={this.config.widget.about.slug}
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-info' /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaInfoCircle /></button>}
             />
 
             <CommitList
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-clock' /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaClock /></button>}
               title={this.config.widget.commitList.title}
               slug={this.config.widget.commitList.slug}
               config={this.config}
@@ -1275,9 +1258,13 @@ class App extends mixin(EventEmitter, Component) {
               currentCommitHash={this.state.currentCommitHash}
             />
 
+            <Milestones
+              config={this.config}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaStar /></button>}
+            />
 
             <Widget
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><span className='icon-calendar' /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaCalendar /></button>}
               title={this.config.widget.calendar.title}
               slug={this.config.widget.calendar.slug}
             >
@@ -1289,6 +1276,17 @@ class App extends mixin(EventEmitter, Component) {
                 maxDate={moment(this.maxDate)}
               />
             </Widget>
+
+            <div className="mobile-bottom">
+              <DatePicker
+                customInput={<Calendar />}
+                selected={this.state.currentDateObject}
+                onSelect={this.setDate.bind(this)}
+                minDate={moment(this.minDate)}
+                maxDate={moment(this.maxDate)}
+              />
+              <div className="text-right">{playpause}</div>
+            </div>
 
           </Sidebar>
           <Content>
