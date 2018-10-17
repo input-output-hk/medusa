@@ -8,14 +8,14 @@ let Component
 let Container
 
 const init = function (config) {
-  Container = document.getElementById('gource-root')
+  Container = document.getElementById('medusa-root')
   Component = ReactDOM.render(<App config={config} />, Container)
   registerServiceWorker()
   return this
 }
 
 /**
- * Check if Gource can run
+ * Check if medusa can run
  */
 const canRun = function () {
   if (!window.WebGLRenderingContext) {

@@ -3,7 +3,7 @@ import loadingImg from '../assets/images/loading.svg'
 export default class FileInfo extends Component {
   render () {
     return (
-      <div className='gource-file-info-widget' style={{ left: this.props.fileInfoLocation.x + 30, top: this.props.fileInfoLocation.y - 50, display: this.props.showFileInfo ? 'block' : 'none' }}>
+      <div className='medusa-file-info-widget' style={{ left: this.props.fileInfoLocation.x + 30, top: this.props.fileInfoLocation.y - 50, display: this.props.showFileInfo ? 'block' : 'none' }}>
         <div className='file-info-loading' style={{ display: this.props.loadingFileInfo ? 'block' : 'none' }}>
           <img width='70' src={loadingImg} alt='Loading' />
         </div>

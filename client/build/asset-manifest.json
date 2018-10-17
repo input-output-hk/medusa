@@ -1,5 +1,5 @@
 {
-  "main.js": "static/js/gource.main.js",
-  "main.js.map": "static/js/gource.main.js.map",
-  "static/media/UbuntuMono.png": "static/media/gource.UbuntuMono.png"
+  "main.js": "static/js/medusa.main.js",
+  "main.js.map": "static/js/medusa.main.js.map",
+  "static/media/UbuntuMono.png": "static/media/medusa.UbuntuMono.png"
 }

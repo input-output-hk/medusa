@@ -8,14 +8,14 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <!--link rel="stylesheet" href="./assets/css/bootstrap.min.css"-->
     <!--link rel="stylesheet" href="./assets/css/font-awesome.min.css"-->
-    <title>WebGL Gource</title>
+    <title>WebGL medusa</title>
   </head>
   <body>
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
-    <div id="gource-root"></div>
-    <a id="opener" href="?gource=fullscreen" style="position:fixed;bottom:0;right:0;z-index:99999">opener XX</a>
+    <div id="medusa-root"></div>
+    <a id="opener" href="?medusa=fullscreen" style="position:fixed;bottom:0;right:0;z-index:9999">Fullscreen</a>
       <script>
 
 
@@ -57,13 +57,31 @@
               '#1fc1c3'
             ]
           },
+          widget:{
+            milestones:{
+              content: "<ul className='list-group list-group-flush'>\
+                <li className='list-group-item bg-transparent'>\
+                  <h4 className='m-0'><a href='#'>Version 1.3 update merge</a></h4>\
+                  <small>14. Feb 2018</small>\
+                </li>\
+                <li className='list-group-item bg-transparent'>\
+                  <h4 className='m-0'><a href='#'>Ouroboros implementation</a></h4>\
+                  <small>14. Feb 2018</small>\
+                </li>\
+                <li className='list-group-item bg-transparent'>\
+                  <h4 className='m-0'><a href='#'>RINA implementation</a></h4>\
+                  <small>14. Feb 2018</small>\
+                </li>\
+              </ul>"
+            }
+          },
           scene: {
             fullScreen: false,
             width: 800,
             height: 600,
             bgColor: 0x121327,
             antialias: false,
-            canvasID: 'gource-stage', // ID of webgl canvas element
+            canvasID: 'medusa-stage', // ID of webgl canvas element
             autoRotate: false, // auto rotate camera around target
             autoRotateSpeed: 0.001 // speed of auto rotation
           },
@@ -77,7 +95,7 @@
           }
         }
 
-        opengource = {
+        openmedusa = {
           display: {
             showUI: true,
             showSidebar: true
@@ -94,15 +112,15 @@
 
         window.onload = function() {
 
-          if (gource.canRun()) {
+          if (medusa.canRun()) {
 
-            gource.init(config).on('ready', function() {
+            medusa.init(config).on('ready', function() {
 
-              gource.on('nodeMouseOver', function(data) {
+              medusa.on('nodeMouseOver', function(data) {
                 document.querySelector('html').style.cursor = 'pointer'
               })
 
-              gource.on('nodeMouseOut', function(data) {
+              medusa.on('nodeMouseOut', function(data) {
                 document.querySelector('html').style.cursor = 'default'
               })
 
@@ -111,13 +129,13 @@
                */
 
               // document.addEventListener('click', function() {
-              //   gource.destroy()
+              //   medusa.destroy()
               // })
 
-              // gource.loadCommit('18b737fa3bf08d2dc3e5faa6ecee60262fb3af8c')
+              // medusa.loadCommit('18b737fa3bf08d2dc3e5faa6ecee60262fb3af8c')
 
               // document.addEventListener('click', function() {
-              //    gource.setConfig({
+              //    medusa.setConfig({
               //     scene: {
               //       fullScreen: false,
               //       width: 800,
@@ -126,30 +144,30 @@
               //    })
               //  })
 
-              //  gource.getFirstCommit().then(function(data) {
+              //  medusa.getFirstCommit().then(function(data) {
               //    console.log(data)
               //  })
 
-              // gource.getlastCommit().then(function(data) {
+              // medusa.getlastCommit().then(function(data) {
               //   console.log(data)
               // })
 
-              // gource.on('commitChanged', function(data) {
+              // medusa.on('commitChanged', function(data) {
               //   console.log(data)
               // })
 
-              // gource.setDate('2018-01-01')
+              // medusa.setDate('2018-01-01')
 
-              // gource.setSphereView(true)
+              // medusa.setSphereView(true)
 
-              // gource.setPlay(true)
+              // medusa.setPlay(true)
 
               // document.addEventListener('click', function() {
-              //   gource.goToPrev()
+              //   medusa.goToPrev()
               // })
 
               // document.addEventListener('click', function() {
-              //   gource.goToNext()
+              //   medusa.goToNext()
               // })
 
             })
@@ -157,11 +175,11 @@
             var opener = document.getElementById('opener');
             opener.onclick = function(e){
               //e.preventDefault();
-              //gource.setConfig(opengource);
+              //medusa.setConfig(openmedusa);
             };
 
           }
         }
     </script>
-  <script type="text/javascript" src="/static/js/gource.main.js"></script></body>
+  <script type="text/javascript" src="/static/js/medusa.main.js"></script></body>
 </html>

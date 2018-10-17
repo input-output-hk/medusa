@@ -1,5 +1,5 @@
 
-.Gource-UI {
+.medusa-UI {
   .commit-list{
     .list-group-item.current{border-right:0 solid rgba($primary,0.7);background: rgba($primary,0.05) !important}
     .message { display: block; width: auto;margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -25,7 +25,7 @@
   */
 }
 @media (max-width: 767px) {
-  .Gource-UI {
+  .medusa-UI {
     .commit-list{
       .gravatar{float:right;display:none}
     }
@@ -33,9 +33,9 @@
 }
 
 .App{
-  .gource-file-info-widget { position: absolute; background: rgba(33, 34, 62, 0.9); border: 1px solid #832dc4; border-radius: 3px; padding: 1em; min-width: 321px; min-height: 86px;z-index: 9999}
-  .gource-file-info-widget:hover { cursor: default}
-  .gource-file-info-widget p { margin: 0 0 0.8em}
+  .medusa-file-info-widget { position: absolute; background: rgba(33, 34, 62, 0.9); border: 1px solid #832dc4; border-radius: 3px; padding: 1em; min-width: 321px; min-height: 86px;z-index: 9999}
+  .medusa-file-info-widget:hover { cursor: default}
+  .medusa-file-info-widget p { margin: 0 0 0.8em}
 
   .file-info-gravatar { display: inline-block; vertical-align: top}
   .file-info-details { display: inline-block; vertical-align: top}

@@ -1,9 +1,9 @@
 body {
   .App.showing-UI,
-  .Gource-UI { position: fixed;top:0;left:0;width:100%;height:100%;z-index: 999999999}
-  .Gource-UI { display: flex;align-items: stretch;border:15px $light solid;pointer-events: none;}
+  .medusa-UI { position: fixed;top:0;left:0;width:100%;height:100%;z-index: 999999999}
+  .medusa-UI { display: flex;align-items: stretch;border:15px $light solid;pointer-events: none;}
 }
-.Gource-UI {
+.medusa-UI {
   .UI-sidebar { min-width: 400px;     max-width: 400px;     transition: all 0.3s; overflow-y: scroll;background: rgba($lighter,0.7);padding-right:40px;pointer-events: auto;
     .mobile-bottom{display: none}
     .close-sidebar{margin:200px 0 0 400px;background: rgba($lighter,0.7);border:0;width:30px;height:60px;position: absolute;z-index: 9;border-radius:40px;border-top-left-radius: 0; border-bottom-left-radius: 0;text-align: left;outline: 0;
@@ -21,7 +21,7 @@ body {
   }
 }
 @media (max-width: 1199px) {
-  .Gource-UI {
+  .medusa-UI {
     .UI-sidebar { min-width: 300px;     max-width: 300px;
       .close-sidebar{margin:200px 0 0 300px;}
     }
@@ -29,7 +29,7 @@ body {
 }
 @media (max-width: 767px) {
   body{
-    .Gource-UI {font-size: 85%;border:0;
+    .medusa-UI {font-size: 85%;border:0;
 
       .UI-content {
         .close-fullscreen{width:70px;height:70px;top:-15px;right:-15px;border:0}
@@ -47,7 +47,7 @@ body {
         .close-sidebar{margin:200px 0 0 250px;}
       }
       .UI-sidebar.active {min-width: 100%;     max-width:  100%; text-align: left;padding-right:0px;
-        
+
       }
     }
   }

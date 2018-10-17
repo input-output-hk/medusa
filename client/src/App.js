@@ -49,7 +49,7 @@ import Smallogo from './style/images/logo-xs.svg'
 import Slider, { createSliderWithTooltip } from 'rc-slider'
 
 // Styles
-import './style/gource.scss'
+import './style/medusa.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
 // import urlNext from './style/images/control-next.svg'k
 
@@ -290,8 +290,8 @@ class App extends mixin(EventEmitter, Component) {
 
     if (typeof URLSearchParams !== 'undefined') {
       let urlParams = new URLSearchParams(window.location.search)
-      if (urlParams.has('gource')) {
-        let value = urlParams.get('gource')
+      if (urlParams.has('medusa')) {
+        let value = urlParams.get('medusa')
         if (value === 'fullscreen') {
           this.setConfig(ToggleFullscreenObj.open)
         }
@@ -1218,7 +1218,7 @@ class App extends mixin(EventEmitter, Component) {
       this.setConfig(ToggleFullscreenObj.close)
       if (typeof URLSearchParams !== 'undefined') {
         let urlParams = new URLSearchParams(window.location.search)
-        if (urlParams.has('gource')) {
+        if (urlParams.has('medusa')) {
           window.history.replaceState({}, '', '/')
         }
       }
@@ -1229,7 +1229,7 @@ class App extends mixin(EventEmitter, Component) {
 
     if (this.state.showUI) {
       return (
-        <div className='Gource-UI'>
+        <div className='medusa-UI'>
           <Sidebar
           config={this.config}
           currentDate={this.state.currentDate}
