@@ -53,7 +53,7 @@ import './style/medusa.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
 // import urlNext from './style/images/control-next.svg'k
 
-import { FaPlay, FaPause, IconContext, FaChevronRight, FaCalendar, FaClock, FaInfoCircle, FaStar } from 'react-icons/fa'
+import { FaPlay, FaPause, IconContext, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle, FaStar } from 'react-icons/fa'
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -1224,7 +1224,7 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
 
-    const playpause = (this.state.play) ? <button onClick={() => { this.setPlay(false) }} className="playpause border-0 bg-transparent"><FaPause /></button> : <button onClick={() => { this.setPlay(true) }} className="playpause border-0 bg-transparent"><FaPlay /></button>
+    const playpause = (this.state.play) ? <button onClick={() => { this.setPlay(false) }} className="playpause border-0 bg-transparent text-primary"><FaPause /></button> : <button onClick={() => { this.setPlay(true) }} className="playpause border-0 bg-transparent text-primary"><FaPlay /></button>
     const closeFullscreenButton = (this.config.display.showClose) ? <button ref='btn' onClick={closeFullscreenFunc} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button> : ''
 
     if (this.state.showUI) {
@@ -1233,6 +1233,10 @@ class App extends mixin(EventEmitter, Component) {
           <Sidebar
           config={this.config}
           currentDate={this.state.currentDate}
+          selected={this.state.currentDateObject}
+          onSelect={this.setDate.bind(this)}
+          minDate={moment(this.minDate)}
+          maxDate={moment(this.maxDate)}
           >
 
             <Head
@@ -1283,15 +1287,10 @@ class App extends mixin(EventEmitter, Component) {
               />
             </Widget>
 
-            <div className="mobile-bottom">
-              <DatePicker
-                customInput={<Calendar />}
-                selected={this.state.currentDateObject}
-                onSelect={this.setDate.bind(this)}
-                minDate={moment(this.minDate)}
-                maxDate={moment(this.maxDate)}
-              />
-              <div className="text-right">{playpause}</div>
+            <div className="mobile-bottom text-center">
+              <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent float-left text-body'><FaChevronLeft /></button>
+              {playpause}
+              <button onClick={this.state.goToNext} className='next border-0 bg-transparent float-right text-body'><FaChevronRight /></button>
             </div>
 
           </Sidebar>

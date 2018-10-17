@@ -23,7 +23,7 @@ const Config = {
   },
   widget: {
     head: {
-      title: 'GOURCE',
+      title: 'MEDUSA',
       subtitle: 'Github project activity',
       slug: 'head',
       content: 'Introduction',
