@@ -74,15 +74,17 @@ body {
           .inner{display: block}
           .icon{display:none;}
         }
+        .mobile-top,.mobile-bottom{font-size: 150%}
+
         .mobile-top{background:rgba($lighter,0.5);
           .calendar-wrap{display: none}
         }
         .mobile-top.calendar-showing{
           .calendar-wrap{display: block;}
         }
-        .mobile-bottom{display: block;padding:($spacer*0.6) ($spacer*0.5) ($spacer*0.7) ($spacer*0.5);}
+        .mobile-bottom{display: block;padding:($spacer*0.9) ($spacer*0.5) ($spacer*0.9) ($spacer*0.5);}
         .mobile-top span{display: inline-block;padding:($spacer*0.7) $spacer ($spacer*0.8) $spacer;}
-        .mobile-bottom > div{display: inline-block;width: 50%;padding:($spacer*0.7) ($spacer*0.5) ($spacer*0.7) ($spacer*0.5);}
+        .mobile-bottom > div{display: inline-block;width: 50%;padding:($spacer*0.9) ($spacer*0.5) ($spacer*0.9) ($spacer*0.5);}
         .close-sidebar{margin:200px 0 0 250px;}
         .card.about{display: block}
       }
