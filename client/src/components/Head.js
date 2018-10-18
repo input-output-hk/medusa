@@ -14,7 +14,7 @@ export default class Head extends Component {
             <a href={link} title={title} target='_blank'><img src={Logo} alt='' /></a>
           </div>
           <div className='col-15 col-sm-15 col-md-17 col-xl-18'>
-            <h2 className='m-0 pt-3'>{this.props.config.widget.head.title}</h2>
+            <h2 className='m-0 pt-2'>{this.props.config.widget.head.title}</h2>
             <small>{this.props.config.widget.head.subtitle}</small>
             <div>{this.props.config.widget.head.content}</div>
           </div>

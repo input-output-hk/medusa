@@ -981,7 +981,7 @@ class App extends mixin(EventEmitter, Component) {
         querySnapshot.forEach(snapshot => {
           let data = snapshot.data()
 
-          data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
+          data.dateLong = moment(data.date).format('ddd, MMM Do YYYY, h:mm:ss a')
           data.dateShort = moment(data.date).format('MMM Do')
           data.sha = snapshot.id
           data.gravatar = this.getGravatar(data.email, 40)
@@ -1010,7 +1010,7 @@ class App extends mixin(EventEmitter, Component) {
 
     // current commit
     let data = this.state.currentCommit
-    data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
+    data.dateLong = moment(data.date).format('ddd, MMM Do YYYY, h:mm:ss a')
     data.dateShort = moment(data.date).format('MMM Do')
     data.gravatar = this.getGravatar(data.email, 40)
     let sidebarCommits = [data]

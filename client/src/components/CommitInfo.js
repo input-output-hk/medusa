@@ -1,16 +1,18 @@
 import React, { Component } from 'react'
 
+import { IconContext } from "react-icons";
+import { FiMessageSquare } from 'react-icons/fi';
+
 export default class CommitInfo extends Component {
   render () {
+    const addition = (this.props.currentAdded != 1) ? "additions" : "addition"
+    const change = (this.props.currentChanged != 1) ? "changes" : "change"
+    const removal = (this.props.currentRemoved != 1) ? "removals" : "removal"
     return (
       <div className='info'>
-        <div className='currentAdded'><span>Files Added:</span> <b>{this.props.currentAdded}</b></div>
-        <div className='currentChanged'><span>Files Changed:</span> <b>{this.props.currentChanged}</b></div>
-        <div className='currentRemoved'><span>Files Removed:</span> <b>{this.props.currentRemoved}</b></div>
-        <div className='currentAuthor'><span>Author:</span> <b>{this.props.currentAuthor}</b></div>
-        <div className='currentMsg'><span>Message:</span> <b>{this.props.currentMsg}</b></div>
-        <div className='currentDate'><span>Commit Date:</span> <b>{this.props.currentDate}</b></div>
-        <div className='currentCommitHash'><span>Commit Hash:</span> <b>{this.props.currentCommitHash}</b></div>
+        <div className='msg'><FiMessageSquare /> <span>{this.props.currentMsg}</span></div>
+        <div className='hash'><span>{this.props.currentCommitHash}</span></div>
+        <div className='added'><span>{this.props.currentAdded} <small>{addition}</small>, {this.props.currentChanged} <small>{change}</small>, {this.props.currentRemoved} <small>{removal}</small> </span></div>
       </div>
     )
   }
