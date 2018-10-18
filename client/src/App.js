@@ -1226,6 +1226,11 @@ class App extends mixin(EventEmitter, Component) {
 
     const playpause = (this.state.play) ? <button onClick={() => { this.setPlay(false) }} className="playpause border-0 bg-transparent text-primary"><FaPause /></button> : <button onClick={() => { this.setPlay(true) }} className="playpause border-0 bg-transparent text-primary"><FaPlay /></button>
     const closeFullscreenButton = (this.config.display.showClose) ? <button ref='btn' onClick={closeFullscreenFunc} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button> : ''
+    //
+    // <Milestones
+    //   config={this.config}
+    //   icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaStar /></button>}
+    // />
 
     if (this.state.showUI) {
       return (
@@ -1266,11 +1271,6 @@ class App extends mixin(EventEmitter, Component) {
               currentMsg={this.state.currentMsg}
               currentDate={this.state.currentDate}
               currentCommitHash={this.state.currentCommitHash}
-            />
-
-            <Milestones
-              config={this.config}
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaStar /></button>}
             />
 
             <Widget

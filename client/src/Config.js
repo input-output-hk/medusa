@@ -40,7 +40,7 @@ const Config = {
     milestones: {
       title: 'Milestones',
       slug: 'milestones',
-      content: '<ul><li></li></ul>',
+      content: '',
     },
     calendar: {
       title: 'Calendar',

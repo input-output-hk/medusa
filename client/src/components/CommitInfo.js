@@ -11,7 +11,7 @@ export default class CommitInfo extends Component {
     return (
       <div className='info'>
         <div className='msg'><FiMessageSquare /> <span>{this.props.currentMsg}</span></div>
-        <div className='hash'><span>{this.props.currentCommitHash}</span></div>
+        <div className='hash'><small>{this.props.currentCommitHash}</small></div>
         <div className='added'><span>{this.props.currentAdded} <small>{addition}</small>, {this.props.currentChanged} <small>{change}</small>, {this.props.currentRemoved} <small>{removal}</small> </span></div>
       </div>
     )
