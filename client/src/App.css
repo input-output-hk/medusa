@@ -13,7 +13,7 @@ canvas#stage {
   z-index: 0;
 }
 
-#gource-root .commits {
+#medusa-root .commits {
   list-style: none;
   position: fixed;
   color: #fff;
@@ -21,54 +21,54 @@ canvas#stage {
   text-align: left;
 }
 
-#gource-root .commits p {
+#medusa-root .commits p {
   margin: 0 0 0.8em;
 }
 
-#gource-root .commits li {
+#medusa-root .commits li {
   padding: 0.7em 1em 0 1em;
   margin: 1em 0;
   border: 1px solid transparent;
   height: 4.3em;
 }
 
-#gource-root .commits li:hover {
+#medusa-root .commits li:hover {
   cursor: pointer;
   border: 1px solid #eeeeee;
   border-radius: 44px;
 
 }
 
-#gource-root .commits li > div {
+#medusa-root .commits li > div {
   display: inline-block;
   vertical-align: top;
 }
 
-#gource-root .commits li.current {
+#medusa-root .commits li.current {
   border: 1px solid #832dc4;
   border-radius: 44px;
 }
 
-#gource-root .commits .sidebar-gravatar {
+#medusa-root .commits .sidebar-gravatar {
   margin-right: 0.7em;
 }
 
-#gource-root .commits .sidebar-gravatar img {
+#medusa-root .commits .sidebar-gravatar img {
   border-top-left-radius: 50% 50%;
   border-top-right-radius: 50% 50%;
   border-bottom-right-radius: 50% 50%;
   border-bottom-left-radius: 50% 50%;
 }
 
-#gource-root .commits .author {
+#medusa-root .commits .author {
   font-weight: bold;
 }
 
-#gource-root .commits .date {
+#medusa-root .commits .date {
   color: #eee;
 }
 
-#gource-root .message {
+#medusa-root .message {
   display: block;
   width: 270px;
   white-space: nowrap;
@@ -76,17 +76,17 @@ canvas#stage {
   text-overflow: ellipsis;
 }
 
-#gource-root .message a {
+#medusa-root .message a {
   color: #fff;
   text-decoration: none;
 }
 
-#gource-root .message a:hover {
+#medusa-root .message a:hover {
   color: #fff;
   text-decoration: underline;
 }
 
-#gource-root .github-view {
+#medusa-root .github-view {
   color: #fff;
   text-decoration: none;
   margin-top: 0.3em;
@@ -95,11 +95,11 @@ canvas#stage {
   float: right;
 }
 
-#gource-root .github-view:hover {
+#medusa-root .github-view:hover {
   text-decoration: underline;
 }
 
-#gource-root .gource-file-info-widget {
+#medusa-root .medusa-file-info-widget {
   position: absolute;
   background: rgba(33, 34, 62, 0.9);
   border: 1px solid #832dc4;
@@ -109,25 +109,25 @@ canvas#stage {
   min-height: 86px;
 }
 
-#gource-root .gource-file-info-widget:hover {
+#medusa-root .medusa-file-info-widget:hover {
   cursor: default;
 }
 
-#gource-root .gource-file-info-widget p {
+#medusa-root .medusa-file-info-widget p {
   margin: 0 0 0.8em;
 }
 
-#gource-root .file-info-gravatar {
+#medusa-root .file-info-gravatar {
   display: inline-block;
   vertical-align: top;
 }
 
-#gource-root .file-info-details {
+#medusa-root .file-info-details {
   display: inline-block;
   vertical-align: top;
 }
 
-#gource-root .file-info-message {
+#medusa-root .file-info-message {
   display: block;
   width: 270px;
   max-height: 50px;
@@ -138,44 +138,44 @@ canvas#stage {
   text-overflow: ellipsis; */
 }
 
-#gource-root .file-info-gravatar {
+#medusa-root .file-info-gravatar {
   margin: 1.2em 0.7em 0 0;
 }
 
-#gource-root .file-info-gravatar img {
+#medusa-root .file-info-gravatar img {
   border-radius: 50%;
 }
 
-#gource-root .file-info-details {
+#medusa-root .file-info-details {
   color: #fff;
   font-size: 0.7em;
   text-align: left;
 }
 
-#gource-root .file-info-author-name a {
+#medusa-root .file-info-author-name a {
   text-decoration: none;
   font-weight: bold;
   color: #fff;
 }
 
-#gource-root .file-info-author-name a:hover {
+#medusa-root .file-info-author-name a:hover {
   text-decoration: underline;
 }
 
-#gource-root .file-info-links a {
+#medusa-root .file-info-links a {
   text-decoration: none;
   font-weight: bold;
   color: #fff;
 }
 
-#gource-root .file-info-links a:hover {
+#medusa-root .file-info-links a:hover {
   text-decoration: underline;
 }
 
-#gource-root .hidden {
+#medusa-root .hidden {
   display: none;
 }
 
-.gource-wrap {
+.medusa-wrap {
   width: 380px;
 }

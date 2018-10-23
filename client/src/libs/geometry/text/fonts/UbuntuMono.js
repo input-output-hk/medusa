@@ -1,9 +1,11 @@
 // Credit: https://github.com/jaredmcqueen/analytics/blob/master/lib/UbuntuMono.js
 
-import * as THREE from 'three'
+import {
+  TextureLoader
+} from '../../../../vendor/three/Three'
 
 const UbuntuMono = function (path) {
-  let texture = new THREE.TextureLoader().load(path)
+  let texture = new TextureLoader().load(path)
   texture.flipY = false
   texture.repeat.set(1, 1)
 

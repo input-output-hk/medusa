@@ -6,9 +6,7 @@
     <meta name="theme-color" content="#000000">
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    <!--link rel="stylesheet" href="./assets/css/bootstrap.min.css"-->
-    <!--link rel="stylesheet" href="./assets/css/font-awesome.min.css"-->
-    <title>WebGL medusa</title>
+    <title>Medusa 3D Git Repository Viewer</title>
   </head>
   <body>
     <noscript>
@@ -18,10 +16,7 @@
     <a id="opener" href="?medusa=fullscreen"  style="position:fixed;bottom:0;right:0;z-index:9999">Fullscreen</a>
       <script>
 
-
-
-
-        config = {
+        var config = {
           git: {
             owner: 'input-output-hk',
             repo: 'cardano-sl',
@@ -76,7 +71,7 @@
             }
           },
           scene: {
-            fullScreen: false,
+            fullScreen: true,
             width: 800,
             height: 600,
             bgColor: 0x121327,
@@ -95,7 +90,7 @@
           }
         }
 
-        openmedusa = {
+        var openmedusa = {
           display: {
             showUI: true,
             showSidebar: true
@@ -172,11 +167,11 @@
 
             })
 
-            var opener = document.getElementById('opener');
+            var opener = document.getElementById('opener')
             opener.onclick = function(e){
               //e.preventDefault();
               //medusa.setConfig(openmedusa);
-            };
+            }
 
           }
         }

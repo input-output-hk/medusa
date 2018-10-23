@@ -1,20 +1,29 @@
 // 3rd Party
 import React, { Component } from 'react'
-import * as THREE from 'three'
-import OrbitConstructor from 'three-orbit-controls'
+
+import {
+  Vector2,
+  Vector3,
+  Color,
+  Scene,
+  PerspectiveCamera,
+  Quaternion,
+  Euler,
+  WebGLRenderer
+} from './vendor/three/Three'
+
+import OrbitControls from './vendor/three-orbit-controls/OrbitControls'
 import deepAssign from 'deep-assign'
 import EventEmitter from 'eventemitter3'
 import mixin from 'mixin'
 import moment from 'moment'
 import firebase from 'firebase/app'
 import 'firebase/firestore'
-import 'firebase/auth'
+// import 'firebase/auth'
 import MD5 from './libs/MD5'
 
 import {
   BrowserRouter
-  // Link,
-  // Route
 } from 'react-router-dom'
 
 // Post
@@ -40,7 +49,6 @@ import Legend from './components/Legend'
 import Content from './components/Content'
 import Head from './components/Head'
 import About from './components/About'
-import Milestones from './components/Milestones'
 import Widget from './components/Widget'
 import DatePicker from 'react-datepicker'
 import Smallogo from './style/images/logo-xs.svg'
@@ -53,7 +61,7 @@ import './style/medusa.scss'
 import FullscreenClose from './style/images/close-fullscreen.svg'
 // import urlNext from './style/images/control-next.svg'k
 
-import { FaPlay, FaPause, IconContext, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle, FaStar } from 'react-icons/fa'
+import { FaPlay, FaPause, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle } from 'react-icons/fa'
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -78,8 +86,8 @@ class App extends mixin(EventEmitter, Component) {
 
     this.userInteracting = true // whether user is interacting with graph
 
-    this.mousePos = new THREE.Vector2() // keep track of mouse position
-    this.mouseDelta = new THREE.Vector2() // keep track of mouse position
+    this.mousePos = new Vector2() // keep track of mouse position
+    this.mouseDelta = new Vector2() // keep track of mouse position
 
     this.timestampToLoad = this.setTimestampToLoad() // should a specific timestamp be loaded
 
@@ -228,7 +236,7 @@ class App extends mixin(EventEmitter, Component) {
     this.docRefChanges = this.firebaseDB.collection(this.repoChanges)
     this.docRefFileInfo = this.firebaseDB.collection(this.repoFileInfo)
 
-    this.anonymousSignin()
+    // this.anonymousSignin()
 
     this.callAPI()
 
@@ -320,7 +328,7 @@ class App extends mixin(EventEmitter, Component) {
         this.renderPass.renderToScreen = false
       } else {
         this.vignettePass = new ShaderPass(Vignette)
-        this.vignettePass.material.uniforms.bgColor.value = new THREE.Color(this.config.scene.bgColor)
+        this.vignettePass.material.uniforms.bgColor.value = new Color(this.config.scene.bgColor)
         this.vignettePass.renderToScreen = true
         this.composer.addPass(this.vignettePass)
       }
@@ -333,8 +341,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   initControls () {
-    this.OrbitControls = OrbitConstructor(THREE)
-    this.controls = new this.OrbitControls(this.camera, this.renderer.domElement)
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     this.setControlsSettings()
   }
 
@@ -402,7 +409,7 @@ class App extends mixin(EventEmitter, Component) {
       clearTimeout(this.interactionTimeout)
       this.interactionTimeout = setTimeout(() => {
         this.userInteracting = false
-        const camPos = this.camera.getWorldPosition(new THREE.Vector3())
+        const camPos = this.camera.getWorldPosition(new Vector3())
         this.cameraPos.x = camPos.x
         this.cameraPos.y = camPos.y
         this.cameraPos.z = camPos.z
@@ -538,15 +545,15 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   initScene () {
-    this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(this.config.scene.bgColor)
+    this.scene = new Scene()
+    this.scene.background = new Color(this.config.scene.bgColor)
   }
 
   /**
    * Set up camera with defaults
    */
   initCamera () {
-    this.camera = new THREE.PerspectiveCamera(this.config.camera.fov, window.innerWidth / window.innerHeight, 0.1, 2000000)
+    this.camera = new PerspectiveCamera(this.config.camera.fov, window.innerWidth / window.innerHeight, 0.1, 2000000)
     this.camera.position.x = this.config.camera.initPos.x
     this.camera.position.y = this.config.camera.initPos.y
     this.camera.position.z = this.config.camera.initPos.z
@@ -558,15 +565,15 @@ class App extends mixin(EventEmitter, Component) {
     this.cameraPos = this.camera.position.clone() // current camera position
     this.targetCameraPos = this.cameraPos.clone() // target camera position
 
-    this.cameraLookAtPos = new THREE.Vector3(0, 0, 0) // current camera lookat
-    this.targetCameraLookAt = new THREE.Vector3(0, 0, 0) // target camera lookat
+    this.cameraLookAtPos = new Vector3(0, 0, 0) // current camera lookat
+    this.targetCameraLookAt = new Vector3(0, 0, 0) // target camera lookat
     this.camera.lookAt(this.cameraLookAtPos)
 
     // set initial camera rotations
-    this.cameraFromQuaternion = new THREE.Quaternion().copy(this.camera.quaternion)
-    let cameraToRotation = new THREE.Euler().copy(this.camera.rotation)
-    this.cameraToQuaternion = new THREE.Quaternion().setFromEuler(cameraToRotation)
-    this.cameraMoveQuaternion = new THREE.Quaternion()
+    this.cameraFromQuaternion = new Quaternion().copy(this.camera.quaternion)
+    let cameraToRotation = new Euler().copy(this.camera.rotation)
+    this.cameraToQuaternion = new Quaternion().setFromEuler(cameraToRotation)
+    this.cameraMoveQuaternion = new Quaternion()
 
     this.camera.updateMatrixWorld()
     this.setCameraSettings()
@@ -598,7 +605,7 @@ class App extends mixin(EventEmitter, Component) {
   initRenderer () {
     this.canvas = document.querySelector('#' + this.config.scene.canvasID)
 
-    this.renderer = new THREE.WebGLRenderer({
+    this.renderer = new WebGLRenderer({
       antialias: false,
       canvas: this.canvas
     })
@@ -913,7 +920,7 @@ class App extends mixin(EventEmitter, Component) {
    */
   cameraAccommodateNodes () {
     // get vector to center
-    let toCentre = this.camera.getWorldPosition(new THREE.Vector3()).normalize()
+    let toCentre = this.camera.getWorldPosition(new Vector3()).normalize()
 
     const nodeCount = Object.keys(this.nodes).length
 
@@ -1224,7 +1231,7 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
 
-    const playpause = (this.state.play) ? <button onClick={() => { this.setPlay(false) }} className="playpause border-0 bg-transparent text-primary"><FaPause /></button> : <button onClick={() => { this.setPlay(true) }} className="playpause border-0 bg-transparent text-primary"><FaPlay /></button>
+    const playpause = (this.state.play) ? <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><FaPause /></button> : <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><FaPlay /></button>
     const closeFullscreenButton = (this.config.display.showClose) ? <button ref='btn' onClick={closeFullscreenFunc} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button> : ''
     //
     // <Milestones
@@ -1236,12 +1243,12 @@ class App extends mixin(EventEmitter, Component) {
       return (
         <div className='medusa-UI'>
           <Sidebar
-          config={this.config}
-          currentDate={this.state.currentDate}
-          selected={this.state.currentDateObject}
-          onSelect={this.setDate.bind(this)}
-          minDate={moment(this.minDate)}
-          maxDate={moment(this.maxDate)}
+            config={this.config}
+            currentDate={this.state.currentDate}
+            selected={this.state.currentDateObject}
+            onSelect={this.setDate.bind(this)}
+            minDate={moment(this.minDate)}
+            maxDate={moment(this.maxDate)}
           >
 
             <Head
@@ -1287,7 +1294,7 @@ class App extends mixin(EventEmitter, Component) {
               />
             </Widget>
 
-            <div className="mobile-bottom text-center">
+            <div className='mobile-bottom text-center'>
               <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent float-left text-body'><FaChevronLeft /></button>
               {playpause}
               <button onClick={this.state.goToNext} className='next border-0 bg-transparent float-right text-body'><FaChevronRight /></button>

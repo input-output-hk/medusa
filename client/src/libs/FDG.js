@@ -1,5 +1,24 @@
 // 3rd Party
-import * as THREE from 'three'
+import {
+  Vector2,
+  Scene,
+  OrthographicCamera,
+  WebGLRenderTarget,
+  LinearFilter,
+  ClampToEdgeWrapping,
+  NearestFilter,
+  RGBAFormat,
+  DataTexture,
+  LuminanceAlphaFormat,
+  FloatType,
+  ShaderMaterial,
+  PlaneBufferGeometry,
+  Mesh,
+  BufferGeometry,
+  BufferAttribute,
+  AdditiveBlending,
+  Points
+} from '../vendor/three/Three'
 
 // Helpers
 import TextureHelper from './TextureHelper'
@@ -34,7 +53,7 @@ export default class FDG {
     this.config = config
     this.camera = camera
     this.mousePos = mousePos
-    this.lastMousePos = new THREE.Vector2(0, 0)
+    this.lastMousePos = new Vector2(0, 0)
     this.app = App // application instance
 
     this.frame = 0 // current frame of the animation
@@ -64,16 +83,16 @@ export default class FDG {
   }
 
   initCamera () {
-    this.quadCamera = new THREE.OrthographicCamera()
+    this.quadCamera = new OrthographicCamera()
     this.quadCamera.position.z = 1
   }
 
   initPicker () {
     this.lastHoveredNodeID = -1
     this.lastSelectedNodeID = -1
-    this.pickingScene = new THREE.Scene()
-    this.pickingTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight)
-    this.pickingTexture.texture.minFilter = THREE.LinearFilter
+    this.pickingScene = new Scene()
+    this.pickingTexture = new WebGLRenderTarget(window.innerWidth, window.innerHeight)
+    this.pickingTexture.texture.minFilter = LinearFilter
     this.pickingTexture.texture.generateMipmaps = false
   }
 
@@ -173,7 +192,7 @@ export default class FDG {
   }
 
   onMouseDown () {
-    this.lastMousePos = new THREE.Vector2(this.mousePos.x, this.mousePos.y)
+    this.lastMousePos = new Vector2(this.mousePos.x, this.mousePos.y)
   }
 
   /**
@@ -214,12 +233,12 @@ export default class FDG {
     this.setTextureDimensions()
 
     if (this.firstRun) {
-      this.positionRenderTarget1 = new THREE.WebGLRenderTarget(this.textureWidth, this.textureHeight, {
-        wrapS: THREE.ClampToEdgeWrapping,
-        wrapT: THREE.ClampToEdgeWrapping,
-        minFilter: THREE.NearestFilter,
-        magFilter: THREE.NearestFilter,
-        format: THREE.RGBAFormat,
+      this.positionRenderTarget1 = new WebGLRenderTarget(this.textureWidth, this.textureHeight, {
+        wrapS: ClampToEdgeWrapping,
+        wrapT: ClampToEdgeWrapping,
+        minFilter: NearestFilter,
+        magFilter: NearestFilter,
+        format: RGBAFormat,
         type: this.config.floatType,
         depthWrite: false,
         depthBuffer: false,
@@ -428,11 +447,11 @@ export default class FDG {
       dataArr[i * 2 + 1] = nodeTextureLocation.y
     }
 
-    let texLocation = new THREE.DataTexture(dataArr, this.texLocationWidth, this.texLocationHeight, THREE.LuminanceAlphaFormat, THREE.FloatType)
+    let texLocation = new DataTexture(dataArr, this.texLocationWidth, this.texLocationHeight, LuminanceAlphaFormat, FloatType)
 
     texLocation.needsUpdate = true
-    texLocation.minFilter = THREE.NearestFilter
-    texLocation.magFilter = THREE.NearestFilter
+    texLocation.minFilter = NearestFilter
+    texLocation.magFilter = NearestFilter
     texLocation.generateMipmaps = false
     texLocation.flipY = false
 
@@ -443,7 +462,7 @@ export default class FDG {
     let texLocation = this.setPositionTextureLocations()
 
     if (!this.positionMaterial) {
-      this.positionMaterial = new THREE.ShaderMaterial({
+      this.positionMaterial = new ShaderMaterial({
         uniforms: {
           texLocation: {
             type: 't',
@@ -479,9 +498,9 @@ export default class FDG {
         fragmentShader: PositionFrag
       })
 
-      this.positionScene = new THREE.Scene()
+      this.positionScene = new Scene()
 
-      this.positionMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), this.positionMaterial)
+      this.positionMesh = new Mesh(new PlaneBufferGeometry(2, 2), this.positionMaterial)
       this.positionScene.add(this.positionMesh)
     } else {
       this.positionMesh.material.uniforms.texLocation.value = texLocation
@@ -497,14 +516,14 @@ export default class FDG {
   initForces () {
     if (this.firstRun) {
       // pull
-      this.pullGeometry = new THREE.BufferGeometry()
-      let pullPosition = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
-      let texLocation = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 4), 4)
+      this.pullGeometry = new BufferGeometry()
+      let pullPosition = new BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
+      let texLocation = new BufferAttribute(new Float32Array((this.nodeCount * 2) * 4), 4)
 
       this.pullGeometry.addAttribute('position', pullPosition)
       this.pullGeometry.addAttribute('texLocation', texLocation)
 
-      this.pullMaterial = new THREE.ShaderMaterial({
+      this.pullMaterial = new ShaderMaterial({
         uniforms: {
           positionTexture: {
             type: 't',
@@ -512,24 +531,24 @@ export default class FDG {
           }
         },
         transparent: true,
-        blending: THREE.AdditiveBlending,
+        blending: AdditiveBlending,
         depthWrite: false,
         depthTest: false,
         vertexShader: PullVert,
         fragmentShader: ForceFrag
       })
-      this.pullScene = new THREE.Scene()
-      this.pullMesh = new THREE.Points(this.pullGeometry, this.pullMaterial)
+      this.pullScene = new Scene()
+      this.pullMesh = new Points(this.pullGeometry, this.pullMaterial)
       this.pullScene.add(this.pullMesh)
 
       // push
-      this.pushGeometry = new THREE.BufferGeometry()
-      let pushPosition = new THREE.BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
+      this.pushGeometry = new BufferGeometry()
+      let pushPosition = new BufferAttribute(new Float32Array((this.nodeCount * 2) * 3), 3)
 
       this.pushGeometry.addAttribute('position', pushPosition)
       this.pushGeometry.addAttribute('texLocation', texLocation)
 
-      this.pushMaterial = new THREE.ShaderMaterial({
+      this.pushMaterial = new ShaderMaterial({
         uniforms: {
           positionTexture: {
             type: 't',
@@ -537,14 +556,14 @@ export default class FDG {
           }
         },
         transparent: true,
-        blending: THREE.AdditiveBlending,
+        blending: AdditiveBlending,
         depthWrite: false,
         depthTest: false,
         vertexShader: PushVert,
         fragmentShader: ForceFrag
       })
-      this.pushScene = new THREE.Scene()
-      this.pushMesh = new THREE.Points(this.pushGeometry, this.pushMaterial)
+      this.pushScene = new Scene()
+      this.pushMesh = new Points(this.pushGeometry, this.pushMaterial)
       this.pushScene.add(this.pushMesh)
     }
 
@@ -589,8 +608,8 @@ export default class FDG {
   }
 
   initPassThrough () {
-    this.passThroughScene = new THREE.Scene()
-    this.passThroughMaterial = new THREE.ShaderMaterial({
+    this.passThroughScene = new Scene()
+    this.passThroughMaterial = new ShaderMaterial({
       uniforms: {
         texture: {
           type: 't',
@@ -600,7 +619,7 @@ export default class FDG {
       vertexShader: PassThroughVert,
       fragmentShader: PassThroughFrag
     })
-    let mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), this.passThroughMaterial)
+    let mesh = new Mesh(new PlaneBufferGeometry(2, 2), this.passThroughMaterial)
     this.passThroughScene.add(mesh)
   }
 }

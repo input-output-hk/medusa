@@ -1,10 +1,10 @@
 {
-  "name": "webgl-gource",
+  "name": "Medusa",
   "version": "1.0.0",
   "description": "3D WebGL Git Repository Visualization",
   "author": "Scott Darby <scott.darby@iohk.io>",
   "license": "ISC",
-  "main": "client/build/static/js/gource.main.js",
+  "main": "client/build/static/js/medusa.main.js",
   "scripts": {
     "client": "cd client && yarn start",
     "server": "nodemon server.js",

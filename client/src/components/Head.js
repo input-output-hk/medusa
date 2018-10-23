@@ -8,7 +8,7 @@ export default class Head extends Component {
     const link = '//github.com/' + Config.git.owner + '/' + Config.git.owner
     const title = 'github.com/' + Config.git.owner + '/' + Config.git.owner
     return (
-      <Widget slug={"head"} icon={this.props.icon}>
+      <Widget slug={'head'} icon={this.props.icon}>
         <div className='row'>
           <div className='col-9 col-sm-9 col-md-7 col-xl-6'>
             <a href={link} title={title} target='_blank'><img src={Logo} alt='' /></a>

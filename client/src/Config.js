@@ -1,4 +1,8 @@
-import * as THREE from 'three'
+import {
+  HalfFloatType,
+  FloatType
+} from './vendor/three/Three'
+
 import Detector from './libs/Detector'
 
 const detector = new Detector()
@@ -26,12 +30,12 @@ const Config = {
       title: 'MEDUSA',
       subtitle: 'Github project activity',
       slug: 'head',
-      content: 'Introduction',
+      content: 'Introduction'
     },
     about: {
       title: 'About',
       slug: 'about',
-      content: 'Custom about content',
+      content: 'Custom about content'
     },
     commitList: {
       title: 'Commit List',
@@ -40,7 +44,7 @@ const Config = {
     milestones: {
       title: 'Milestones',
       slug: 'milestones',
-      content: '',
+      content: ''
     },
     calendar: {
       title: 'Calendar',
@@ -114,7 +118,7 @@ const Config = {
   dev: {
     debugPicker: false
   },
-  floatType: detector.isIOS ? THREE.HalfFloatType : THREE.FloatType
+  floatType: detector.isIOS ? HalfFloatType : FloatType
 }
 
 export default Config

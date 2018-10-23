@@ -1,10 +1,7 @@
 import React, {Component} from 'react'
-import Close from '../style/images/close-side.svg'
 import DatePicker from 'react-datepicker'
-import Calendar from '../components/Calendar'
 
-import { IconContext } from "react-icons";
-import { FaChevronLeft,FaInfoCircle,FaCalendar } from 'react-icons/fa';
+import { FaChevronLeft, FaInfoCircle, FaCalendar } from 'react-icons/fa'
 
 export default class Sidebar extends Component {
   constructor (props) {
@@ -34,11 +31,11 @@ export default class Sidebar extends Component {
           <div className='content'>
             <button ref='btn' onClick={this.handleClick.bind(this)} className='close-sidebar'><FaChevronLeft /></button>
             <div className={this.state.mobilecal ? 'mobile-top d-md-none d-block calendar-showing' : 'mobile-top d-md-none d-block'}>
-              <div className="row">
-                <div className="col">
+              <div className='row'>
+                <div className='col'>
                   <span className='text-body'>{this.props.currentDate}</span>
                   <button ref='btn' onClick={this.mobilecalClick.bind(this)} className='calendar-show bg-transparent border-0 text-body p-0'><FaCalendar /></button>
-                  <div className="calendar-wrap">
+                  <div className='calendar-wrap'>
                     <DatePicker
                       inline
                       selected={this.props.selected}
@@ -48,7 +45,7 @@ export default class Sidebar extends Component {
                     />
                   </div>
                 </div>
-                <div className="col text-right">
+                <div className='col text-right'>
                   <span><button ref='btn' onClick={this.handleClick.bind(this)} className='close-info bg-transparent border-0 text-primary p-0'><FaInfoCircle /></button></span>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 {
-  "short_name": "WebGL Gource",
-  "name": "WebGL Gource",
+  "short_name": "Medusa",
+  "name": "Medusa 3D Git Repository Viewer",
   "icons": [
     {
       "src": "favicon.ico",

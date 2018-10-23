@@ -2,9 +2,8 @@ import React, { Component } from 'react'
 import Widget from '../components/Widget'
 import CommitInfo from '../components/CommitInfo'
 
-import { IconContext } from "react-icons";
-import { FaExternalLinkAlt} from 'react-icons/fa';
-import { FiMessageSquare } from 'react-icons/fi';
+import { FaExternalLinkAlt } from 'react-icons/fa'
+import { FiMessageSquare } from 'react-icons/fi'
 
 export default class CommitList extends Component {
   //
@@ -20,7 +19,7 @@ export default class CommitList extends Component {
   render () {
     if (this.props.config.display.showSidebar) {
       const infopanel = <CommitInfo currentAdded={this.props.currentAdded} currentChanged={this.props.currentChanged} currentRemoved={this.props.currentRemoved} currentAuthor={this.props.currentAuthor} currentMsg={this.props.currentMsg} currentDate={this.props.currentDate} currentCommitHash={this.props.currentCommitHash} />
-      //const info = (commit.index === this.props.sidebarCurrentCommitIndex) ? infopanel : ''
+      // const info = (commit.index === this.props.sidebarCurrentCommitIndex) ? infopanel : ''
 
       return (
         <Widget title={this.props.title} slug={this.props.slug} icon={this.props.icon} test={this.props.test} list={'true'}>
@@ -40,7 +39,6 @@ export default class CommitList extends Component {
                     <small>
                       <span className='date' title={commit.dateLong}>{commit.dateLong}</span>
                     </small>
-
 
                     {commit.index === this.props.sidebarCurrentCommitIndex ? infopanel : <p className='message'><FiMessageSquare /> {commit.msg}</p>}
 
