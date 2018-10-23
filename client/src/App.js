@@ -58,7 +58,7 @@ import Slider, { createSliderWithTooltip } from 'rc-slider'
 
 // Styles
 import './style/medusa.scss'
-import FullscreenClose from './style/images/close-fullscreen.svg'
+import FullscreenCloseImg from './style/images/close-fullscreen.svg'
 // import urlNext from './style/images/control-next.svg'k
 
 import { FaPlay, FaPause, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle } from 'react-icons/fa'
@@ -96,6 +96,44 @@ class App extends mixin(EventEmitter, Component) {
     this.edges = [] // edge data
     this.loadPrevCommit = false // load in the previous commit
     this.loadNextCommit = false // load in the next commit
+
+    this.fullScreenConfig = {
+      open: {
+        display: {
+          showUI: true,
+          showSidebar: true
+        },
+        scene: {
+          fullScreen: true
+        },
+        camera: {
+          enableZoom: true
+        },
+        FDG: {
+          usePicker: true,
+          showFilePaths: true
+        }
+      },
+      close: {
+        display: {
+          showUI: false,
+          showSidebar: false
+        },
+        scene: {
+          fullScreen: false,
+          width: this.config.scene.width,
+          height: this.config.scene.height
+        },
+        camera: {
+          enableZoom: false,
+          initPos: { x: 0, y: 0, z: this.config.scene.zPosMinimized }
+        },
+        FDG: {
+          usePicker: false,
+          showFilePaths: false
+        }
+      }
+    }
 
     this.state = {
       play: this.config.FDG.autoPlay,
@@ -225,16 +263,17 @@ class App extends mixin(EventEmitter, Component) {
       const settings = {timestampsInSnapshots: true}
       firebase.firestore().settings(settings)
 
-      await firebase.firestore().enablePersistence()
+      if (this.config.useIndexedDB) {
+        this.firebaseDB = await firebase.firestore().enablePersistence()
+      } else {
+        this.firebaseDB = await firebase.firestore()
+      }
     } catch (error) {
       console.log(error)
     }
 
-    this.firebaseDB = firebase.firestore()
-
     this.docRef = this.firebaseDB.collection(this.repo)
     this.docRefChanges = this.firebaseDB.collection(this.repoChanges)
-    this.docRefFileInfo = this.firebaseDB.collection(this.repoFileInfo)
 
     // this.anonymousSignin()
 
@@ -258,50 +297,12 @@ class App extends mixin(EventEmitter, Component) {
     this.addEvents()
     this.animate()
 
-    const ToggleFullscreenObj = {
-      open: {
-        display: {
-          showUI: true,
-          showSidebar: true
-        },
-        scene: {
-          fullScreen: true
-        },
-        camera: {
-          enableZoom: true
-        },
-        FDG: {
-          usePicker: true,
-          showFilePaths: true
-        }
-      },
-      close: {
-        display: {
-          showUI: false,
-          showSidebar: false
-        },
-        scene: {
-          fullScreen: false,
-          width: this.config.scene.width,
-          height: this.config.scene.height
-        },
-        camera: {
-          enableZoom: false,
-          initPos: { x: 0, y: 0, z: this.config.scene.zPosMinimized }
-        },
-        FDG: {
-          usePicker: false,
-          showFilePaths: false
-        }
-      }
-    }
-
     if (typeof URLSearchParams !== 'undefined') {
       let urlParams = new URLSearchParams(window.location.search)
       if (urlParams.has('medusa')) {
         let value = urlParams.get('medusa')
         if (value === 'fullscreen') {
-          this.setConfig(ToggleFullscreenObj.open)
+          this.setConfig(this.fullScreenConfig.open)
         }
       }
     }
@@ -769,7 +770,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async updateGraph (doc) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!doc.exists) {
         console.log('Error: Commit ' + doc.id + ' does not exist in repo')
         resolve()
@@ -956,8 +957,6 @@ class App extends mixin(EventEmitter, Component) {
     let commitsAbove = this.docRef.orderBy('index', 'asc').where('index', '>', currentCommitIndex).limit(this.config.display.sidebarCommitLimit)
     let commitsBelow = this.docRef.orderBy('index', 'desc').where('index', '<', currentCommitIndex).limit(this.config.display.sidebarCommitLimit)
 
-    // this.sidebarRunCount = 0
-
     let snapshotOptions = {}
     if (this.timestampToLoad) {
       snapshotOptions.includeMetadataChanges = true
@@ -1005,12 +1004,6 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   sortCommitsSidebar (currentCommitIndex) {
-    /* if (this.sidebarRunCount > 0 && this.timestampToLoad === 0) {
-      return
-    }
-
-    this.sidebarRunCount++ */
-
     if (typeof this.commitsAboveArr === 'undefined' || typeof this.commitsBelowArr === 'undefined') {
       return
     }
@@ -1065,6 +1058,11 @@ class App extends mixin(EventEmitter, Component) {
     }
 
     if (play && !this.APIprocessing) {
+      // go back to start if play head at end
+      if (this.maxIndex === this.state.currentCommitIndex) {
+        this.setDate(moment(this.minDate))
+        return
+      }
       this.callAPI()
     }
   }
@@ -1122,7 +1120,6 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   setDisplayConfig () {
-    console.log('setDisplayConfig')
     this.setState({
       showUI: this.config.display.showUI,
       showSidebar: this.config.display.showSidebar
@@ -1154,7 +1151,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async getFirstCommit () {
-    let ref = this.firebaseDB.collection(this.repoChanges)
+    let ref = this.firebaseDB.collection(this.repo)
     let commits = ref.orderBy('date', 'asc').limit(1)
     let snapshot = await commits.get()
     let firstCommit = snapshot.docs[0].data()
@@ -1165,13 +1162,14 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async getLastCommit () {
-    let ref = this.firebaseDB.collection(this.repoChanges)
+    let ref = this.firebaseDB.collection(this.repo)
     let commits = ref.orderBy('date', 'desc').limit(1)
     let snapshot = await commits.get()
 
     let lastCommit = snapshot.docs[0].data()
 
     this.maxDate = lastCommit.date
+    this.maxIndex = lastCommit.index
 
     return lastCommit
   }
@@ -1182,57 +1180,37 @@ class App extends mixin(EventEmitter, Component) {
     })
   }
 
+  playPauseButton () {
+    if (this.state.play) {
+      return (
+        <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><FaPause /></button>
+      )
+    } else {
+      return (
+        <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><FaPlay /></button>
+      )
+    }
+  }
+
+  closeFullscreen () {
+    this.setConfig(this.fullScreenConfig.close)
+    if (typeof URLSearchParams !== 'undefined') {
+      let urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('medusa')) {
+        window.history.replaceState({}, '', '/')
+      }
+    }
+  }
+
+  closeFullscreenButton () {
+    if (this.config.display.showClose) {
+      return (
+        <button ref='btn' onClick={this.closeFullscreen.bind(this)} className='close-fullscreen'><img src={FullscreenCloseImg} alt='' /></button>
+      )
+    }
+  }
+
   UI () {
-    const ToggleFullscreenObj = {
-      open: {
-        display: {
-          showUI: true,
-          showSidebar: true
-        },
-        scene: {
-          fullScreen: true
-        },
-        camera: {
-          enableZoom: true
-        },
-        FDG: {
-          usePicker: true,
-          showFilePaths: true
-        }
-      },
-      close: {
-        display: {
-          showUI: false,
-          showSidebar: false
-        },
-        scene: {
-          fullScreen: false,
-          width: this.config.scene.width,
-          height: this.config.scene.height
-        },
-        camera: {
-          enableZoom: false,
-          initPos: { x: 0, y: 0, z: this.config.scene.zPosMinimized }
-        },
-        FDG: {
-          usePicker: false,
-          showFilePaths: false
-        }
-      }
-    }
-
-    const closeFullscreenFunc = () => {
-      this.setConfig(ToggleFullscreenObj.close)
-      if (typeof URLSearchParams !== 'undefined') {
-        let urlParams = new URLSearchParams(window.location.search)
-        if (urlParams.has('medusa')) {
-          window.history.replaceState({}, '', '/')
-        }
-      }
-    }
-
-    const playpause = (this.state.play) ? <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><FaPause /></button> : <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><FaPlay /></button>
-    const closeFullscreenButton = (this.config.display.showClose) ? <button ref='btn' onClick={closeFullscreenFunc} className='close-fullscreen'><img src={FullscreenClose} alt='' /></button> : ''
     //
     // <Milestones
     //   config={this.config}
@@ -1296,7 +1274,7 @@ class App extends mixin(EventEmitter, Component) {
 
             <div className='mobile-bottom text-center'>
               <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent float-left text-body'><FaChevronLeft /></button>
-              {playpause}
+              {this.playPauseButton()}
               <button onClick={this.state.goToNext} className='next border-0 bg-transparent float-right text-body'><FaChevronRight /></button>
             </div>
 
@@ -1305,7 +1283,7 @@ class App extends mixin(EventEmitter, Component) {
             <div className='controls top'>
 
               <BrowserRouter>
-                {closeFullscreenButton}
+                {this.closeFullscreenButton()}
               </BrowserRouter>
 
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >

@@ -72,7 +72,8 @@ const Config = {
     projectId: 'webgl-gource-1da99',
     storageBucket: 'webgl-gource-1da99.appspot.com',
     messagingSenderId: '532264380396',
-    useChangesDB: true // in play mode only load in data which has changed
+    useChangesDB: true, // in play mode only load in data which has changed
+    useIndexedDB: false // enable firebase indexedDB (currently this seems buggy)
   },
   FDG: {
     nodeCount: 3000, // max number of nodes the scene can contain
