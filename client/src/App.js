@@ -149,6 +149,7 @@ class App extends mixin(EventEmitter, Component) {
       currentRemoved: null,
       currentCommitIndex: -1,
       sideBarCommits: [],
+      sidebarCommitLimit: 5,
       sidebarCurrentCommitIndex: -1,
       selectedFileCommitID: '',
       selectedFilePath: '',
@@ -1210,12 +1211,12 @@ class App extends mixin(EventEmitter, Component) {
     }
   }
 
+  resetCommitList (value) {
+    this.config.display.sidebarCommitLimit = parseInt(value.value, 10)
+    this.populateSideBar(this.state.sidebarCurrentCommitIndex)
+  }
+
   UI () {
-    //
-    // <Milestones
-    //   config={this.config}
-    //   icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaStar /></button>}
-    // />
 
     if (this.state.showUI) {
       return (
@@ -1244,6 +1245,8 @@ class App extends mixin(EventEmitter, Component) {
               title={this.config.widget.commitList.title}
               slug={this.config.widget.commitList.slug}
               config={this.config}
+              onChange={this.resetCommitList.bind(this)}
+              value={this.state.value}
               sideBarCommits={this.state.sideBarCommits}
               sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
               loadCommit={this.loadCommit.bind(this)}

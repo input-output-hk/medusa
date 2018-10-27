@@ -20,11 +20,13 @@ export default class Widget extends Component {
     const title = (this.props.title) ? <div className='card-header border-dark border-top border-bottom-0 pl-0 pb-2'><h5 className='card-title m-0'>{this.props.title} <button ref='btn' onClick={() => this.handleClick()} className='close'><img src={Close} alt='' /></button></h5></div> : ''
     const children = (this.props.list) ? <div>{this.props.children}</div> : <div className='card-body'>{this.props.children}</div>
     const icon = (this.props.icon) ? <div className='icon'>{this.props.icon}</div> : ''
+    const subhead = (this.props.subhead) ? <div className="subhead">{this.props.subhead}</div> : ''
 
     return (
       <div className={slug}>
         {icon}
         {title}
+        {subhead}
         <div className='inner'>
           {children}
         </div>

@@ -1,29 +1,67 @@
 import React, { Component } from 'react'
 import Widget from '../components/Widget'
 import CommitInfo from '../components/CommitInfo'
+import Select from 'react-select'
 
-import { FaExternalLinkAlt } from 'react-icons/fa'
-import { FiMessageSquare } from 'react-icons/fi'
+import { IconContext } from "react-icons";
+import { FaExternalLinkAlt} from 'react-icons/fa';
+import { FiMessageSquare } from 'react-icons/fi';
+
+const options = [
+  { value: '5', label: '5' },
+  { value: '10', label: '10' },
+  { value: '20', label: '20' },
+  { value: '30', label: '30' },
+  { value: '50', label: '50' },
+  { value: '99999999', label: 'All' },
+]
+
+const customStyles = {
+  option: (base, state) => ({
+    borderBottom: '1px solid rgba(0,0,0,0.2)',
+    padding: 5,
+  }),
+  control: (base, state) => ({
+    border: '0 solid rgba(0,0,0,0.2)',
+    background: 'rgba(255,255,255,0.2)',
+    padding: 0,
+  }),
+}
 
 export default class CommitList extends Component {
-  //
 
-  //
-  // <div className="card-body">
-  //   <div className='commit--switcher'>
-  //     <a onClick={this.props.goToPrev} className='prev' title='Previous commit'>Previous<em className='icon-arrow-down' /></a>
-  //     <a onClick={this.props.goToNext} className='next' title='Next commit'>Next<em className='icon-arrow-up' /></a>
-  //   </div>
-  // </div>
+  state = {
+    selectedOption: null,
+  }
+  handleChange = (selectedOption) => {
+    this.setState({ selectedOption })
+    if (typeof this.props.onChange === 'function') {
+        this.props.onChange(selectedOption)
+    }
+  }
 
   render () {
     if (this.props.config.display.showSidebar) {
+      const { selectedOption } = this.state;
       const infopanel = <CommitInfo currentAdded={this.props.currentAdded} currentChanged={this.props.currentChanged} currentRemoved={this.props.currentRemoved} currentAuthor={this.props.currentAuthor} currentMsg={this.props.currentMsg} currentDate={this.props.currentDate} currentCommitHash={this.props.currentCommitHash} />
-      // const info = (commit.index === this.props.sidebarCurrentCommitIndex) ? infopanel : ''
 
       return (
-        <Widget title={this.props.title} slug={this.props.slug} icon={this.props.icon} test={this.props.test} list={'true'}>
-
+        <Widget title={this.props.title} slug={this.props.slug} icon={this.props.icon} list={'true'} onChange={this.props.onChange} value={this.props.value}>
+          <div className="row control-count">
+            <div className="col-16">
+              <label className="d-inline-block ml-3">Commit display count</label>
+            </div>
+            <div className="col-8">
+              <Select
+                className="select mr-3"
+                value={selectedOption}
+                placeholder="5"
+                onChange={this.handleChange}
+                styles={customStyles}
+                options={options}
+              />
+            </div>
+          </div>
           <ul className='list-group list-group-flush'>
             {this.props.sideBarCommits.map((commit) =>
               <li key={commit.sha}
@@ -39,6 +77,7 @@ export default class CommitList extends Component {
                     <small>
                       <span className='date' title={commit.dateLong}>{commit.dateLong}</span>
                     </small>
+
 
                     {commit.index === this.props.sidebarCurrentCommitIndex ? infopanel : <p className='message'><FiMessageSquare /> {commit.msg}</p>}
 
