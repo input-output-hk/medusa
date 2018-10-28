@@ -1212,7 +1212,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   resetCommitList (value) {
-    this.config.display.sidebarCommitLimit = parseInt(value.value, 10)
+    this.config.display.sidebarCommitLimit = parseInt(value, 10)
     this.populateSideBar(this.state.sidebarCurrentCommitIndex)
   }
 

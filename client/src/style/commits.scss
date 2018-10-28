@@ -6,7 +6,8 @@
       .info div{padding: 1px 0 3px 0}
       .info div+div{border-top:1px solid rgba($primary,0.1);padding: 4px 0}
     }
-    .control-count .select{max-width:auto;}
+    .subhead .select{float:right;margin:-28px 0 8px 0}
+    .subhead .select select{border: 0;background: rgba(255,255,255,0.3)}
     .message { display: block; width: auto;margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       a { color: #fff; text-decoration: none}
       a:hover { color: #fff; text-decoration: underline}
