@@ -980,7 +980,7 @@ class App extends mixin(EventEmitter, Component) {
     this.setPostSettings()
     this.setCameraSettings()
 
-    if (this.FDG && this.FDG.active === true) {
+    if (this.FDG && this.FDG.enabled) {
       this.FDG.triggerUpdate()
     }
   }
