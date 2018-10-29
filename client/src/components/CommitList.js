@@ -26,7 +26,7 @@ export default class CommitList extends Component {
     if (this.props.config.display.showSidebar) {
       const { selectedOption } = this.state;
       const infopanel = <CommitInfo currentAdded={this.props.currentAdded} currentChanged={this.props.currentChanged} currentRemoved={this.props.currentRemoved} currentAuthor={this.props.currentAuthor} currentMsg={this.props.currentMsg} currentDate={this.props.currentDate} currentCommitHash={this.props.currentCommitHash} />
-      const selector = <div className="select mr-3"><small>Showing</small>&nbsp;&nbsp;<select className="" value={this.state.value} onChange={this.handleChange}><option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="99999999">All</option></select></div>
+      const selector = <div className="select mr-3"><small>Showing</small>&nbsp;&nbsp;<select className="" value={this.state.value} onChange={this.handleChange}><option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="500">500</option></select></div>
 
       return (
         <Widget title={this.props.title} slug={this.props.slug} icon={this.props.icon} list={'true'} value={this.state.value} onChange={this.handleChange} subhead={selector}>
