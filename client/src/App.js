@@ -1115,7 +1115,7 @@ class App extends mixin(EventEmitter, Component) {
 
     this.resize()
 
-    if (this.FDG && this.FDG.active === true) {
+    if (this.FDG && this.FDG.enabled) {
       this.FDG.triggerUpdate()
     }
   }
