@@ -19,7 +19,7 @@ import mixin from 'mixin'
 import moment from 'moment'
 import firebase from 'firebase/app'
 import 'firebase/firestore'
-// import 'firebase/auth'
+import 'firebase/auth'
 import MD5 from './libs/MD5'
 
 import {
@@ -276,7 +276,7 @@ class App extends mixin(EventEmitter, Component) {
     this.docRef = this.firebaseDB.collection(this.repo)
     this.docRefChanges = this.firebaseDB.collection(this.repoChanges)
 
-    // this.anonymousSignin()
+    this.anonymousSignin()
 
     this.callAPI()
 
