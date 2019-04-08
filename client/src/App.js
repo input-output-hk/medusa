@@ -198,10 +198,16 @@ class App extends mixin(EventEmitter, Component) {
   /**
    * Slow down a potential DDOS attack by requiring the user to be signed in anonymously
    */
-  anonymousSignin () {
-    firebase.auth().signInAnonymously().catch(function (error) {
-      console.log(error.code)
-      console.log(error.message)
+  async anonymousSignin () {
+    return new Promise((resolve, reject) => {
+      firebase.auth().signInAnonymously()
+        .then(() => {
+          resolve()
+        })
+        .catch(function (error) {
+          console.log(error.code)
+          console.log(error.message)
+        })
     })
   }
 
@@ -276,7 +282,7 @@ class App extends mixin(EventEmitter, Component) {
     this.docRef = this.firebaseDB.collection(this.repo)
     this.docRefChanges = this.firebaseDB.collection(this.repoChanges)
 
-    this.anonymousSignin()
+    await this.anonymousSignin()
 
     this.callAPI()
 
@@ -1217,7 +1223,6 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   UI () {
-
     if (this.state.showUI) {
       return (
         <div className='medusa-UI'>
