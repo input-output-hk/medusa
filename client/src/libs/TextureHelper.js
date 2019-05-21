@@ -1,4 +1,9 @@
-import * as THREE from 'three'
+import {
+  DataTexture,
+  NearestFilter,
+  RGBAFormat,
+  FloatType
+} from '../vendor/three/Three'
 
 export default class TextureHelper {
   constructor () {
@@ -52,15 +57,15 @@ export default class TextureHelper {
     }
 
     if (!this.positionTexture) {
-      this.positionTexture = new THREE.DataTexture(
+      this.positionTexture = new DataTexture(
         textureArray,
         this.textureWidth,
         this.textureHeight,
-        THREE.RGBAFormat,
-        THREE.FloatType
+        RGBAFormat,
+        FloatType
       )
-      this.positionTexture.minFilter = THREE.NearestFilter
-      this.positionTexture.magFilter = THREE.NearestFilter
+      this.positionTexture.minFilter = NearestFilter
+      this.positionTexture.magFilter = NearestFilter
       this.positionTexture.generateMipmaps = false
       this.positionTexture.flipY = false
       this.positionTexture.needsUpdate = true

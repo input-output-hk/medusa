@@ -53,15 +53,15 @@ module.exports = {
     // changing JS code would still trigger a refresh.
   ],
   output: {
-    library: 'gource',
+    library: 'medusa',
     // Add /* filename */ comments to generated require()s in the output.
     pathinfo: true,
     // This does not produce a real file. It's just the virtual path that is
     // served by WebpackDevServer in development. This is the JS bundle
     // containing code from all our entry points, and the Webpack runtime.
-    filename: 'static/js/gource.js',
+    filename: 'static/js/medusa.js',
     // There are also additional JS chunk files if you use code splitting.
-    chunkFilename: 'static/js/gource.[name].chunk.js',
+    chunkFilename: 'static/js/medusa.[name].chunk.js',
     // This is the URL that app is served from. We use "/" in development.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -141,13 +141,18 @@ module.exports = {
           // smaller than specified limit in bytes as data URLs to avoid requests.
           // A missing `test` is equivalent to a match.
           {
-            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.svg$/],
             loader: require.resolve('url-loader'),
             options: {
               limit: 10000,
-              name: 'static/media/gource.[name].[hash:8].[ext]'
+              name: 'static/media/medusa.[name].[hash:8].[ext]'
             }
           },
+          {
+              test: /\.(eot|svg|ttf|woff|woff2)$/,
+              loader: 'file?name=node_modules/simple-line-icons/fonts/[name].[ext]'
+          },
+
           // Process JS with Babel.
           {
             test: /\.(js|jsx|mjs)$/,
@@ -160,6 +165,15 @@ module.exports = {
               // directory for faster rebuilds.
               cacheDirectory: true
             }
+          },
+          // SASS integration
+          {
+            test: /\.scss$/,
+            use: [
+              'style-loader', // creates style nodes from JS strings
+              'css-loader', // translates CSS into CommonJS
+              'sass-loader' // compiles Sass to CSS, using Node Sass by default
+            ]
           },
           // "postcss" loader applies autoprefixer to our CSS.
           // "css" loader resolves paths in CSS and adds assets as dependencies.
@@ -211,7 +225,7 @@ module.exports = {
             exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
             loader: require.resolve('file-loader'),
             options: {
-              name: 'static/media/gource.[name].[hash:8].[ext]'
+              name: 'static/media/medusa.[name].[hash:8].[ext]'
             }
           }
         ]

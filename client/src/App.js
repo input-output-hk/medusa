@@ -1,7 +1,18 @@
 // 3rd Party
 import React, { Component } from 'react'
-import * as THREE from 'three'
-import OrbitContructor from 'three-orbit-controls'
+
+import {
+  Vector2,
+  Vector3,
+  Color,
+  Scene,
+  PerspectiveCamera,
+  Quaternion,
+  Euler,
+  WebGLRenderer
+} from './vendor/three/Three'
+
+import OrbitControls from './vendor/three-orbit-controls/OrbitControls'
 import deepAssign from 'deep-assign'
 import EventEmitter from 'eventemitter3'
 import mixin from 'mixin'
@@ -11,22 +22,72 @@ import 'firebase/firestore'
 import 'firebase/auth'
 import MD5 from './libs/MD5'
 
+import {
+  BrowserRouter
+} from 'react-router-dom'
+
 // Post
-import { EffectComposer, ShaderPass, RenderPass } from './libs/post/EffectComposer'
+import {
+  EffectComposer,
+  ShaderPass,
+  RenderPass
+  // UnrealBloomPass
+} from './libs/post/EffectComposer'
 import Vignette from './libs/post/Vignette'
 
 // Libs
 import Config from './Config'
 import FDG from './libs/FDG'
 
-// CSS
-import './App.css'
+// Components
+import FileInfo from './components/FileInfo'
+import CommitList from './components/CommitList'
+import Controls from './components/Controls'
+import Sidebar from './components/Sidebar'
+import Calendar from './components/Calendar'
+import Legend from './components/Legend'
+import Content from './components/Content'
+import Head from './components/Head'
+import About from './components/About'
+import Widget from './components/Widget'
+import DatePicker from 'react-datepicker'
+import Smallogo from './style/images/logo-xs.svg'
+
+// Slider
+import Slider, { createSliderWithTooltip } from 'rc-slider'
+
+// Styles
+import './style/medusa.scss'
+import FullscreenCloseImg from './style/images/close-fullscreen.svg'
+// import urlNext from './style/images/control-next.svg'k
+
+import { FaPlay, FaPause, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle } from 'react-icons/fa'
+
+const SliderWithTooltip = createSliderWithTooltip(Slider)
+
+function dateSliderTooltipFormatter (v) {
+  return `${moment(v).format('DD.MM.YYYY')}`
+}
 
 class App extends mixin(EventEmitter, Component) {
   constructor (props) {
     super(props)
 
     this.config = deepAssign(Config, this.props.config)
+
+    if (typeof URLSearchParams !== 'undefined') {
+      let urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('repo')) {
+        let value = urlParams.get('repo')
+        if (this.config.git.supportedRepos.indexOf(value) !== -1) {
+          this.setConfig({
+            git: {
+              repo: value
+            }
+          })
+        }
+      }
+    }
 
     this.initFireBase()
 
@@ -39,10 +100,10 @@ class App extends mixin(EventEmitter, Component) {
 
     this.userInteracting = true // whether user is interacting with graph
 
-    this.mousePos = new THREE.Vector2() // keep track of mouse position
-    this.mouseDelta = new THREE.Vector2() // keep track of mouse position
+    this.mousePos = new Vector2() // keep track of mouse position
+    this.mouseDelta = new Vector2() // keep track of mouse position
 
-    let timestampToLoad = this.setTimestampToLoad() // should a specific timestamp be loaded
+    this.timestampToLoad = this.setTimestampToLoad() // should a specific timestamp be loaded
 
     this.commitsToProcess = [] // list of commits to process
     this.nodes = {} // node data
@@ -50,9 +111,50 @@ class App extends mixin(EventEmitter, Component) {
     this.loadPrevCommit = false // load in the previous commit
     this.loadNextCommit = false // load in the next commit
 
+    this.fullScreenConfig = {
+      open: {
+        display: {
+          showUI: true,
+          showSidebar: true
+        },
+        scene: {
+          fullScreen: true
+        },
+        camera: {
+          enableZoom: true
+        },
+        FDG: {
+          usePicker: true,
+          showFilePaths: true
+        }
+      },
+      close: {
+        display: {
+          showUI: false,
+          showSidebar: false
+        },
+        scene: {
+          fullScreen: false,
+          width: this.config.scene.width,
+          height: this.config.scene.height
+        },
+        camera: {
+          enableZoom: false,
+          initPos: { x: 0, y: 0, z: this.config.scene.zPosMinimized }
+        },
+        FDG: {
+          usePicker: false,
+          showFilePaths: false
+        }
+      }
+    }
+
+    this.componentMounted = false
+
     this.state = {
       play: this.config.FDG.autoPlay,
       currentDate: null,
+      currentDateObject: moment(),
       currentCommitHash: '',
       spherize: this.config.FDG.sphereProject,
       currentCommit: null,
@@ -61,9 +163,9 @@ class App extends mixin(EventEmitter, Component) {
       currentAdded: null,
       currentChanged: null,
       currentRemoved: null,
-      timestampToLoad: timestampToLoad,
       currentCommitIndex: -1,
       sideBarCommits: [],
+      sidebarCommitLimit: 5,
       sidebarCurrentCommitIndex: -1,
       selectedFileCommitID: '',
       selectedFilePath: '',
@@ -74,12 +176,23 @@ class App extends mixin(EventEmitter, Component) {
       selectedFileDate: '',
       selectedFileName: '',
       selectedFileMessage: '',
-      fileInfoLocation: {x: 0, y: 0},
+      fileInfoLocation: { x: 0, y: 0 },
       showFileInfo: false,
-      loadingFileInfo: true
+      loadingFileInfo: true,
+      dateRangeLoaded: false,
+      showUI: this.config.display.showUI,
+      showSidebar: this.config.display.showSidebar
     }
 
     this.loadCommitHash = this.config.git.commitHash
+  }
+
+  async setDateRange () {
+    await this.getFirstCommit()
+    await this.getLastCommit()
+    this.setState({
+      dateRangeLoaded: true
+    })
   }
 
   setTimestampToLoad () {
@@ -119,19 +232,36 @@ class App extends mixin(EventEmitter, Component) {
    * than the latest commit date, the latest commit
    * will be loaded
    *
-   * @param {string} date
+   * @param {moment} dateObject
    */
-  setDate (dateString) {
-    let date = moment(dateString).valueOf()
+  async setDate (dateObject) {
+    this.timestampToLoad = dateObject.valueOf()
+
     this.setState({
-      timestampToLoad: date
+      currentDateObject: dateObject
     })
-    if (!this.state.play) {
-      this.callAPI()
-    } else {
+
+    if (this.state.play) {
       this.setPlay(false)
-      this.callAPI()
     }
+    this.callAPI()
+  }
+
+  /**
+   * Set timestamp to load commits from
+   *
+   * @param {string} timestamp
+   */
+  async setTimestamp (timestamp) {
+    this.timestampToLoad = timestamp
+
+    this.setState({
+      currentDateObject: moment(timestamp)
+    })
+    if (this.state.play) {
+      this.setPlay(false)
+    }
+    this.callAPI()
   }
 
   /**
@@ -141,7 +271,7 @@ class App extends mixin(EventEmitter, Component) {
    */
   setSphereView (bool) {
     this.config.FDG.sphereProject = bool
-    this.setState({spherize: this.config.FDG.sphereProject})
+    this.setState({ spherize: this.config.FDG.sphereProject })
   }
 
   async initFireBase () {
@@ -153,19 +283,19 @@ class App extends mixin(EventEmitter, Component) {
     try {
       firebase.initializeApp(this.config.fireBase)
 
-      const settings = {timestampsInSnapshots: true}
-      firebase.firestore().settings(settings)
+      firebase.firestore()
 
-      await firebase.firestore().enablePersistence()
+      if (this.config.useIndexedDB) {
+        this.firebaseDB = await firebase.firestore().enablePersistence()
+      } else {
+        this.firebaseDB = await firebase.firestore()
+      }
     } catch (error) {
       console.log(error)
     }
 
-    this.firebaseDB = firebase.firestore()
-
     this.docRef = this.firebaseDB.collection(this.repo)
     this.docRefChanges = this.firebaseDB.collection(this.repoChanges)
-    this.docRefFileInfo = this.firebaseDB.collection(this.repoFileInfo)
 
     await this.anonymousSignin()
 
@@ -176,6 +306,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   componentDidMount () {
+    this.componentMounted = true
     this.initStage()
   }
 
@@ -187,7 +318,20 @@ class App extends mixin(EventEmitter, Component) {
     this.initControls()
     this.initFDG()
     this.addEvents()
+    this.getFullScreenConfig()
     this.animate()
+  }
+
+  getFullScreenConfig () {
+    if (typeof URLSearchParams !== 'undefined') {
+      let urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('medusa')) {
+        let value = urlParams.get('medusa')
+        if (value === 'fullscreen') {
+          this.setConfig(this.fullScreenConfig.open)
+        }
+      }
+    }
   }
 
   initPost () {
@@ -199,13 +343,23 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   setPostSettings () {
+    if (!this.composer) {
+      return
+    }
+
+    // if (this.config.post.bloom) {
+    //   // res, strength, radius, threshold
+    //   this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
+    //   this.composer.addPass(this.bloomPass)
+    // }
+
     if (this.config.post.vignette) {
       if (this.vignettePass) {
         this.vignettePass.enabled = true
         this.renderPass.renderToScreen = false
       } else {
         this.vignettePass = new ShaderPass(Vignette)
-        this.vignettePass.material.uniforms.bgColor.value = new THREE.Color(this.config.scene.bgColor)
+        this.vignettePass.material.uniforms.bgColor.value = new Color(this.config.scene.bgColor)
         this.vignettePass.renderToScreen = true
         this.composer.addPass(this.vignettePass)
       }
@@ -218,12 +372,14 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   initControls () {
-    this.OrbitControls = OrbitContructor(THREE)
-    this.controls = new this.OrbitControls(this.camera, this.renderer.domElement)
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     this.setControlsSettings()
   }
 
   setControlsSettings () {
+    if (!this.controls) {
+      return
+    }
     this.controls.minDistance = 200
     this.controls.maxDistance = 10000
     this.controls.enablePan = false
@@ -287,7 +443,7 @@ class App extends mixin(EventEmitter, Component) {
       clearTimeout(this.interactionTimeout)
       this.interactionTimeout = setTimeout(() => {
         this.userInteracting = false
-        const camPos = this.camera.getWorldPosition(new THREE.Vector3())
+        const camPos = this.camera.getWorldPosition(new Vector3())
         this.cameraPos.x = camPos.x
         this.cameraPos.y = camPos.y
         this.cameraPos.z = camPos.z
@@ -323,6 +479,10 @@ class App extends mixin(EventEmitter, Component) {
     })
 
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
+
+    this.on('ready', () => {
+      this.setDateRange()
+    })
 
     this.on('nodeDeselect', function (data) {
       this.controls.enabled = true
@@ -419,15 +579,15 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   initScene () {
-    this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(this.config.scene.bgColor)
+    this.scene = new Scene()
+    this.scene.background = new Color(this.config.scene.bgColor)
   }
 
   /**
    * Set up camera with defaults
    */
   initCamera () {
-    this.camera = new THREE.PerspectiveCamera(this.config.camera.fov, window.innerWidth / window.innerHeight, 0.1, 2000000)
+    this.camera = new PerspectiveCamera(this.config.camera.fov, window.innerWidth / window.innerHeight, 0.1, 2000000)
     this.camera.position.x = this.config.camera.initPos.x
     this.camera.position.y = this.config.camera.initPos.y
     this.camera.position.z = this.config.camera.initPos.z
@@ -439,21 +599,24 @@ class App extends mixin(EventEmitter, Component) {
     this.cameraPos = this.camera.position.clone() // current camera position
     this.targetCameraPos = this.cameraPos.clone() // target camera position
 
-    this.cameraLookAtPos = new THREE.Vector3(0, 0, 0) // current camera lookat
-    this.targetCameraLookAt = new THREE.Vector3(0, 0, 0) // target camera lookat
+    this.cameraLookAtPos = new Vector3(0, 0, 0) // current camera lookat
+    this.targetCameraLookAt = new Vector3(0, 0, 0) // target camera lookat
     this.camera.lookAt(this.cameraLookAtPos)
 
     // set initial camera rotations
-    this.cameraFromQuaternion = new THREE.Quaternion().copy(this.camera.quaternion)
-    let cameraToRotation = new THREE.Euler().copy(this.camera.rotation)
-    this.cameraToQuaternion = new THREE.Quaternion().setFromEuler(cameraToRotation)
-    this.cameraMoveQuaternion = new THREE.Quaternion()
+    this.cameraFromQuaternion = new Quaternion().copy(this.camera.quaternion)
+    let cameraToRotation = new Euler().copy(this.camera.rotation)
+    this.cameraToQuaternion = new Quaternion().setFromEuler(cameraToRotation)
+    this.cameraMoveQuaternion = new Quaternion()
 
     this.camera.updateMatrixWorld()
     this.setCameraSettings()
   }
 
   setCameraSettings () {
+    if (!this.camera) {
+      return
+    }
     this.camera.fov = this.config.camera.fov
     this.camera.updateMatrixWorld()
   }
@@ -479,8 +642,8 @@ class App extends mixin(EventEmitter, Component) {
   initRenderer () {
     this.canvas = document.querySelector('#' + this.config.scene.canvasID)
 
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: this.config.scene.antialias,
+    this.renderer = new WebGLRenderer({
+      antialias: false,
       canvas: this.canvas
     })
   }
@@ -489,6 +652,10 @@ class App extends mixin(EventEmitter, Component) {
    * Window resize
    */
   resize () {
+    if (!this.camera) {
+      return
+    }
+
     if (this.config.scene.fullScreen) {
       this.width = window.innerWidth
       this.height = window.innerHeight
@@ -549,10 +716,10 @@ class App extends mixin(EventEmitter, Component) {
     } else if (this.loadNextCommit) { // load next commit
       commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
       this.direction = 'next'
-    } else if (this.config.git.loadLatest && !this.state.timestampToLoad) {
+    } else if (this.config.git.loadLatest && !this.timestampToLoad) {
       commits = this.docRef.orderBy('index', 'desc').limit(1)
-    } else if (this.state.timestampToLoad) {
-      commits = this.docRef.where('date', '>=', this.state.timestampToLoad).limit(1)
+    } else if (this.timestampToLoad) {
+      commits = this.docRef.where('date', '>=', this.timestampToLoad).limit(1)
     } else {
       commits = this.docRef.where('index', '==', this.state.currentCommitIndex + 1).limit(1)
       this.direction = 'next'
@@ -569,14 +736,14 @@ class App extends mixin(EventEmitter, Component) {
 
     let snapshotOptions = {}
 
-    if (this.state.timestampToLoad) {
+    if (this.timestampToLoad) {
       snapshotOptions.includeMetadataChanges = true
     }
 
     commits.onSnapshot(snapshotOptions,
       async function (querySnapshot) {
         // if loading from a particular date, disable local storage cache
-        if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
+        if (this.timestampToLoad && querySnapshot.metadata.fromCache) {
           return
         }
 
@@ -592,10 +759,10 @@ class App extends mixin(EventEmitter, Component) {
           if (snapshot.size !== 0) {
             let commit = snapshot.docs[0].data()
             if (this.direction === 'prev') {
-              this.setState({currentCommitIndex: commit.index + 1})
+              this.setState({ currentCommitIndex: commit.index + 1 })
               this.loadPrevCommit = true
             } else {
-              this.setState({currentCommitIndex: commit.index - 1})
+              this.setState({ currentCommitIndex: commit.index - 1 })
               this.loadNextCommit = true
             }
             this.callAPI()
@@ -615,7 +782,7 @@ class App extends mixin(EventEmitter, Component) {
         }
 
         // if no results found for the passed date, load latest commit
-        if (this.state.timestampToLoad && snapshots.length === 0) {
+        if (this.timestampToLoad && snapshots.length === 0) {
           commits = this.docRef.orderBy('index', 'desc').limit(1)
           let snapshot = await commits.get()
           snapshots.push(snapshot)
@@ -643,7 +810,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async updateGraph (doc) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!doc.exists) {
         console.log('Error: Commit ' + doc.id + ' does not exist in repo')
         resolve()
@@ -711,9 +878,10 @@ class App extends mixin(EventEmitter, Component) {
 
         let changedState = {}
 
-        changedState.timestampToLoad = 0
+        this.timestampToLoad = 0
         changedState.currentCommit = commit
         changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
+        changedState.currentDateObject = moment(moment.unix(commit.date / 1000))
         changedState.committerDate = commit.committerDate ? moment.unix(commit.committerDate / 1000).format('MM/DD/YYYY HH:mm:ss') : changedState.currentDate
         changedState.currentCommitHash = commit.sha
         changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
@@ -793,7 +961,7 @@ class App extends mixin(EventEmitter, Component) {
    */
   cameraAccommodateNodes () {
     // get vector to center
-    let toCentre = this.camera.getWorldPosition(new THREE.Vector3()).normalize()
+    let toCentre = this.camera.getWorldPosition(new Vector3()).normalize()
 
     const nodeCount = Object.keys(this.nodes).length
 
@@ -822,22 +990,20 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async populateSideBar (currentCommitIndex) {
-    if (!this.config.display.showSidebar) {
+    if (!this.state.showSidebar) {
       return
     }
 
     let commitsAbove = this.docRef.orderBy('index', 'asc').where('index', '>', currentCommitIndex).limit(this.config.display.sidebarCommitLimit)
     let commitsBelow = this.docRef.orderBy('index', 'desc').where('index', '<', currentCommitIndex).limit(this.config.display.sidebarCommitLimit)
 
-    // this.sidebarRunCount = 0
-
     let snapshotOptions = {}
-    if (this.state.timestampToLoad) {
+    if (this.timestampToLoad) {
       snapshotOptions.includeMetadataChanges = true
     }
 
     commitsAbove.onSnapshot(snapshotOptions, function (querySnapshot) {
-      if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
+      if (this.timestampToLoad && querySnapshot.metadata.fromCache) {
         return
       }
 
@@ -853,7 +1019,7 @@ class App extends mixin(EventEmitter, Component) {
       })
 
       commitsBelow.onSnapshot(function (querySnapshot) {
-        if (this.state.timestampToLoad && querySnapshot.metadata.fromCache) {
+        if (this.timestampToLoad && querySnapshot.metadata.fromCache) {
           return
         }
 
@@ -861,7 +1027,7 @@ class App extends mixin(EventEmitter, Component) {
         querySnapshot.forEach(snapshot => {
           let data = snapshot.data()
 
-          data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
+          data.dateLong = moment(data.date).format('ddd, MMM Do YYYY, h:mm:ss a')
           data.dateShort = moment(data.date).format('MMM Do')
           data.sha = snapshot.id
           data.gravatar = this.getGravatar(data.email, 40)
@@ -878,19 +1044,13 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   sortCommitsSidebar (currentCommitIndex) {
-    /* if (this.sidebarRunCount > 0 && this.state.timestampToLoad === 0) {
-      return
-    }
-
-    this.sidebarRunCount++ */
-
     if (typeof this.commitsAboveArr === 'undefined' || typeof this.commitsBelowArr === 'undefined') {
       return
     }
 
     // current commit
     let data = this.state.currentCommit
-    data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
+    data.dateLong = moment(data.date).format('ddd, MMM Do YYYY, h:mm:ss a')
     data.dateShort = moment(data.date).format('MMM Do')
     data.gravatar = this.getGravatar(data.email, 40)
     let sidebarCommits = [data]
@@ -925,12 +1085,12 @@ class App extends mixin(EventEmitter, Component) {
 
   toggleSpherize () {
     this.config.FDG.sphereProject = !this.state.spherize
-    this.setState({spherize: this.config.FDG.sphereProject})
+    this.setState({ spherize: this.config.FDG.sphereProject })
   }
 
   setPlay (bool) {
     let play = bool
-    this.setState({play: play})
+    this.setState({ play: play })
 
     if (!play) {
       this.APIprocessing = false
@@ -938,13 +1098,18 @@ class App extends mixin(EventEmitter, Component) {
     }
 
     if (play && !this.APIprocessing) {
+      // go back to start if play head at end
+      if (this.maxIndex === this.state.currentCommitIndex) {
+        this.setDate(moment(this.minDate))
+        return
+      }
       this.callAPI()
     }
   }
 
   togglePlay () {
     let play = !this.state.play
-    this.setState({play: play})
+    this.setState({ play: play })
 
     if (!play) {
       this.APIprocessing = false
@@ -960,7 +1125,7 @@ class App extends mixin(EventEmitter, Component) {
     if (hash) {
       this.loadCommitHash = hash
       this.commitsToProcess = [hash]
-      this.setState({play: false})
+      this.setState({ play: false })
       this.callAPI()
     }
   }
@@ -968,14 +1133,14 @@ class App extends mixin(EventEmitter, Component) {
   goToPrev () {
     this.loadPrevCommit = true
     this.commitsToProcess = []
-    this.setState({play: false})
+    this.setState({ play: false })
     this.callAPI()
   }
 
   goToNext () {
     this.loadNextCommit = true
     this.commitsToProcess = []
-    this.setState({play: false})
+    this.setState({ play: false })
     this.callAPI()
   }
 
@@ -985,10 +1150,22 @@ class App extends mixin(EventEmitter, Component) {
     this.setControlsSettings()
     this.setPostSettings()
     this.setCameraSettings()
+    this.setDisplayConfig()
+    this.resize()
 
     if (this.FDG && this.FDG.enabled) {
       this.FDG.triggerUpdate()
     }
+  }
+
+  setDisplayConfig () {
+    if (!this.componentMounted) {
+      return
+    }
+    this.setState({
+      showUI: this.config.display.showUI,
+      showSidebar: this.config.display.showSidebar
+    })
   }
 
   destroy () {
@@ -1016,153 +1193,202 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   async getFirstCommit () {
-    let ref = this.firebaseDB.collection(this.repoChanges)
+    let ref = this.firebaseDB.collection(this.repo)
     let commits = ref.orderBy('date', 'asc').limit(1)
     let snapshot = await commits.get()
-    return snapshot.docs[0].data()
+    let firstCommit = snapshot.docs[0].data()
+
+    this.minDate = firstCommit.date
+
+    return firstCommit
   }
 
-  async getlastCommit () {
-    let ref = this.firebaseDB.collection(this.repoChanges)
+  async getLastCommit () {
+    let ref = this.firebaseDB.collection(this.repo)
     let commits = ref.orderBy('date', 'desc').limit(1)
     let snapshot = await commits.get()
-    return snapshot.docs[0].data()
+
+    let lastCommit = snapshot.docs[0].data()
+
+    this.maxDate = lastCommit.date
+    this.maxIndex = lastCommit.index
+
+    return lastCommit
   }
 
-  sideBar () {
-    if (this.config.display.showSidebar) {
+  onDateSliderChange (timestamp) {
+    this.setState({
+      currentDateObject: moment(timestamp)
+    })
+  }
+
+  playPauseButton () {
+    if (this.state.play) {
       return (
-        <ol className='gource-sidebar'>
-          {this.state.sideBarCommits.map((commit) =>
-            <li key={commit.sha}
-              className={commit.index === this.state.sidebarCurrentCommitIndex ? 'current' : ''}
-              onClick={() => { this.loadCommit(commit.sha) }}>
-              <div className='sidebar-gravatar'>
-                <img src={commit.gravatar} width='40' height='40' alt='' />
-              </div>
-              <div className='sidebar-details'>
-                <p>
-                  <span className='sidebar-author'>{commit.author}</span> <span className='sidebar-date' title={commit.dateLong}>{commit.dateShort}</span>
-                  <a className='sidebar-github-view' target='_blank' title='View Commit on GitHub' href={'https://github.com/' + this.config.git.owner + '/' + this.config.git.repo + '/commit/' + commit.sha}>
-                  View on GitHub
-                  </a>
-                </p>
-                <p>
-                  <span className='sidebar-message'>
-                    {commit.msg}
-                  </span>
-                </p>
-              </div>
-            </li>
-          )}
-        </ol>
+        <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><FaPause /></button>
+      )
+    } else {
+      return (
+        <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><FaPlay /></button>
       )
     }
+  }
+
+  closeFullscreen () {
+    this.setConfig(this.fullScreenConfig.close)
+    if (typeof URLSearchParams !== 'undefined') {
+      let urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('medusa')) {
+        window.history.replaceState({}, '', '/')
+      }
+    }
+  }
+
+  closeFullscreenButton () {
+    if (this.config.display.showClose) {
+      return (
+        <button ref='btn' onClick={this.closeFullscreen.bind(this)} className='close-fullscreen'><img src={FullscreenCloseImg} alt='' /></button>
+      )
+    }
+  }
+
+  resetCommitList (value) {
+    this.config.display.sidebarCommitLimit = parseInt(value, 10)
+    this.populateSideBar(this.state.sidebarCurrentCommitIndex)
   }
 
   UI () {
-    if (!this.config.display.showUI) {
+    if (this.state.showUI) {
       return (
-        <div className='gource-ui'>
-          {this.sideBar()}
+        <div className='medusa-UI'>
+          <Sidebar
+            config={this.config}
+            currentDate={this.state.currentDate}
+            selected={this.state.currentDateObject}
+            onSelect={this.setDate.bind(this)}
+            minDate={moment(this.minDate)}
+            maxDate={moment(this.maxDate)}
+          >
+
+            <Head
+              config={this.config}
+              icon={<button className='bg-transparent border-0 text-primary pt-2 pb-1'><img src={Smallogo} alt='' /></button>}
+            />
+
+            <About
+              config={this.config}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaInfoCircle /></button>}
+            />
+
+            <CommitList
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaClock /></button>}
+              title={this.config.widget.commitList.title}
+              slug={this.config.widget.commitList.slug}
+              config={this.config}
+              onChange={this.resetCommitList.bind(this)}
+              value={this.state.value}
+              sideBarCommits={this.state.sideBarCommits}
+              sidebarCurrentCommitIndex={this.state.sidebarCurrentCommitIndex}
+              loadCommit={this.loadCommit.bind(this)}
+              goToPrev={this.goToPrev.bind(this)}
+              goToNext={this.goToNext.bind(this)}
+              currentAdded={this.state.currentAdded}
+              currentChanged={this.state.currentChanged}
+              currentRemoved={this.state.currentRemoved}
+              currentAuthor={this.state.currentAuthor}
+              currentMsg={this.state.currentMsg}
+              currentDate={this.state.currentDate}
+              currentCommitHash={this.state.currentCommitHash}
+            />
+
+            <Widget
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaCalendar /></button>}
+              title={this.config.widget.calendar.title}
+              slug={this.config.widget.calendar.slug}
+            >
+              <DatePicker
+                inline
+                selected={this.state.currentDateObject}
+                onSelect={this.setDate.bind(this)}
+                minDate={moment(this.minDate)}
+                maxDate={moment(this.maxDate)}
+              />
+            </Widget>
+
+            <div className='mobile-bottom text-center'>
+              <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent float-left text-body'><FaChevronLeft /></button>
+              {this.playPauseButton()}
+              <button onClick={this.state.goToNext} className='next border-0 bg-transparent float-right text-body'><FaChevronRight /></button>
+            </div>
+
+          </Sidebar>
+          <Content>
+            <div className='controls top'>
+
+              <BrowserRouter>
+                {this.closeFullscreenButton()}
+              </BrowserRouter>
+
+              <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
+                {this.slider()}
+
+                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><FaChevronRight /></button>
+
+                <DatePicker
+                  customInput={<Calendar />}
+                  popperPlacement='bottom-end'
+                  selected={this.state.currentDateObject}
+                  onSelect={this.setDate.bind(this)}
+                  minDate={moment(this.minDate)}
+                  maxDate={moment(this.maxDate)}
+                />
+              </Controls>
+
+            </div>
+
+            <Legend config={this.config} />
+
+          </Content>
         </div>
       )
     }
-
-    return (
-      <div className='gource-ui'>
-        {this.sideBar()}
-        <div className='info'>
-          <div className='currentAdded'><span>Files Added:</span> <b>{this.state.currentAdded}</b></div>
-          <div className='currentChanged'><span>Files Changed:</span> <b>{this.state.currentChanged}</b></div>
-          <div className='currentRemoved'><span>Files Removed:</span> <b>{this.state.currentRemoved}</b></div>
-          <div className='currentAuthor'><span>Author:</span> <b>{this.state.currentAuthor}</b></div>
-          <div className='currentMsg'><span>Message:</span> <b>{this.state.currentMsg}</b></div>
-          <div className='currentDate'><span>Commit Date:</span> <b>{this.state.currentDate}</b></div>
-          <div className='currentCommitHash'><span>Commit Hash:</span> <b>{this.state.currentCommitHash}</b></div>
-        </div>
-        <div className='gource-controls'>
-          <button className='previousCommit' onClick={this.goToPrev.bind(this)}>&lt; Prev</button>
-          <button className='nextCommit' onClick={this.goToNext.bind(this)}>Next &gt;</button>
-          <label>
-              Play:
-            <input
-              name='play'
-              type='checkbox'
-              checked={this.state.play}
-              onChange={this.togglePlay.bind(this)} />
-          </label>
-          <label>
-              Commit:
-            <input
-              ref={input => {
-                this.commitInput = input
-              }}
-              name='commitInput'
-              type='text' />
-            <button onClick={() => { this.loadCommit(this.commitInput.value.trim()) }}>Go</button>
-          </label>
-          <label>
-              Sphere Projection:
-            <input
-              name='spherize'
-              type='checkbox'
-              checked={this.state.spherize}
-              onChange={this.toggleSpherize.bind(this)} />
-          </label>
-        </div>
-      </div>
-    )
   }
 
-  fileInfoWidget () {
-    return (
-      <div className='gource-file-info-widget' style={{ left: this.state.fileInfoLocation.x + 30, top: this.state.fileInfoLocation.y - 50, display: this.state.showFileInfo ? 'block' : 'none' }}>
-        <div className='file-info-loading' style={{ display: this.state.loadingFileInfo ? 'block' : 'none' }}>
-          <img width='70' src={this.config.FDG.pickerLoadingPath} alt='Loading' />
-        </div>
-        <div className='file-info-contents' style={{ display: this.state.loadingFileInfo ? 'none' : 'block' }}>
-          <div className='file-info-gravatar'>
-            <img src={this.state.selectedFileAuthorImg} width='40' height='40' alt='' />
-          </div>
-          <div className='file-info-details'>
-            <div className='file-info-author-name'>
-              <p>
-                <a href={'https://github.com/' + this.config.git.owner + '/' + this.config.git.repo + '/commits?author=' + this.state.selectedFileAuthorLogin}
-                  target='_blank'
-                  title={'View all commits by ' + this.state.selectedFileAuthorName}
-                >
-                  {this.state.selectedFileAuthorName}
-                </a> {this.state.selectedFileDateRelative}
-              </p>
-            </div>
-
-            <div className='file-info-name'>
-              <p>{this.state.selectedFileName}</p>
-            </div>
-            <div className='file-info-message'>
-              <p>{this.state.selectedFileMessage}</p>
-            </div>
-            <div className='file-info-links'>
-              <a className='' href={'https://github.com/' + this.config.git.owner + '/' + this.config.git.repo + '/blob/' + this.state.selectedFileCommitID + '/' + this.state.selectedFilePath}
-                target='_blank'
-                title='View file on GitHub'
-              >View file</a>&nbsp;|&nbsp;
-              <a href={this.state.selectedFileCommitURL}
-                target='_blank'
-                title='View full commit on GitHub'
-              >View commit</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  slider () {
+    if (this.state.dateRangeLoaded) {
+      return (
+        <SliderWithTooltip
+          tipFormatter={dateSliderTooltipFormatter}
+          min={moment(this.minDate).valueOf()}
+          max={moment(this.maxDate).valueOf()}
+          onAfterChange={this.setTimestamp.bind(this)}
+          onChange={this.onDateSliderChange.bind(this)}
+          value={this.state.currentDateObject.valueOf()}
+        />
+      )
+    }
   }
 
   render () {
+    const cls = (this.config.display.showUI) ? 'showing-UI App' : 'App'
+
     return (
-      <div className='App'>
-        {this.fileInfoWidget()}
+      <div className={`${cls} ${`bsnoclash`}`}>
+        <FileInfo
+          fileInfoLocation={this.state.fileInfoLocation}
+          showFileInfo={this.state.showFileInfo}
+          loadingFileInfo={this.state.loadingFileInfo}
+          selectedFileAuthorImg={this.state.selectedFileAuthorImg}
+          selectedFileAuthorLogin={this.state.selectedFileAuthorLogin}
+          selectedFileAuthorName={this.state.selectedFileAuthorName}
+          selectedFileDateRelative={this.state.selectedFileDateRelative}
+          selectedFilePath={this.state.selectedFilePath}
+          selectedFileName={this.state.selectedFileName}
+          selectedFileMessage={this.state.selectedFileMessage}
+          selectedFileCommitID={this.state.selectedFileCommitID}
+          selectedFileCommitURL={this.state.selectedFileCommitURL}
+          config={this.config}
+        />
         {this.UI()}
         <canvas width={this.config.scene.width} height={this.config.scene.height} id={this.config.scene.canvasID} />
       </div>

@@ -1,12 +1,12 @@
-## WebGL Gource
+## Medusa
 
-WebGL Gource is a 3D git repository history visualization tool inspired by the famous Gource visualization: https://github.com/acaudwell/Gource.
+Medusa is a 3D git repository history visualization tool inspired by the famous medusa visualization: https://github.com/acaudwell/medusa.
 
-It employs a custom GPGPU Force Directed Graph simulation to efficiently maintain it's structure.
+It uses a GPGPU Force Directed Graph simulation to efficiently maintain it's structure.
 
 This package comes with a Node JS server for populating Google Firebase Firestore from the Github API and a frontend client for running the visualization.
 
-![Gource visual](https://gource.iohk.io/static/assets/images/gource.jpg)
+![medusa visual](https://medusa.iohk.io/static/assets/images/medusa.jpg)
 
 Install server dependencies with:
 
@@ -28,7 +28,7 @@ yarn dev
 
 ## Firebase Firestore data storage
 
-WebGL Gource relies on data being copied from the Github API to Google Firebase Firestore. You will need to set up a new Firebase Firestore project through your Google Console.
+Medusa relies on data being copied from the Github API to Google Firebase Firestore. You will need to set up a new Firebase Firestore project through your Google Console.
 
 Once this is set up, paste the following into the Firestore Rules:
 
@@ -90,12 +90,12 @@ In order to show details about a file on click you will need to set up a Google 
 
 ## Running the Visualization
 
-The following code will create a new gource instance:
+The following code will create a new medusa instance:
 
 ```
 window.onload = function() {
-  if (gource.canRun()) {
-    gource.init(config).on('ready', function() {
+  if (medusa.canRun()) {
+    medusa.init(config).on('ready', function() {
 
     }
   }
@@ -104,7 +104,7 @@ window.onload = function() {
 
 A detailed example implementation can be found in: ```/client/build/index.html```
 
-The following config settings can be passed to the Gource instance. Default values can be found in ```/client/src/Config.js```.
+The following config settings can be passed to the medusa instance. Default values can be found in ```/client/src/Config.js```.
 
 ```
 config = {
@@ -147,7 +147,7 @@ config = {
             height: 600,
             bgColor: 0x121327,
             antialias: false,
-            canvasID: 'gource-stage', // ID of webgl canvas element
+            canvasID: 'medusa-stage', // ID of webgl canvas element
             autoRotate: false, // auto rotate camera around target
             autoRotateSpeed: 0.001 // speed of auto rotation
           },
@@ -164,9 +164,7 @@ config = {
 
 ## TODO
 
-- Move external UI from https://cardanoroadmap.com/ to the react application
 - Move frontend data sorting code to webworkers to ensure smooth playback in play mode
 - Add higher visual quality setting for faster machines
-- Debug Firestore indexedDB local storage anomalies
 - Use an octree for physics calculations
 - Add UI widgets to expose more information about the repository to the user

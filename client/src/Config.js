@@ -1,4 +1,7 @@
-import * as THREE from 'three'
+import {
+  HalfFloatType,
+  FloatType
+} from './vendor/three/Three'
 
 import Detector from './libs/Detector'
 
@@ -11,12 +14,57 @@ const Config = {
     branch: 'develop',
     commitHash: '', // hash of commit to load
     commitDate: '', // date to load
-    loadLatest: true // load latest commit in db
+    loadLatest: true, // load latest commit in db
+    supportedRepos: ['cardano-sl', 'plutus', 'ouroboros-network']
   },
   display: {
     showUI: true,
     showSidebar: true,
-    sidebarCommitLimit: 5
+    sidebarCommitLimit: 5,
+    showClose: true
+  },
+  client: {
+    url: ''
+  },
+  widget: {
+    head: {
+      title: 'MEDUSA',
+      subtitle: 'Github project activity',
+      slug: 'head',
+      content: 'Introduction'
+    },
+    about: {
+      title: 'About',
+      slug: 'about',
+      content: 'Custom about content'
+    },
+    commitList: {
+      title: 'Commit List',
+      slug: 'commit-list'
+    },
+    milestones: {
+      title: 'Milestones',
+      slug: 'milestones',
+      content: ''
+    },
+    calendar: {
+      title: 'Calendar',
+      slug: 'calendar'
+    }
+  },
+  legend: {
+    committed: {
+      title: 'Committed file',
+      icon: ''
+    },
+    updated: {
+      title: 'Updated file',
+      icon: ''
+    },
+    cold: {
+      title: 'Cold file',
+      icon: ''
+    }
   },
   fireBase: {
     apiKey: 'AIzaSyCwfdzrjQ5GRqyz-napBM29T7Zel_6KIUY',
@@ -25,21 +73,17 @@ const Config = {
     projectId: 'webgl-gource-1da99',
     storageBucket: 'webgl-gource-1da99.appspot.com',
     messagingSenderId: '532264380396',
-    useChangesDB: true // in play mode only load in data which has changed
+    useChangesDB: true, // in play mode only load in data which has changed
+    useIndexedDB: false // enable firebase indexedDB (currently this seems buggy)
   },
   FDG: {
-    nodeSpritePath: 'textures/dot.png', // path to node texture
-    nodeSpritePathBlur: 'textures/dot-blur.png', // path to blur node texture
-    nodeUpdatedSpritePath: 'textures/dot-concentric.png', // path to node updated state texture
-    fontTexturePath: 'textures/UbuntuMono.png', // path to font texture
-    nodeCount: 4096, // max number of nodes the scene can contain
+    nodeCount: 3000, // max number of nodes the scene can contain
     autoPlay: true,
     delayAmount: 1000, // time in between new commits being added to the graph
     sphereProject: 0, // project graph onto sphere? 1 == true, 0 == false
     sphereRadius: 700, // radius of sphere if in sphere projection mode
     showFilePaths: true, // display filepath overlay on nodes
     usePicker: false, // show file commit details on click
-    pickerLoadingPath: '/assets/images/loading.svg', // show file commit details on click
     colorCooldownSpeed: 0.05, // speed at which node colors cycle
     filePathCharLimit: 20, // speed at which node colors cycle
     cycleColors: false, // cycle colors based on file edit time from red to blue to white
@@ -64,17 +108,19 @@ const Config = {
     autoRotateSpeed: 0.3 // speed of auto rotation
   },
   post: {
-    vignette: true
+    vignette: true,
+    bloom: true // post-processing bloom effect
   },
   camera: {
     fov: 60,
-    initPos: {x: 0, y: 0, z: 800},
+    initPos: { x: 0, y: 0, z: 800 },
+    zPosMinimized: 1600,
     enableZoom: true // enable camera zoom on mousewheel/pinch gesture
   },
   dev: {
     debugPicker: false
   },
-  floatType: detector.isIOS ? THREE.HalfFloatType : THREE.FloatType
+  floatType: detector.isIOS ? HalfFloatType : FloatType
 }
 
 export default Config

@@ -1,4 +1,16 @@
-import * as THREE from 'three'
+
+import {
+  ShaderMaterial,
+  LinearFilter,
+  WebGLRenderTarget,
+  RGBAFormat,
+  UniformsUtils,
+  OrthographicCamera,
+  Scene,
+  Mesh,
+  PlaneBufferGeometry
+} from '../../vendor/three/Three'
+
 import CopyShader from './CopyShader'
 
 /**
@@ -10,14 +22,14 @@ const EffectComposer = function (renderer, renderTarget) {
 
   if (renderTarget === undefined) {
     var parameters = {
-      minFilter: THREE.LinearFilter,
-      magFilter: THREE.LinearFilter,
-      format: THREE.RGBAFormat,
+      minFilter: LinearFilter,
+      magFilter: LinearFilter,
+      format: RGBAFormat,
       stencilBuffer: false
     }
 
     var size = renderer.getDrawingBufferSize()
-    renderTarget = new THREE.WebGLRenderTarget(size.width, size.height, parameters)
+    renderTarget = new WebGLRenderTarget(size.width, size.height, parameters)
     renderTarget.texture.name = 'EffectComposer.rt1'
   }
 
@@ -33,11 +45,11 @@ const EffectComposer = function (renderer, renderTarget) {
   // dependencies
 
   if (CopyShader === undefined) {
-    console.error('THREE.EffectComposer relies on THREE.CopyShader')
+    console.error('EffectComposer relies on CopyShader')
   }
 
   if (ShaderPass === undefined) {
-    console.error('THREE.EffectComposer relies on THREE.ShaderPass')
+    console.error('EffectComposer relies on ShaderPass')
   }
 
   this.copyPass = new ShaderPass(CopyShader)
@@ -90,10 +102,10 @@ Object.assign(EffectComposer.prototype, {
         this.swapBuffers()
       }
 
-      /* if (THREE.MaskPass !== undefined) {
-        if (pass instanceof THREE.MaskPass) {
+      /* if (MaskPass !== undefined) {
+        if (pass instanceof MaskPass) {
           maskActive = true
-        } else if (pass instanceof THREE.ClearMaskPass) {
+        } else if (pass instanceof ClearMaskPass) {
           maskActive = false
         }
       } */
@@ -157,14 +169,14 @@ const ShaderPass = function (shader, textureID) {
 
   this.textureID = (textureID !== undefined) ? textureID : 'tDiffuse'
 
-  if (shader instanceof THREE.ShaderMaterial) {
+  if (shader instanceof ShaderMaterial) {
     this.uniforms = shader.uniforms
 
     this.material = shader
   } else if (shader) {
-    this.uniforms = THREE.UniformsUtils.clone(shader.uniforms)
+    this.uniforms = UniformsUtils.clone(shader.uniforms)
 
-    this.material = new THREE.ShaderMaterial({
+    this.material = new ShaderMaterial({
 
       defines: shader.defines || {},
       uniforms: this.uniforms,
@@ -174,10 +186,10 @@ const ShaderPass = function (shader, textureID) {
     })
   }
 
-  this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-  this.scene = new THREE.Scene()
+  this.camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1)
+  this.scene = new Scene()
 
-  this.quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), null)
+  this.quad = new Mesh(new PlaneBufferGeometry(2, 2), null)
   this.quad.frustumCulled = false // Avoid getting clipped
   this.scene.add(this.quad)
 }

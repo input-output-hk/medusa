@@ -35,7 +35,7 @@ if (env.stringified['process.env'].NODE_ENV !== '"production"') {
 }
 
 // Note: defined here because it will be used more than once.
-const cssFilename = 'static/css/gource.[name].css'
+const cssFilename = 'static/css/medusa.[name].css'
 
 // ExtractTextPlugin expects the build output to be flat.
 // (See https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/27)
@@ -43,7 +43,7 @@ const cssFilename = 'static/css/gource.[name].css'
 // To have this structure working with relative paths, we have to use custom options.
 const extractTextPluginOptions = shouldUseRelativeAssetPaths
   ? // Making sure that the publicPath goes back to to build folder.
-    { publicPath: Array(cssFilename.split('/').length).join('../') }
+  { publicPath: Array(cssFilename.split('/').length).join('../') }
   : {}
 
 // This is the production configuration.
@@ -58,14 +58,14 @@ module.exports = {
   // In production, we only want to load the polyfills and the app code.
   entry: [require.resolve('./polyfills'), paths.appIndexJs],
   output: {
-    library: 'gource',
+    library: 'medusa',
     // The build folder.
     path: paths.appBuild,
     // Generated JS file names (with nested folders).
     // There will be one main bundle, and one file per asynchronous chunk.
     // We don't currently advertise code splitting but Webpack supports it.
-    filename: 'static/js/gource.[name].js',
-    chunkFilename: 'static/js/gource.[name].[chunkhash:8].chunk.js',
+    filename: 'static/js/medusa.[name].js',
+    chunkFilename: 'static/js/medusa.[name].[chunkhash:8].chunk.js',
     // We inferred the "public path" (such as / or /my-project) from homepage.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -146,12 +146,16 @@ module.exports = {
           // "url" loader works just like "file" loader but it also embeds
           // assets smaller than specified size as data URLs to avoid requests.
           {
-            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.svg$/],
             loader: require.resolve('url-loader'),
             options: {
               limit: 10000,
-              name: 'static/media/gource.[name].[ext]'
+              name: 'static/media/medusa.[name].[ext]'
             }
+          },
+          {
+              test: /\.(eot|svg|ttf|woff|woff2)$/,
+              loader: 'file?name=node_modules/simple-line-icons/fonts/[name].[ext]'
           },
           // Process JS with Babel.
           {
@@ -160,9 +164,20 @@ module.exports = {
             loader: require.resolve('babel-loader'),
             options: {
 
-              compact: true
+              compact: false
             }
           },
+
+          // SASS integration
+          {
+            test: /\.scss$/,
+            use: [
+              'style-loader', // creates style nodes from JS strings
+              'css-loader', // translates CSS into CommonJS
+              'sass-loader' // compiles Sass to CSS, using Node Sass by default
+            ]
+          },
+
           // The notation here is somewhat confusing.
           // "postcss" loader applies autoprefixer to our CSS.
           // "css" loader resolves paths in CSS and adds assets as dependencies.
@@ -234,7 +249,7 @@ module.exports = {
             // by webpacks internal loaders.
             exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
             options: {
-              name: 'static/media/gource.[name].[ext]'
+              name: 'static/media/medusa.[name].[ext]'
             }
           }
           // ** STOP ** Are you adding a new loader?

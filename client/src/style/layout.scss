@@ -1,0 +1,97 @@
+body {
+  a,button{outline: none}
+  .App.showing-UI,
+  .medusa-UI { position: fixed;top:0;left:0;width:100%;height:100%;z-index: 999999999}
+  .medusa-UI { display: flex;align-items: stretch;border:15px $light solid;pointer-events: none;}
+}
+.medusa-UI {
+  .UI-sidebar { min-width: 400px;     max-width: 400px;     transition: all 0.3s; overflow-y: scroll;background: rgba($lighter,0.7);padding-right:40px;pointer-events: auto;
+    .mobile-bottom{display: none}
+    .card{
+      .card-header{margin-left: $spacer;margin-right: -1.6 * $spacer;
+        .close{margin:-5px -17px 0 0}
+      }
+      .icon{display: none}
+    }
+    .card.closed{
+      .inner{display: none}
+      .card-header{
+        .close{transform: rotate(90deg)}
+      }
+    }
+    .close-sidebar{margin:200px 0 0 400px;background: rgba($lighter,0.7);border:0;width:30px;height:60px;position: absolute;z-index: 9;border-radius:40px;border-top-left-radius: 0; border-bottom-left-radius: 0;text-align: left;outline: 0;
+      svg{transform: rotate(0deg);}
+    }
+  }
+  .UI-sidebar.off { min-width: 40px;     max-width: 40px;     text-align: center;padding-right:0px;
+    .card{
+      border-color: transparent;
+      .card-header{display: none;
+
+      }
+      .subhead,
+      .inner{display: none}
+      .icon{display:block;height:30px;text-align: center;}
+    }
+    .card.closed{
+      .card-header{
+        .card-title{display: none}
+      }
+      .icon{display: inline-block;}
+    }
+    .close-sidebar{margin:200px 0 0 20px;
+      svg{transform: rotate(180deg);}
+    }
+  }
+  .UI-content { width: 100%;     padding: 20px;     min-height: 100vh;     transition: all 0.3s;
+    .close-fullscreen{margin:0px 0 0 0px;background: $light;width:80px;height:80px;position: absolute;z-index: 9;border-radius:100px;top:-25px;right:-25px;border:0}
+    .controls.top{margin:50px 0px;pointer-events: auto;}
+  }
+}
+
+
+
+@media (max-width: 1199px) {
+  .medusa-UI {
+    .UI-sidebar { min-width: 300px;     max-width: 300px;
+      .close-sidebar{margin:200px 0 0 300px;}
+    }
+  }
+}
+@media (max-width: 767px) {
+  body{
+    .medusa-UI {font-size: 85%;border:0;
+
+      .UI-content {
+        .close-fullscreen{width:70px;height:70px;top:-15px;right:-15px;border:0}
+      }
+
+      .controls.top .slider{position:fixed;top:50px;width: 90%;display: none}
+
+      .UI-sidebar { min-width: 100%;     max-width:  100%;bottom:0;padding:0;position: fixed;
+        .close-sidebar,
+        .card{display: none;clear:both;
+          .card-header{display: none;}
+          .inner{display: block}
+          .icon{display:none;}
+        }
+        .mobile-top,.mobile-bottom{font-size: 150%}
+
+        .mobile-top{background:rgba($lighter,0.5);
+          .calendar-wrap{display: none}
+        }
+        .mobile-top.calendar-showing{
+          .calendar-wrap{display: block;}
+        }
+        .mobile-bottom{display: block;padding:($spacer*0.9) ($spacer*0.5) ($spacer*0.9) ($spacer*0.5);}
+        .mobile-top span{display: inline-block;padding:($spacer*0.7) $spacer ($spacer*0.8) $spacer;}
+        .mobile-bottom > div{display: inline-block;width: 50%;padding:($spacer*0.9) ($spacer*0.5) ($spacer*0.9) ($spacer*0.5);}
+        .close-sidebar{margin:200px 0 0 250px;}
+        .card.about{display: block}
+      }
+      .UI-sidebar.off {min-width: 100%;     max-width:  100%; text-align: left;padding-right:0px;
+        .card{display: none;border-color: transparent;}
+      }
+    }
+  }
+}

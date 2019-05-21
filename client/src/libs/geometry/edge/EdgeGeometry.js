@@ -1,4 +1,10 @@
-import * as THREE from 'three'
+import {
+  Vector3,
+  ShaderMaterial,
+  BufferAttribute,
+  LineSegments,
+  BufferGeometry
+} from '../../../vendor/three/Three'
 
 // shaders
 import FragmentShader from './shaders/edge.frag'
@@ -50,21 +56,21 @@ export default class EdgeGeometry {
       this.geometry.dispose()
     }
 
-    this.geometry = new THREE.BufferGeometry()
+    this.geometry = new BufferGeometry()
 
     let updatedArray = new Float32Array(edgeCount * 2)
     this.setUpdated(nodeData, nodeCount, updatedArray, edgeData)
-    let updated = new THREE.BufferAttribute(updatedArray, 1)
+    let updated = new BufferAttribute(updatedArray, 1)
     this.geometry.addAttribute('updated', updated)
 
-    let texLocation = new THREE.BufferAttribute(forceArray, 2)
+    let texLocation = new BufferAttribute(forceArray, 2)
     this.geometry.addAttribute('texLocation', texLocation)
 
-    let position = new THREE.BufferAttribute(new Float32Array((edgeCount * 2) * 3), 3)
+    let position = new BufferAttribute(new Float32Array((edgeCount * 2) * 3), 3)
     this.geometry.addAttribute('position', position)
 
     if (!this.material) {
-      this.material = new THREE.ShaderMaterial({
+      this.material = new ShaderMaterial({
         uniforms: {
           camDistToCenter: {
             type: 'f',
@@ -91,14 +97,16 @@ export default class EdgeGeometry {
       })
     }
 
-    this.edges = new THREE.LineSegments(this.geometry, this.material)
+    this.edges = new LineSegments(this.geometry, this.material)
+
+    this.edges.geometry.setDrawRange(0, nodeData.length * 4)
 
     return this.edges
   }
 
   update (camera, frame) {
-    let camPos = camera.getWorldPosition(new THREE.Vector3())
-    const center = new THREE.Vector3(0.0, 0.0, 0.0)
+    let camPos = camera.getWorldPosition(new Vector3())
+    const center = new Vector3(0.0, 0.0, 0.0)
     this.material.uniforms.camDistToCenter.value = camPos.distanceTo(center)
     this.material.uniforms.uTime.value = frame
   }

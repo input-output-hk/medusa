@@ -1,4 +1,13 @@
-import * as THREE from 'three'
+import {
+  Vector3,
+  ShaderMaterial,
+  BufferAttribute,
+  TextureLoader,
+  BufferGeometry,
+  Color,
+  Points,
+  AdditiveBlending
+} from '../../../vendor/three/Three'
 
 import TextureHelper from '../../TextureHelper'
 
@@ -7,14 +16,20 @@ import FragmentShader from './shaders/node.frag'
 import VertexShader from './shaders/node.vert'
 import PickFragmentShader from './shaders/pick.frag'
 
+// images
+import spriteFile from '../../../assets/images/dot.png'
+import spriteBlurFile from '../../../assets/images/dot-blur.png'
+import spriteUpdatedFile from '../../../assets/images/dot-concentric.png'
+
 export default class NodeGeometry {
   constructor (config) {
     this.config = config
     this.nodeCount = config.FDG.nodeCount
     this.textureHelper = new TextureHelper()
-    this.sprite = new THREE.TextureLoader().load(this.config.FDG.nodeSpritePath)
-    this.spriteBlur = new THREE.TextureLoader().load(this.config.FDG.nodeSpritePathBlur)
-    this.uSprite = new THREE.TextureLoader().load(this.config.FDG.nodeUpdatedSpritePath)
+
+    this.sprite = new TextureLoader().load(spriteFile)
+    this.spriteBlur = new TextureLoader().load(spriteBlurFile)
+    this.uSprite = new TextureLoader().load(spriteUpdatedFile)
     this.decayTime = 0.0
     this.material = null
     this.pickingMaterial = null
@@ -23,7 +38,7 @@ export default class NodeGeometry {
     this.lastHoveredID = -1
 
     for (let index = 0; index < this.config.FDG.colorPalette.length; index++) {
-      this.config.FDG.colorPalette[index] = new THREE.Color(this.config.FDG.colorPalette[index])
+      this.config.FDG.colorPalette[index] = new Color(this.config.FDG.colorPalette[index])
     }
     this.baseColor = this.config.FDG.colorPalette[0]
   }
@@ -35,7 +50,7 @@ export default class NodeGeometry {
     colorArray,
     pickingColors
   ) {
-    let pickColor = new THREE.Color(0x999999)
+    let pickColor = new Color(0x999999)
 
     for (let i = 0; i < nodeCount; i++) {
       const node = nodeData[i]
@@ -125,16 +140,16 @@ export default class NodeGeometry {
       this.geometry.dispose()
     }
 
-    this.geometry = new THREE.BufferGeometry()
-    this.pickingGeometry = new THREE.BufferGeometry()
+    this.geometry = new BufferGeometry()
+    this.pickingGeometry = new BufferGeometry()
 
     let positionArray = new Float32Array(nodeCount * 3)
     let colorArray = new Float32Array(nodeCount * 4)
 
     // picking geometry attributes
-    let pickingColors = new THREE.BufferAttribute(new Float32Array(nodeCount * 3), 3)
-    let isHovered = new THREE.BufferAttribute(new Float32Array(nodeCount), 1)
-    let isSelected = new THREE.BufferAttribute(new Float32Array(nodeCount), 1)
+    let pickingColors = new BufferAttribute(new Float32Array(nodeCount * 3), 3)
+    let isHovered = new BufferAttribute(new Float32Array(nodeCount), 1)
+    let isSelected = new BufferAttribute(new Float32Array(nodeCount), 1)
 
     this.setTextureLocations(
       nodeData,
@@ -144,8 +159,8 @@ export default class NodeGeometry {
       pickingColors
     )
 
-    let position = new THREE.BufferAttribute(positionArray, 3)
-    let color = new THREE.BufferAttribute(colorArray, 4)
+    let position = new BufferAttribute(positionArray, 3)
+    let color = new BufferAttribute(colorArray, 4)
 
     this.geometry.addAttribute('position', position)
     this.geometry.addAttribute('color', color)
@@ -157,7 +172,7 @@ export default class NodeGeometry {
       idArray[index] = index
     }
 
-    let id = new THREE.BufferAttribute(idArray, 1)
+    let id = new BufferAttribute(idArray, 1)
     this.geometry.addAttribute('id', id)
 
     this.pickingGeometry.addAttribute('position', position)
@@ -212,17 +227,17 @@ export default class NodeGeometry {
         }
       }
 
-      this.material = new THREE.ShaderMaterial({
+      this.material = new ShaderMaterial({
         uniforms: uniforms,
         transparent: true,
-        blending: THREE.AdditiveBlending,
+        blending: AdditiveBlending,
         depthWrite: false,
         depthTest: false,
         vertexShader: VertexShader,
         fragmentShader: FragmentShader
       })
 
-      this.pickingMaterial = new THREE.ShaderMaterial({
+      this.pickingMaterial = new ShaderMaterial({
         uniforms: uniforms,
         depthTest: true,
         transparent: false,
@@ -233,8 +248,12 @@ export default class NodeGeometry {
 
     this.resize()
 
-    this.pickingMesh = new THREE.Points(this.pickingGeometry, this.pickingMaterial)
-    this.nodes = new THREE.Points(this.geometry, this.material)
+    this.pickingMesh = new Points(this.pickingGeometry, this.pickingMaterial)
+    this.nodes = new Points(this.geometry, this.material)
+
+    this.nodes.geometry.setDrawRange(0, nodeData.length)
+    this.pickingMesh.geometry.setDrawRange(0, nodeData.length)
+
     return this.nodes
   }
 
@@ -257,8 +276,8 @@ export default class NodeGeometry {
     this.material.uniforms.decayTime.value = this.decayTime
     this.material.uniforms.uTime.value = frame
 
-    let camPos = camera.getWorldPosition(new THREE.Vector3())
-    const center = new THREE.Vector3(0.0, 0.0, 0.0)
+    let camPos = camera.getWorldPosition(new Vector3())
+    const center = new Vector3(0.0, 0.0, 0.0)
     this.material.uniforms.camDistToCenter.value = camPos.distanceTo(center)
   }
 }

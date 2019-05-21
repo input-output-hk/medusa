@@ -1,4 +1,11 @@
-import * as THREE from 'three'
+import {
+  PlaneBufferGeometry,
+  InstancedBufferGeometry,
+  InstancedBufferAttribute,
+  ShaderMaterial,
+  Mesh,
+  AdditiveBlending
+} from '../../../vendor/three/Three'
 
 import TextureHelper from '../../TextureHelper'
 
@@ -9,11 +16,14 @@ import VertexShader from './shaders/text.vert'
 // font
 import UbuntuMono from './fonts/UbuntuMono'
 
+// images
+import fontImgFile from '../../../assets/images/UbuntuMono.png'
+
 export default class TextGeometry {
   constructor (config) {
     this.config = config
     this.textureHelper = new TextureHelper()
-    this.font = UbuntuMono(this.config.FDG.fontTexturePath)
+    this.font = UbuntuMono(fontImgFile)
     this.fontSize = 15
     this.kerning = 1.5
     this.textureSize = 1024 // size of the font texture (aspect 1:1)
@@ -93,7 +103,7 @@ export default class TextGeometry {
       this.geometry.dispose()
     }
 
-    this.geometry = new THREE.InstancedBufferGeometry().copy(new THREE.PlaneBufferGeometry(1, 1))
+    this.geometry = new InstancedBufferGeometry().copy(new PlaneBufferGeometry(1, 1))
 
     let scaleArray = new Float32Array(nodeCount * 20)
     let labelPositionsArray = new Float32Array(nodeCount * 20)
@@ -108,10 +118,10 @@ export default class TextGeometry {
       scaleArray
     )
 
-    let scale = new THREE.InstancedBufferAttribute(scaleArray, 2)
-    let textCoords = new THREE.InstancedBufferAttribute(textCoordsArray, 4)
-    let labelPositions = new THREE.InstancedBufferAttribute(labelPositionsArray, 2)
-    let textureLocation = new THREE.InstancedBufferAttribute(textureLocationArray, 2)
+    let scale = new InstancedBufferAttribute(scaleArray, 2)
+    let textCoords = new InstancedBufferAttribute(textCoordsArray, 4)
+    let labelPositions = new InstancedBufferAttribute(labelPositionsArray, 2)
+    let textureLocation = new InstancedBufferAttribute(textureLocationArray, 2)
 
     this.geometry.addAttribute('scale', scale)
     this.geometry.addAttribute('labelPositions', labelPositions)
@@ -119,7 +129,7 @@ export default class TextGeometry {
     this.geometry.addAttribute('textureLocation', textureLocation)
 
     if (!this.material) {
-      this.material = new THREE.ShaderMaterial({
+      this.material = new ShaderMaterial({
         uniforms: {
           fontTexture: {
             type: 't', value: this.font.texture
@@ -135,13 +145,13 @@ export default class TextGeometry {
         },
         vertexShader: VertexShader,
         fragmentShader: FragmentShader,
-        blending: THREE.AdditiveBlending,
+        blending: AdditiveBlending,
         depthTest: false,
         transparent: true
       })
     }
 
-    this.text = new THREE.Mesh(this.geometry, this.material)
+    this.text = new Mesh(this.geometry, this.material)
     return this.text
   }
 
