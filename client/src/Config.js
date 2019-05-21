@@ -14,7 +14,8 @@ const Config = {
     branch: 'develop',
     commitHash: '', // hash of commit to load
     commitDate: '', // date to load
-    loadLatest: true // load latest commit in db
+    loadLatest: true, // load latest commit in db
+    supportedRepos: ['cardano-sl', 'plutus', 'ouroboros-network']
   },
   display: {
     showUI: true,
@@ -112,7 +113,7 @@ const Config = {
   },
   camera: {
     fov: 60,
-    initPos: {x: 0, y: 0, z: 800},
+    initPos: { x: 0, y: 0, z: 800 },
     zPosMinimized: 1600,
     enableZoom: true // enable camera zoom on mousewheel/pinch gesture
   },

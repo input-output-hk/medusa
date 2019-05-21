@@ -75,6 +75,20 @@ class App extends mixin(EventEmitter, Component) {
 
     this.config = deepAssign(Config, this.props.config)
 
+    if (typeof URLSearchParams !== 'undefined') {
+      let urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('repo')) {
+        let value = urlParams.get('repo')
+        if (this.config.git.supportedRepos.indexOf(value) !== -1) {
+          this.setConfig({
+            git: {
+              repo: value
+            }
+          })
+        }
+      }
+    }
+
     this.initFireBase()
 
     this.running = true // whether the app is running
@@ -135,6 +149,8 @@ class App extends mixin(EventEmitter, Component) {
       }
     }
 
+    this.componentMounted = false
+
     this.state = {
       play: this.config.FDG.autoPlay,
       currentDate: null,
@@ -160,7 +176,7 @@ class App extends mixin(EventEmitter, Component) {
       selectedFileDate: '',
       selectedFileName: '',
       selectedFileMessage: '',
-      fileInfoLocation: {x: 0, y: 0},
+      fileInfoLocation: { x: 0, y: 0 },
       showFileInfo: false,
       loadingFileInfo: true,
       dateRangeLoaded: false,
@@ -255,7 +271,7 @@ class App extends mixin(EventEmitter, Component) {
    */
   setSphereView (bool) {
     this.config.FDG.sphereProject = bool
-    this.setState({spherize: this.config.FDG.sphereProject})
+    this.setState({ spherize: this.config.FDG.sphereProject })
   }
 
   async initFireBase () {
@@ -267,8 +283,7 @@ class App extends mixin(EventEmitter, Component) {
     try {
       firebase.initializeApp(this.config.fireBase)
 
-      const settings = {timestampsInSnapshots: true}
-      firebase.firestore().settings(settings)
+      firebase.firestore()
 
       if (this.config.useIndexedDB) {
         this.firebaseDB = await firebase.firestore().enablePersistence()
@@ -291,6 +306,7 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   componentDidMount () {
+    this.componentMounted = true
     this.initStage()
   }
 
@@ -302,8 +318,11 @@ class App extends mixin(EventEmitter, Component) {
     this.initControls()
     this.initFDG()
     this.addEvents()
+    this.getFullScreenConfig()
     this.animate()
+  }
 
+  getFullScreenConfig () {
     if (typeof URLSearchParams !== 'undefined') {
       let urlParams = new URLSearchParams(window.location.search)
       if (urlParams.has('medusa')) {
@@ -324,6 +343,10 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   setPostSettings () {
+    if (!this.composer) {
+      return
+    }
+
     // if (this.config.post.bloom) {
     //   // res, strength, radius, threshold
     //   this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.7, 0.1)
@@ -354,6 +377,9 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   setControlsSettings () {
+    if (!this.controls) {
+      return
+    }
     this.controls.minDistance = 200
     this.controls.maxDistance = 10000
     this.controls.enablePan = false
@@ -588,6 +614,9 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   setCameraSettings () {
+    if (!this.camera) {
+      return
+    }
     this.camera.fov = this.config.camera.fov
     this.camera.updateMatrixWorld()
   }
@@ -623,6 +652,10 @@ class App extends mixin(EventEmitter, Component) {
    * Window resize
    */
   resize () {
+    if (!this.camera) {
+      return
+    }
+
     if (this.config.scene.fullScreen) {
       this.width = window.innerWidth
       this.height = window.innerHeight
@@ -726,10 +759,10 @@ class App extends mixin(EventEmitter, Component) {
           if (snapshot.size !== 0) {
             let commit = snapshot.docs[0].data()
             if (this.direction === 'prev') {
-              this.setState({currentCommitIndex: commit.index + 1})
+              this.setState({ currentCommitIndex: commit.index + 1 })
               this.loadPrevCommit = true
             } else {
-              this.setState({currentCommitIndex: commit.index - 1})
+              this.setState({ currentCommitIndex: commit.index - 1 })
               this.loadNextCommit = true
             }
             this.callAPI()
@@ -1052,12 +1085,12 @@ class App extends mixin(EventEmitter, Component) {
 
   toggleSpherize () {
     this.config.FDG.sphereProject = !this.state.spherize
-    this.setState({spherize: this.config.FDG.sphereProject})
+    this.setState({ spherize: this.config.FDG.sphereProject })
   }
 
   setPlay (bool) {
     let play = bool
-    this.setState({play: play})
+    this.setState({ play: play })
 
     if (!play) {
       this.APIprocessing = false
@@ -1076,7 +1109,7 @@ class App extends mixin(EventEmitter, Component) {
 
   togglePlay () {
     let play = !this.state.play
-    this.setState({play: play})
+    this.setState({ play: play })
 
     if (!play) {
       this.APIprocessing = false
@@ -1092,7 +1125,7 @@ class App extends mixin(EventEmitter, Component) {
     if (hash) {
       this.loadCommitHash = hash
       this.commitsToProcess = [hash]
-      this.setState({play: false})
+      this.setState({ play: false })
       this.callAPI()
     }
   }
@@ -1100,14 +1133,14 @@ class App extends mixin(EventEmitter, Component) {
   goToPrev () {
     this.loadPrevCommit = true
     this.commitsToProcess = []
-    this.setState({play: false})
+    this.setState({ play: false })
     this.callAPI()
   }
 
   goToNext () {
     this.loadNextCommit = true
     this.commitsToProcess = []
-    this.setState({play: false})
+    this.setState({ play: false })
     this.callAPI()
   }
 
@@ -1118,7 +1151,6 @@ class App extends mixin(EventEmitter, Component) {
     this.setPostSettings()
     this.setCameraSettings()
     this.setDisplayConfig()
-
     this.resize()
 
     if (this.FDG && this.FDG.enabled) {
@@ -1127,6 +1159,9 @@ class App extends mixin(EventEmitter, Component) {
   }
 
   setDisplayConfig () {
+    if (!this.componentMounted) {
+      return
+    }
     this.setState({
       showUI: this.config.display.showUI,
       showSidebar: this.config.display.showSidebar
