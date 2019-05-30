@@ -1351,6 +1351,32 @@ class App extends mixin(EventEmitter, Component) {
           </Content>
         </div>
       )
+    }else{
+      return (
+        <div className='medusa-UI pagepart'>
+          <Content>
+            <div className='controls top'>
+
+
+              <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
+                {this.slider()}
+
+                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><FaChevronRight /></button>
+
+                <DatePicker
+                  customInput={<Calendar />}
+                  popperPlacement='bottom-end'
+                  selected={this.state.currentDateObject}
+                  onSelect={this.setDate.bind(this)}
+                  minDate={moment(this.minDate)}
+                  maxDate={moment(this.maxDate)}
+                />
+              </Controls>
+
+            </div>
+          </Content>
+        </div>
+      )
     }
   }
 

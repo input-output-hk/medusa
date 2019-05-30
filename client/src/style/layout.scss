@@ -3,6 +3,7 @@ body {
   .App.showing-UI,
   .medusa-UI { position: fixed;top:0;left:0;width:100%;height:100%;z-index: 999999999}
   .medusa-UI { display: flex;align-items: stretch;border:15px $light solid;pointer-events: none;}
+  .medusa-UI.pagepart {border:0;}
 }
 .medusa-UI {
   .UI-sidebar { min-width: 400px;     max-width: 400px;     transition: all 0.3s; overflow-y: scroll;background: rgba($lighter,0.7);padding-right:40px;pointer-events: auto;
