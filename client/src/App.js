@@ -87,6 +87,26 @@ class App extends mixin(EventEmitter, Component) {
           })
         }
       }
+      if (urlParams.has('about_title')) {
+        let value = urlParams.get('about_title')
+          this.config.widget.about.title = value
+      }
+      if (urlParams.has('about_content')) {
+        let value = urlParams.get('about_content')
+          this.config.widget.about.content = value
+      }
+      if (urlParams.has('commitList_title')) {
+        let value = urlParams.get('commitList_title')
+          this.config.widget.commitList.title = value
+      }
+      if (urlParams.has('milestones_title')) {
+        let value = urlParams.get('milestones_title')
+          this.config.widget.milestones.title = value
+      }
+      if (urlParams.has('calendar_title')) {
+        let value = urlParams.get('calendar_title')
+          this.config.widget.calendar.title = value
+      }
     }
 
     this.initFireBase()
