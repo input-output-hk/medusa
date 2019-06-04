@@ -87,26 +87,59 @@ class App extends mixin(EventEmitter, Component) {
           })
         }
       }
-      if (urlParams.has('about_title')) {
-        let value = urlParams.get('about_title')
+
+
+      if (urlParams.has('title')) {
+        let value = urlParams.get('title')
+          this.config.widget.head.title = value
+      }
+      if (urlParams.has('subtitle')) {
+        let value = urlParams.get('subtitle')
+          this.config.widget.head.subtitle = value
+      }
+      if (urlParams.has('intro')) {
+        let value = urlParams.get('intro')
+          this.config.widget.head.content = value
+      }
+
+      if (urlParams.has('about')) {
+        let value = urlParams.get('about')
           this.config.widget.about.title = value
       }
-      if (urlParams.has('about_content')) {
-        let value = urlParams.get('about_content')
+      if (urlParams.has('content')) {
+        let value = urlParams.get('content')
           this.config.widget.about.content = value
       }
-      if (urlParams.has('commitList_title')) {
-        let value = urlParams.get('commitList_title')
+      if (urlParams.has('commits')) {
+        let value = urlParams.get('commits')
           this.config.widget.commitList.title = value
       }
-      if (urlParams.has('milestones_title')) {
-        let value = urlParams.get('milestones_title')
+      if (urlParams.has('showing')) {
+        let value = urlParams.get('showing')
+          this.config.widget.commitList.showing = value
+      }
+      if (urlParams.has('milestones')) {
+        let value = urlParams.get('milestones')
           this.config.widget.milestones.title = value
       }
-      if (urlParams.has('calendar_title')) {
-        let value = urlParams.get('calendar_title')
+      if (urlParams.has('calendar')) {
+        let value = urlParams.get('calendar')
           this.config.widget.calendar.title = value
       }
+
+      if (urlParams.has('committed')) {
+        let value = urlParams.get('committed')
+          this.config.legend.committed.title = value
+      }
+      if (urlParams.has('updated')) {
+        let value = urlParams.get('updated')
+          this.config.legend.updated.title = value
+      }
+      if (urlParams.has('cold')) {
+        let value = urlParams.get('cold')
+          this.config.legend.cold.title = value
+      }
+
     }
 
     this.initFireBase()
@@ -1305,6 +1338,7 @@ class App extends mixin(EventEmitter, Component) {
               title={this.config.widget.commitList.title}
               slug={this.config.widget.commitList.slug}
               config={this.config}
+              showing={this.config.widget.commitList.showing}
               onChange={this.resetCommitList.bind(this)}
               value={this.state.value}
               sideBarCommits={this.state.sideBarCommits}

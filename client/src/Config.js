@@ -40,6 +40,7 @@ const Config = {
     },
     commitList: {
       title: 'Commit List',
+      showing: 'Showing',
       slug: 'commit-list'
     },
     milestones: {
