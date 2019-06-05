@@ -1,7 +1,7 @@
 
 .medusa-UI {
   .commit-list{
-    .list-group-item{position: static;}
+    .list-group-item{position: static;cursor: pointer;}
     .list-group-item.current{border-right:0 solid rgba($primary,0.7);background: rgba($primary,0.05) !important;
       .info div{padding: 1px 0 3px 0}
       .info div+div{border-top:1px solid rgba($primary,0.1);padding: 4px 0}
