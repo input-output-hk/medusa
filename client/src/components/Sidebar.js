@@ -1,7 +1,12 @@
 import React, {Component} from 'react'
 import DatePicker from 'react-datepicker'
+import Config from '../Config'
+import SVG from 'react-inlinesvg'
 
-import { FaChevronLeft, FaInfoCircle, FaCalendar } from 'react-icons/fa'
+import IconCalendar from '../style/images/control-calendar.svg'
+import IconInfo from '../style/images/icon-info-circle.svg'
+import IconClock from '../style/images/icon-clock.svg'
+import IconPrev from '../style/images/control-prev.svg'
 
 export default class Sidebar extends Component {
   constructor (props) {
@@ -12,48 +17,25 @@ export default class Sidebar extends Component {
     }
   }
 
-  handleClick () {
+  handleClick (event) {
     this.setState({
       condition: !this.state.condition
     })
-  }
-
-  mobilecalClick () {
-    this.setState({
-      mobilecal: !this.state.mobilecal
-    })
+    this.props.config.display.showSidebar = this.state.condition;
+    if (typeof this.props.onChange === 'function') {
+        this.props.onChange(this.state.condition)
+    }
   }
 
   render () {
-    if (this.props.config.display.showSidebar) {
-      return (
-        <div className={this.state.condition ? 'UI-sidebar off' : 'UI-sidebar'}>
-          <div className='content'>
-            <button ref='btn' onClick={this.handleClick.bind(this)} className='close-sidebar'><FaChevronLeft /></button>
-            <div className={this.state.mobilecal ? 'mobile-top d-md-none d-block calendar-showing' : 'mobile-top d-md-none d-block'}>
-              <div className='row'>
-                <div className='col'>
-                  <span className='text-body'>{this.props.currentDate}</span>
-                  <button ref='btn' onClick={this.mobilecalClick.bind(this)} className='calendar-show bg-transparent border-0 text-body p-0'><FaCalendar /></button>
-                  <div className='calendar-wrap'>
-                    <DatePicker
-                      inline
-                      selected={this.props.selected}
-                      onSelect={this.props.onSelect}
-                      minDate={this.props.minDate}
-                      maxDate={this.props.maxDate}
-                    />
-                  </div>
-                </div>
-                <div className='col text-right'>
-                  <span><button ref='btn' onClick={this.handleClick.bind(this)} className='close-info bg-transparent border-0 text-primary p-0'><FaInfoCircle /></button></span>
-                </div>
-              </div>
-            </div>
-            {this.props.children}
-          </div>
+    return (
+      <div className={this.state.condition ? 'UI-sidebar off' : 'UI-sidebar'}>
+        <div className='content'>
+          <button ref='btn' onClick={this.handleClick.bind(this)} className='close-sidebar'><SVG src={IconPrev}></SVG></button>
+          {this.props.children}
         </div>
-      )
-    }
+      </div>
+    )
   }
+
 }

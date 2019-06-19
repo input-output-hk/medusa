@@ -21,6 +21,7 @@ import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/auth'
 import MD5 from './libs/MD5'
+import Media from 'react-media'
 
 import {
   BrowserRouter
@@ -56,10 +57,18 @@ import Smallogo from './style/images/logo-xs.svg'
 // Slider
 import Slider, { createSliderWithTooltip } from 'rc-slider'
 
+import SVG from 'react-inlinesvg'
+
 // Styles
 import './style/medusa.scss'
 import FullscreenCloseImg from './style/images/close-fullscreen.svg'
-// import urlNext from './style/images/control-next.svg'k
+import IconCalendar from './style/images/control-calendar.svg'
+import IconPlay from './style/images/control-play.svg'
+import IconPause from './style/images/control-pause.svg'
+import IconPrev from './style/images/control-prev.svg'
+import IconNext from './style/images/control-next.svg'
+import IconClock from './style/images/icon-clock.svg'
+import IconInfo from './style/images/icon-info-circle.svg'
 
 import { FaPlay, FaPause, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle } from 'react-icons/fa'
 
@@ -229,6 +238,7 @@ class App extends mixin(EventEmitter, Component) {
       selectedFileDate: '',
       selectedFileName: '',
       selectedFileMessage: '',
+      mobileTabSelect: 'viewing-about',
       fileInfoLocation: { x: 0, y: 0 },
       showFileInfo: false,
       loadingFileInfo: true,
@@ -1310,10 +1320,41 @@ class App extends mixin(EventEmitter, Component) {
     this.populateSideBar(this.state.sidebarCurrentCommitIndex)
   }
 
+  mobileTabView (param,e) {
+    this.setState({
+      mobileTabSelect: param
+    })
+  }
+
+  mobileTabSelectActive (value) {
+    return (this.state.mobileTabSelect == value) ? 'active' : ''
+  }
+
+
   UI () {
+    const medusaUI = (this.config.scene.fullScreen) ? 'medusa-UI fullscreen' : 'medusa-UI'
+
+    const mobileTabSelectActive = (value) => {
+      return (this.state.mobileTabSelect == value) ? 'active' : ''
+    }
+
     if (this.state.showUI) {
       return (
-        <div className='medusa-UI'>
+        <div className={`${medusaUI} ${this.state.mobileTabSelect}`}>
+
+
+
+          <Media query="(max-width: 767px)">
+            <div className='mobile-controls text-center'>
+              <span className='text-body text-center d-block'>{this.state.currentDate}</span>
+              <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent text-body m-4 mt-2'><SVG src={IconPrev}></SVG></button>
+              {this.playPauseButton()}
+              <button onClick={this.state.goToNext} className='next border-0 bg-transparent text-body m-4 mt-2'><SVG src={IconNext}></SVG></button>
+            </div>
+          </Media>
+
+
+
           <Sidebar
             config={this.config}
             currentDate={this.state.currentDate}
@@ -1369,11 +1410,14 @@ class App extends mixin(EventEmitter, Component) {
               />
             </Widget>
 
-            <div className='mobile-bottom text-center'>
-              <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent float-left text-body'><FaChevronLeft /></button>
-              {this.playPauseButton()}
-              <button onClick={this.state.goToNext} className='next border-0 bg-transparent float-right text-body'><FaChevronRight /></button>
-            </div>
+            <Media query="(max-width: 767px)">
+              <div className='mobile-tabs'>
+                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-about")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-about')}`}>About</button>
+                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-commits")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-commits')}`}>Commits</button>
+                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-calendar")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-calendar')}`}>Calendar</button>
+              </div>
+            </Media>
+ 
 
           </Sidebar>
           <Content>

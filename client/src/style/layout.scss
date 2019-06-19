@@ -1,34 +1,51 @@
 body {
   a,button{outline: none}
   .App.showing-UI,
-  .medusa-UI { position: fixed;top:0;left:0;width:100%;height:100%;z-index: 999999999}
-  .medusa-UI { display: flex;align-items: stretch;border:15px $light solid;pointer-events: none;}
+  .medusa-UI { position: fixed;top:0;left:0;width:100%;height:100%;z-index:99999999}
+  .medusa-UI { display: flex;align-items: stretch;border:$spacer $light solid;pointer-events: none;}
+  .App.showing-UI{
+    #medusa-stage{position: absolute;z-index: 99999998}
+    @media (min-width:768px) {
+      #medusa-stage{top:$spacer;right:$spacer}
+    }
+  }
+  .kurva{position: absolute;top:550px;left:60px;font-size: 100px;z-index: 999999999999;color:#fff}
 }
 .medusa-UI {
-  .UI-sidebar { min-width: 400px;     max-width: 400px;     transition: all 0.3s; overflow-y: scroll;background: rgba($lighter,0.7);padding-right:40px;pointer-events: auto;
+  .UI-sidebar { min-width: 400px;     max-width: 400px;     transition: all 0.3s; overflow-y: scroll;background: rgba($lighter,0.8);padding-right:40px;pointer-events: auto;
+    .content{background: rgba($lighter,1);}
     .mobile-bottom{display: none}
     .card{
       .card-header{margin-left: $spacer;margin-right: -1.6 * $spacer;
-        .close{margin:-5px -17px 0 0}
+        .close{margin:-5px -17px 0 0;outline: none}
       }
       .icon{display: none}
-    }
-    .card.closed{
-      .inner{display: none}
-      .card-header{
-        .close{transform: rotate(90deg)}
+      &.commit-list{
+        @media (min-width: 768px) {
+          .subhead{margin:-($spacer*2.5) 0 0 0}
+        }
+      }
+      &.closed{
+        .subhead,.inner{display: none}
+        .card-header{
+          .close{transform: rotate(90deg)}
+        }
       }
     }
+
     .close-sidebar{margin:200px 0 0 400px;background: rgba($lighter,0.7);border:0;width:30px;height:60px;position: absolute;z-index: 9;border-radius:40px;border-top-left-radius: 0; border-bottom-left-radius: 0;text-align: left;outline: 0;
       svg{transform: rotate(0deg);}
+      polyline{stroke:rgba(255,255,255,0.3)}
+      &:hover{
+        polyline{stroke:rgba(255,255,255,0.6)}
+      }
     }
   }
   .UI-sidebar.off { min-width: 40px;     max-width: 40px;     text-align: center;padding-right:0px;
     .card{
       border-color: transparent;
-      .card-header{display: none;
-
-      }
+      .card-header,
+      .suphead,
       .subhead,
       .inner{display: none}
       .icon{display:block;height:30px;text-align: center;}
@@ -43,12 +60,15 @@ body {
       svg{transform: rotate(180deg);}
     }
   }
-  .UI-content { width: 100%;     padding: 20px;     min-height: 100vh;     transition: all 0.3s;
-    .close-fullscreen{margin:0px 0 0 0px;background: $light;width:80px;height:80px;position: absolute;z-index: 9;border-radius:100px;top:-25px;right:-25px;border:0}
-    .controls.top{margin:50px 0px;pointer-events: auto;}
+  .UI-content { width: 100%;     padding: 0px;     min-height: 100vh;     transition: all 0.3s;pointer-events: none;
+    .close-fullscreen{margin:0px 0 0 0px;background:transparent;width:80px;height:70px;position: absolute;z-index: 9;top:-25px;right:-25px;border:0;outline: none}
+    @media (min-width: 768px) {
+      .close-fullscreen{background: $light;border-radius:100px;}
+    }
+    .controls.top{padding:50px 30px;pointer-events: auto;position: relative;z-index: 99;top:10px;width:100%}
+    //#medusa-stage{position: absolute;z-index: 0;top:0}
   }
 }
-
 
 
 @media (max-width: 1199px) {
@@ -61,21 +81,23 @@ body {
 @media (max-width: 767px) {
   body{
     .medusa-UI {font-size: 85%;border:0;
-
+      .mobile-controls{position: fixed;top:1.4*$spacer;left:0;width:100%;z-index: 9;font-size: 130%;font-weight: 400}
       .UI-content {
-        .close-fullscreen{width:70px;height:70px;top:-15px;right:-15px;border:0}
+        .close-fullscreen{width:70px;height:70px;top:-17px;right:-10px;border:0}
+        .controls.top {padding: 0;
+          .slider{display: none}
+        }
       }
 
-      .controls.top .slider{position:fixed;top:50px;width: 90%;display: none}
 
-      .UI-sidebar { min-width: 100%;     max-width:  100%;bottom:0;padding:0;position: fixed;
+      .UI-sidebar { min-width: 100%;     max-width:  100%;bottom:0;padding:0;position: fixed;z-index: 9;
         .close-sidebar,
         .card{display: none;clear:both;
           .card-header{display: none;}
           .inner{display: block}
           .icon{display:none;}
         }
-        .mobile-top,.mobile-bottom{font-size: 150%}
+        .mobile-top,.mobile-bottom{font-size: 130%}
 
         .mobile-top{background:rgba($lighter,0.5);
           .calendar-wrap{display: none}
@@ -84,14 +106,27 @@ body {
           .calendar-wrap{display: block;}
         }
         .mobile-bottom{display: block;padding:($spacer*0.9) ($spacer*0.5) ($spacer*0.9) ($spacer*0.5);}
-        .mobile-top span{display: inline-block;padding:($spacer*0.7) $spacer ($spacer*0.8) $spacer;}
+        .mobile-top span{display: inline-block;padding:($spacer*0.2) ($spacer*0.3) ($spacer*0.2) ($spacer*0.2);}
         .mobile-bottom > div{display: inline-block;width: 50%;padding:($spacer*0.9) ($spacer*0.5) ($spacer*0.9) ($spacer*0.5);}
         .close-sidebar{margin:200px 0 0 250px;}
-        .card.about{display: block}
+
+        .mobile-tabs {width:100%}
+        .mobile-tabs button{display:inline-block;width:33.3%;letter-spacing:.1em;background:rgba($dark,.2);outline: none}
+        .mobile-tabs button.active{background: $lighter}
       }
       .UI-sidebar.off {min-width: 100%;     max-width:  100%; text-align: left;padding-right:0px;
         .card{display: none;border-color: transparent;}
       }
+      &.viewing-about {
+        .UI-sidebar .card.about{display: block}
+      }
+      &.viewing-commits {
+        .UI-sidebar .card.commit-list{display: block}
+      }
+      &.viewing-calendar {
+        .UI-sidebar .card.calendar{display: block}
+      }
+
     }
   }
 }

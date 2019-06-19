@@ -72,6 +72,8 @@
     "raw-loader": "^0.5.1",
     "react-fontawesome": "^1.6.1",
     "react-icons": "^3.1.0",
+    "react-inlinesvg": "^0.8.4",
+    "react-media": "^1.9.2",
     "react-render-html": "^0.6.0",
     "react-router": "^4.3.1",
     "react-select": "^2.1.1",
