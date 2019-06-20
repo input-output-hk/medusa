@@ -70,8 +70,6 @@ import IconNext from './style/images/control-next.svg'
 import IconClock from './style/images/icon-clock.svg'
 import IconInfo from './style/images/icon-info-circle.svg'
 
-import { FaPlay, FaPause, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle } from 'react-icons/fa'
-
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
 function dateSliderTooltipFormatter (v) {
