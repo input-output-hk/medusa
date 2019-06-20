@@ -21,6 +21,7 @@ import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/auth'
 import MD5 from './libs/MD5'
+import Media from 'react-media'
 
 import {
   BrowserRouter
@@ -56,10 +57,18 @@ import Smallogo from './style/images/logo-xs.svg'
 // Slider
 import Slider, { createSliderWithTooltip } from 'rc-slider'
 
+import SVG from 'react-inlinesvg'
+
 // Styles
 import './style/medusa.scss'
 import FullscreenCloseImg from './style/images/close-fullscreen.svg'
-// import urlNext from './style/images/control-next.svg'k
+import IconCalendar from './style/images/control-calendar.svg'
+import IconPlay from './style/images/control-play.svg'
+import IconPause from './style/images/control-pause.svg'
+import IconPrev from './style/images/control-prev.svg'
+import IconNext from './style/images/control-next.svg'
+import IconClock from './style/images/icon-clock.svg'
+import IconInfo from './style/images/icon-info-circle.svg'
 
 import { FaPlay, FaPause, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle } from 'react-icons/fa'
 
@@ -87,26 +96,59 @@ class App extends mixin(EventEmitter, Component) {
           })
         }
       }
-      if (urlParams.has('about_title')) {
-        let value = urlParams.get('about_title')
+
+
+      if (urlParams.has('title')) {
+        let value = urlParams.get('title')
+          this.config.widget.head.title = value
+      }
+      if (urlParams.has('subtitle')) {
+        let value = urlParams.get('subtitle')
+          this.config.widget.head.subtitle = value
+      }
+      if (urlParams.has('intro')) {
+        let value = urlParams.get('intro')
+          this.config.widget.head.content = value
+      }
+
+      if (urlParams.has('about')) {
+        let value = urlParams.get('about')
           this.config.widget.about.title = value
       }
-      if (urlParams.has('about_content')) {
-        let value = urlParams.get('about_content')
+      if (urlParams.has('content')) {
+        let value = urlParams.get('content')
           this.config.widget.about.content = value
       }
-      if (urlParams.has('commitList_title')) {
-        let value = urlParams.get('commitList_title')
+      if (urlParams.has('commits')) {
+        let value = urlParams.get('commits')
           this.config.widget.commitList.title = value
       }
-      if (urlParams.has('milestones_title')) {
-        let value = urlParams.get('milestones_title')
+      if (urlParams.has('showing')) {
+        let value = urlParams.get('showing')
+          this.config.widget.commitList.showing = value
+      }
+      if (urlParams.has('milestones')) {
+        let value = urlParams.get('milestones')
           this.config.widget.milestones.title = value
       }
-      if (urlParams.has('calendar_title')) {
-        let value = urlParams.get('calendar_title')
+      if (urlParams.has('calendar')) {
+        let value = urlParams.get('calendar')
           this.config.widget.calendar.title = value
       }
+
+      if (urlParams.has('committed')) {
+        let value = urlParams.get('committed')
+          this.config.legend.committed.title = value
+      }
+      if (urlParams.has('updated')) {
+        let value = urlParams.get('updated')
+          this.config.legend.updated.title = value
+      }
+      if (urlParams.has('cold')) {
+        let value = urlParams.get('cold')
+          this.config.legend.cold.title = value
+      }
+
     }
 
     this.initFireBase()
@@ -196,6 +238,7 @@ class App extends mixin(EventEmitter, Component) {
       selectedFileDate: '',
       selectedFileName: '',
       selectedFileMessage: '',
+      mobileTabSelect: 'viewing-about',
       fileInfoLocation: { x: 0, y: 0 },
       showFileInfo: false,
       loadingFileInfo: true,
@@ -1245,11 +1288,11 @@ class App extends mixin(EventEmitter, Component) {
   playPauseButton () {
     if (this.state.play) {
       return (
-        <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><FaPause /></button>
+        <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><SVG src={IconPause}></SVG></button>
       )
     } else {
       return (
-        <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><FaPlay /></button>
+        <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><SVG src={IconPlay}></SVG></button>
       )
     }
   }
@@ -1277,10 +1320,41 @@ class App extends mixin(EventEmitter, Component) {
     this.populateSideBar(this.state.sidebarCurrentCommitIndex)
   }
 
+  mobileTabView (param,e) {
+    this.setState({
+      mobileTabSelect: param
+    })
+  }
+
+  mobileTabSelectActive (value) {
+    return (this.state.mobileTabSelect == value) ? 'active' : ''
+  }
+
+
   UI () {
+    const medusaUI = (this.config.scene.fullScreen) ? 'medusa-UI fullscreen' : 'medusa-UI'
+
+    const mobileTabSelectActive = (value) => {
+      return (this.state.mobileTabSelect == value) ? 'active' : ''
+    }
+
     if (this.state.showUI) {
       return (
-        <div className='medusa-UI'>
+        <div className={`${medusaUI} ${this.state.mobileTabSelect}`}>
+
+
+
+          <Media query="(max-width: 767px)">
+            <div className='mobile-controls text-center'>
+              <span className='text-body text-center d-block'>{this.state.currentDate}</span>
+              <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent text-body m-4 mt-2'><SVG src={IconPrev}></SVG></button>
+              {this.playPauseButton()}
+              <button onClick={this.state.goToNext} className='next border-0 bg-transparent text-body m-4 mt-2'><SVG src={IconNext}></SVG></button>
+            </div>
+          </Media>
+
+
+
           <Sidebar
             config={this.config}
             currentDate={this.state.currentDate}
@@ -1297,14 +1371,15 @@ class App extends mixin(EventEmitter, Component) {
 
             <About
               config={this.config}
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaInfoCircle /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconInfo}></SVG></button>}
             />
 
             <CommitList
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaClock /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconClock}></SVG></button>}
               title={this.config.widget.commitList.title}
               slug={this.config.widget.commitList.slug}
               config={this.config}
+              showing={this.config.widget.commitList.showing}
               onChange={this.resetCommitList.bind(this)}
               value={this.state.value}
               sideBarCommits={this.state.sideBarCommits}
@@ -1322,7 +1397,7 @@ class App extends mixin(EventEmitter, Component) {
             />
 
             <Widget
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaCalendar /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconCalendar}></SVG></button>}
               title={this.config.widget.calendar.title}
               slug={this.config.widget.calendar.slug}
             >
@@ -1335,11 +1410,14 @@ class App extends mixin(EventEmitter, Component) {
               />
             </Widget>
 
-            <div className='mobile-bottom text-center'>
-              <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent float-left text-body'><FaChevronLeft /></button>
-              {this.playPauseButton()}
-              <button onClick={this.state.goToNext} className='next border-0 bg-transparent float-right text-body'><FaChevronRight /></button>
-            </div>
+            <Media query="(max-width: 767px)">
+              <div className='mobile-tabs'>
+                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-about")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-about')}`}>About</button>
+                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-commits")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-commits')}`}>Commits</button>
+                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-calendar")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-calendar')}`}>Calendar</button>
+              </div>
+            </Media>
+ 
 
           </Sidebar>
           <Content>
@@ -1352,7 +1430,7 @@ class App extends mixin(EventEmitter, Component) {
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}
 
-                <button onClick={this.goToNext.bind(this)} className='next border-0 bg-transparent'><FaChevronRight /></button>
+                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><SVG src={IconNext}></SVG></button>
 
                 <DatePicker
                   customInput={<Calendar />}

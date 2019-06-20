@@ -2,12 +2,18 @@
 .medusa-UI {
   .commit-list{
     .list-group-item{position: static;cursor: pointer;}
+    .list-group-item{position: static;
+      a.github .link{fill:rgba($primary,0.7)}
+    }
     .list-group-item.current{border-right:0 solid rgba($primary,0.7);background: rgba($primary,0.05) !important;
       .info div{padding: 1px 0 3px 0}
       .info div+div{border-top:1px solid rgba($primary,0.1);padding: 4px 0}
     }
+    .date{text-transform: uppercase;opacity: .7;display: block;line-height: 1.8}
     .subhead .select{float:right;margin:-28px 0 8px 0}
+    .subhead button,
     .subhead .select select{border: 0;background: rgba(255,255,255,0.3)}
+    .message,.msg path{fill:$body-color}
     .message { display: block; width: auto;margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       a { color: #fff; text-decoration: none}
       a:hover { color: #fff; text-decoration: underline}
@@ -34,6 +40,15 @@
   .medusa-UI {
     .commit-list{
       .gravatar{float:right;display:none}
+      .subhead .select{float:none;margin:0px 0 8px 0}
+      .subhead .select .selector{display: none}
+      .list-group-item{display: none}
+      .list-group-item.current{display:block}
+      &.expanded{position: fixed;bottom:47px;z-index: 9999;height:calc(100% - 110px);width:100%;background: rgba($lighter,1);
+        .list-group-item{display: block}
+        .subhead .select .selector{display:block}
+        .inner{height:calc(100% - 60px);overflow-y:auto }
+      }
     }
   }
 }
