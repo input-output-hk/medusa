@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import { FaCalendar } from 'react-icons/fa'
+import SVG from 'react-inlinesvg'
+import IconCalendar from '../style/images/control-calendar.svg'
 
 export default class Calendar extends Component {
   render () {
@@ -7,7 +8,7 @@ export default class Calendar extends Component {
       <button
         className='calendar border-0 bg-transparent'
         onClick={this.props.onClick}>
-        <FaCalendar />
+        <SVG src={IconCalendar}></SVG>
       </button>
     )
   }

@@ -1288,11 +1288,11 @@ class App extends mixin(EventEmitter, Component) {
   playPauseButton () {
     if (this.state.play) {
       return (
-        <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><FaPause /></button>
+        <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><SVG src={IconPause}></SVG></button>
       )
     } else {
       return (
-        <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><FaPlay /></button>
+        <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><SVG src={IconPlay}></SVG></button>
       )
     }
   }
@@ -1371,11 +1371,11 @@ class App extends mixin(EventEmitter, Component) {
 
             <About
               config={this.config}
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaInfoCircle /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconInfo}></SVG></button>}
             />
 
             <CommitList
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaClock /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconClock}></SVG></button>}
               title={this.config.widget.commitList.title}
               slug={this.config.widget.commitList.slug}
               config={this.config}
@@ -1397,7 +1397,7 @@ class App extends mixin(EventEmitter, Component) {
             />
 
             <Widget
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><FaCalendar /></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconCalendar}></SVG></button>}
               title={this.config.widget.calendar.title}
               slug={this.config.widget.calendar.slug}
             >
@@ -1430,7 +1430,7 @@ class App extends mixin(EventEmitter, Component) {
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}
 
-                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><FaChevronRight /></button>
+                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><SVG src={IconNext}></SVG></button>
 
                 <DatePicker
                   customInput={<Calendar />}
