@@ -4,9 +4,9 @@ import { FiMessageSquare } from 'react-icons/fi'
 
 export default class CommitInfo extends Component {
   render () {
-    const addition = (this.props.currentAdded !== 1) ? 'additions' : 'addition'
-    const change = (this.props.currentChanged !== 1) ? 'changes' : 'change'
-    const removal = (this.props.currentRemoved !== 1) ? 'removals' : 'removal'
+    const addition = (this.props.currentAdded !== 1) ? this.props.config.widget.commitList.additions : this.props.config.widget.commitList.addition
+    const change = (this.props.currentChanged !== 1) ? this.props.config.widget.commitList.changes : this.props.config.widget.commitList.change
+    const removal = (this.props.currentRemoved !== 1) ? this.props.config.widget.commitList.removals : this.props.config.widget.commitList.removal
     return (
       <div className='info'>
         <div className='msg'><FiMessageSquare /> <span>{this.props.currentMsg}</span></div>

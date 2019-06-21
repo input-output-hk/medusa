@@ -26,6 +26,7 @@ const Config = {
   client: {
     url: ''
   },
+  lang: 'en',
   widget: {
     head: {
       title: 'MEDUSA',
@@ -41,6 +42,12 @@ const Config = {
     commitList: {
       title: 'Commit List',
       showing: 'Showing',
+      addition: 'Addition',
+      removal: 'Removal',
+      change: 'Change',
+      additions: 'Additions',
+      removals: 'Removals',
+      changes: 'Changes',
       slug: 'commit-list'
     },
     milestones: {

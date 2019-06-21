@@ -2,9 +2,10 @@
   .controls{
 
     text-align: center;
-    button,.rc-slider{display: inline-block;vertical-align: bottom;color:rgba($secondary,0.8);}
     button.prev,button.next,.playpause,.calendar{cursor: pointer;}
-    .rc-slider{vertical-align: baseline;}
+    button,.rc-slider{display: inline-block;vertical-align: middle;color:rgba($secondary,0.8);}
+    .rc-slider{vertical-align: top;margin-top:11px !important}
+
     .rc-slider{width:75%;margin:0 20px;}
     .playpause,.calendar{font-size:130%}
     .slider > div{
