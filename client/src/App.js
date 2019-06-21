@@ -1606,7 +1606,7 @@ class App extends mixin(EventEmitter, Component) {
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}
 
-                <button onClick={this.goToNext.bind(this)} className='next border-0 bg-transparent'><FaChevronRight /></button>
+                <button onClick={this.goToNext.bind(this)} className='next border-0 bg-transparent'><SVG src={IconNext}></SVG></button>
 
                 <DatePicker
                   customInput={<Calendar />}
