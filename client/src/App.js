@@ -52,6 +52,7 @@ import Head from './components/Head'
 import About from './components/About'
 import Widget from './components/Widget'
 import DatePicker from 'react-datepicker'
+
 import Smallogo from './style/images/logo-xs.svg'
 
 // Slider
@@ -70,9 +71,134 @@ import IconNext from './style/images/control-next.svg'
 import IconClock from './style/images/icon-clock.svg'
 import IconInfo from './style/images/icon-info-circle.svg'
 
-import { FaPlay, FaPause, FaChevronRight, FaChevronLeft, FaCalendar, FaClock, FaInfoCircle } from 'react-icons/fa'
-
 const SliderWithTooltip = createSliderWithTooltip(Slider)
+
+const UIlabels = {
+  en: {
+    widget: {
+      about: {
+        title: 'About',
+      },
+      commitList: {
+        title: 'Commit List',
+        showing: 'Showing',
+        addition: 'Addition',
+        removal: 'Removal',
+        change: 'Change',
+        additions: 'Additions',
+        removals: 'Removals',
+        changes: 'Changes',
+      },
+      calendar: {
+        title: 'Calendar',
+      }
+    },
+    legend: {
+      committed: {
+        title: 'Committed file',
+      },
+      updated: {
+        title: 'Updated file',
+      },
+      cold: {
+        title: 'Cold file',
+      }
+    }
+  },
+  ja: {
+    widget: {
+      about: {
+        title: '約',
+      },
+      commitList: {
+        title: 'コミットリスト',
+        showing: '表示中',
+        addition: '添加',
+        removal: '除去',
+        change: '変化する',
+        additions: '追加',
+        removals: '削除',
+        changes: '変更点',
+      },
+      calendar: {
+        title: 'カレンダー',
+      }
+    },
+    legend: {
+      committed: {
+        title: '確定ファイル',
+      },
+      updated: {
+        title: '更新済みファイル',
+      },
+      cold: {
+        title: 'コールドファイル',
+      }
+    }
+  },
+  cn: {
+    widget: {
+      about: {
+        title: '关于',
+      },
+      commitList: {
+        title: '提交清单',
+        showing: '显示',
+        addition: '加成',
+        removal: '切除',
+        change: '更改',
+        additions: '附加',
+        removals: '清除',
+        changes: '变化',
+      },
+      calendar: {
+        title: '日历',
+      }
+    },
+    legend: {
+      committed: {
+        title: '提交文件',
+      },
+      updated: {
+        title: '更新后的文件',
+      },
+      cold: {
+        title: '冷文件',
+      }
+    }
+  },
+  ko: {
+    widget: {
+      about: {
+        title: '약',
+      },
+      commitList: {
+        title: '커밋 목록',
+        showing: '전시',
+        addition: '부가',
+        removal: '제거',
+        change: '변화',
+        additions: '추가',
+        removals: '삭제',
+        changes: '변경 사항',
+      },
+      calendar: {
+        title: '달력',
+      }
+    },
+    legend: {
+      committed: {
+        title: '커밋 된 파일',
+      },
+      updated: {
+        title: '업데이트 된 파일',
+      },
+      cold: {
+        title: '콜드 파일',
+      }
+    }
+  }
+}
 
 function dateSliderTooltipFormatter (v) {
   return `${moment(v).format('DD.MM.YYYY')}`
@@ -97,6 +223,23 @@ class App extends mixin(EventEmitter, Component) {
         }
       }
 
+      if (urlParams.has('lang')) {
+        let value = urlParams.get('lang')
+        this.config.lang = value
+        this.config.widget.about.title = UIlabels[value].widget.about.title
+        this.config.widget.commitList.title = UIlabels[value].widget.commitList.title
+        this.config.widget.commitList.showing = UIlabels[value].widget.commitList.showing
+        this.config.widget.commitList.addition = UIlabels[value].widget.commitList.addition
+        this.config.widget.commitList.change = UIlabels[value].widget.commitList.change
+        this.config.widget.commitList.removal = UIlabels[value].widget.commitList.removal
+        this.config.widget.commitList.additions = UIlabels[value].widget.commitList.additions
+        this.config.widget.commitList.changes = UIlabels[value].widget.commitList.changes
+        this.config.widget.commitList.removals = UIlabels[value].widget.commitList.removals
+        this.config.widget.calendar.title = UIlabels[value].widget.calendar.title
+        this.config.legend.committed.title = UIlabels[value].legend.committed.title
+        this.config.legend.updated.title = UIlabels[value].legend.updated.title
+        this.config.legend.cold.title = UIlabels[value].legend.cold.title
+      }
 
       if (urlParams.has('title')) {
         let value = urlParams.get('title')
@@ -1337,6 +1480,10 @@ class App extends mixin(EventEmitter, Component) {
     const mobileTabSelectActive = (value) => {
       return (this.state.mobileTabSelect == value) ? 'active' : ''
     }
+
+    // registerLocale('ja', lang_ja)
+    // registerLocale('cn', lang_cn)
+    // registerLocale('ko', lang_ko)
 
     if (this.state.showUI) {
       return (
