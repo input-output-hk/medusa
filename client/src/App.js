@@ -126,7 +126,7 @@ const UIlabels = {
         content: ''
       },
       about: {
-        title: '約',
+        title: '内容',
       },
       commitList: {
         title: 'コミットリスト',
@@ -202,11 +202,11 @@ const UIlabels = {
         content: ''
       },
         about: {
-        title: '약',
+        title: '개요',
       },
       commitList: {
         title: '커밋 목록',
-        showing: '전시',
+        showing: '표시',
         addition: '부가',
         removal: '제거',
         change: '변화',
@@ -241,11 +241,11 @@ const UIlabels = {
         content: ''
       },
         about: {
-        title: '약',
+        title: '개요',
       },
       commitList: {
         title: '커밋 목록',
-        showing: '전시',
+        showing: '표시',
         addition: '부가',
         removal: '제거',
         change: '변화',
@@ -1670,6 +1670,7 @@ class App extends mixin(EventEmitter, Component) {
 
                 <DatePicker
                   customInput={<Calendar />}
+                  locale={this.config.lang}
                   popperPlacement='bottom-end'
                   locale={this.config.lang}
                   selected={this.state.currentDateObject}
