@@ -38,7 +38,7 @@ export default class CommitList extends Component {
   render () {
     const { selectedOption } = this.state;
     const infopanel = <CommitInfo config={this.props.config} currentAdded={this.props.currentAdded} currentChanged={this.props.currentChanged} currentRemoved={this.props.currentRemoved} currentAuthor={this.props.currentAuthor} currentMsg={this.props.currentMsg} currentDate={this.props.currentDate} currentCommitHash={this.props.currentCommitHash} />
-    const selector = <div className="select m-3 mt-2"><button ref='btn' className="float-right d-md-none" onClick={this.handleMinimize}>{this.state.minimizeLabel}</button> <div className="selector"><small>Showing</small>&nbsp;&nbsp;<select className="" value={this.state.value} onChange={this.handleChange}><option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="500">500</option></select></div><div className="clear"></div></div>
+    const selector = <div className="select m-3 mt-2"><button ref='btn' className="float-right d-md-none" onClick={this.handleMinimize}>{this.state.minimizeLabel}</button> <div className="selector"><small>{this.props.showing}</small>&nbsp;&nbsp;<select className="" value={this.state.value} onChange={this.handleChange}><option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="500">500</option></select></div><div className="clear"></div></div>
     const extracls = (!this.state.minimized) ? 'expanded' : ''
 
     return (

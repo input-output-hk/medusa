@@ -48,7 +48,9 @@ const Config = {
       additions: 'Additions',
       removals: 'Removals',
       changes: 'Changes',
-      slug: 'commit-list'
+      slug: 'commit-list',
+      viewfile: 'View file',
+      viewcommit: 'View commit',
     },
     milestones: {
       title: 'Milestones',

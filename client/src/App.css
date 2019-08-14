@@ -101,6 +101,7 @@ canvas#stage {
 
 #medusa-root .medusa-file-info-widget {
   position: absolute;
+  z-index: 9999999999;
   background: rgba(33, 34, 62, 0.9);
   border: 1px solid #832dc4;
   border-radius: 44px;

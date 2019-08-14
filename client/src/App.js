@@ -17,6 +17,12 @@ import deepAssign from 'deep-assign'
 import EventEmitter from 'eventemitter3'
 import mixin from 'mixin'
 import moment from 'moment'
+import 'moment/locale/ja'
+import 'moment/locale/zh-cn'
+import 'moment/locale/ko'
+import 'moment/locale/en-gb'
+
+
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/auth'
@@ -76,6 +82,11 @@ const SliderWithTooltip = createSliderWithTooltip(Slider)
 const UIlabels = {
   en: {
     widget: {
+      head: {
+        title: 'MEDUSA',
+        subtitle: 'Github project activity',
+        content: 'Introduction'
+      },
       about: {
         title: 'About',
       },
@@ -88,6 +99,8 @@ const UIlabels = {
         additions: 'Additions',
         removals: 'Removals',
         changes: 'Changes',
+        viewfile: 'View file',
+        viewcommit: 'View commit',
       },
       calendar: {
         title: 'Calendar',
@@ -107,6 +120,11 @@ const UIlabels = {
   },
   ja: {
     widget: {
+      head: {
+        title: 'MEDUSA',
+        subtitle: 'Github プロジェクトアクティビティ ライブ',
+        content: ''
+      },
       about: {
         title: '約',
       },
@@ -119,6 +137,8 @@ const UIlabels = {
         additions: '追加',
         removals: '削除',
         changes: '変更点',
+        viewfile: 'ファイルを閲覧する',
+        viewcommit: 'コミットを見る',
       },
       calendar: {
         title: 'カレンダー',
@@ -126,10 +146,10 @@ const UIlabels = {
     },
     legend: {
       committed: {
-        title: '確定ファイル',
+        title: 'コミットされたファイル',
       },
       updated: {
-        title: '更新済みファイル',
+        title: '更新ファイル',
       },
       cold: {
         title: 'コールドファイル',
@@ -138,7 +158,12 @@ const UIlabels = {
   },
   cn: {
     widget: {
-      about: {
+      head: {
+        title: 'Medusa 项目浏览器',
+        subtitle: 'Github 项目活动状态',
+        content: ''
+      },
+        about: {
         title: '关于',
       },
       commitList: {
@@ -150,6 +175,8 @@ const UIlabels = {
         additions: '附加',
         removals: '清除',
         changes: '变化',
+        viewfile: '查看文件',
+        viewcommit: '查看提交',
       },
       calendar: {
         title: '日历',
@@ -160,16 +187,21 @@ const UIlabels = {
         title: '提交文件',
       },
       updated: {
-        title: '更新后的文件',
+        title: '更新的文件',
       },
       cold: {
         title: '冷文件',
       }
     }
   },
-  ko: {
+  kr: {
     widget: {
-      about: {
+      head: {
+        title: 'Medusa 프로젝트 탐색기',
+        subtitle: 'Github 프로젝트 활동 라이브',
+        content: ''
+      },
+        about: {
         title: '약',
       },
       commitList: {
@@ -181,6 +213,8 @@ const UIlabels = {
         additions: '추가',
         removals: '삭제',
         changes: '변경 사항',
+        viewfile: '파일보기',
+        viewcommit: '커밋보기',
       },
       calendar: {
         title: '달력',
@@ -188,16 +222,63 @@ const UIlabels = {
     },
     legend: {
       committed: {
-        title: '커밋 된 파일',
+        title: '커밋된 파일',
       },
       updated: {
-        title: '업데이트 된 파일',
+        title: '업데이트된 파일',
       },
       cold: {
         title: '콜드 파일',
       }
     }
   }
+  ,
+  ko: {
+    widget: {
+      head: {
+        title: 'Medusa 프로젝트 탐색기',
+        subtitle: 'Github 프로젝트 활동 라이브',
+        content: ''
+      },
+        about: {
+        title: '약',
+      },
+      commitList: {
+        title: '커밋 목록',
+        showing: '전시',
+        addition: '부가',
+        removal: '제거',
+        change: '변화',
+        additions: '추가',
+        removals: '삭제',
+        changes: '변경 사항',
+        viewfile: '파일보기',
+        viewcommit: '커밋보기',
+      },
+      calendar: {
+        title: '달력',
+      }
+    },
+    legend: {
+      committed: {
+        title: '커밋된 파일',
+      },
+      updated: {
+        title: '업데이트된 파일',
+      },
+      cold: {
+        title: '콜드 파일',
+      }
+    }
+  }
+}
+
+const lang_locales = {
+  ja: 'ja',
+  cn: 'zh-cn',
+  kr: 'ko',
+  ko: 'ko',
+  en: 'en-gb'
 }
 
 function dateSliderTooltipFormatter (v) {
@@ -225,7 +306,12 @@ class App extends mixin(EventEmitter, Component) {
 
       if (urlParams.has('lang')) {
         let value = urlParams.get('lang')
+
         this.config.lang = value
+        this.config.widget.head.title = UIlabels[value].widget.head.title
+        this.config.widget.head.subtitle = UIlabels[value].widget.head.subtitle
+        this.config.widget.head.content = UIlabels[value].widget.head.content
+
         this.config.widget.about.title = UIlabels[value].widget.about.title
         this.config.widget.commitList.title = UIlabels[value].widget.commitList.title
         this.config.widget.commitList.showing = UIlabels[value].widget.commitList.showing
@@ -235,6 +321,8 @@ class App extends mixin(EventEmitter, Component) {
         this.config.widget.commitList.additions = UIlabels[value].widget.commitList.additions
         this.config.widget.commitList.changes = UIlabels[value].widget.commitList.changes
         this.config.widget.commitList.removals = UIlabels[value].widget.commitList.removals
+        this.config.widget.commitList.viewfile = UIlabels[value].widget.commitList.viewfile
+        this.config.widget.commitList.viewcommit = UIlabels[value].widget.commitList.viewcommit
         this.config.widget.calendar.title = UIlabels[value].widget.calendar.title
         this.config.legend.committed.title = UIlabels[value].legend.committed.title
         this.config.legend.updated.title = UIlabels[value].legend.updated.title
@@ -733,7 +821,7 @@ class App extends mixin(EventEmitter, Component) {
         showFileInfo: true
       })
 
-      let commitDate = moment(this.state.currentCommit.committerDate).format()
+      let commitDate = moment(this.state.currentCommit.committerDate).locale(lang_locales[this.config.lang]).format()
 
       let uri = 'https://us-central1-webgl-gource-1da99.cloudfunctions.net/github-fileInfo?repo=' + this.config.git.repo +
       '&branch=' + this.config.git.branch +
@@ -761,7 +849,7 @@ class App extends mixin(EventEmitter, Component) {
             selectedFileAuthorImg: fileCommitDetails.author.avatarUrl,
             selectedFileCommitURL: fileCommitDetails.commitUrl,
             selectedFileDate: fileCommitDetails.author.date,
-            selectedFileDateRelative: moment(fileCommitDetails.author.date).fromNow(),
+            selectedFileDateRelative: moment(fileCommitDetails.author.date).locale(lang_locales[this.config.lang]).fromNow(),
             selectedFileMessage: fileCommitDetails.message,
             selectedFileName: fileName,
             showFileInfo: true,
@@ -1086,9 +1174,9 @@ class App extends mixin(EventEmitter, Component) {
 
         this.timestampToLoad = 0
         changedState.currentCommit = commit
-        changedState.currentDate = moment.unix(commit.date / 1000).format('MM/DD/YYYY HH:mm:ss')
+        changedState.currentDate = moment.unix(commit.date / 1000).locale(lang_locales[this.config.lang]).format('MM/DD/YYYY HH:mm:ss')
         changedState.currentDateObject = moment(moment.unix(commit.date / 1000))
-        changedState.committerDate = commit.committerDate ? moment.unix(commit.committerDate / 1000).format('MM/DD/YYYY HH:mm:ss') : changedState.currentDate
+        changedState.committerDate = commit.committerDate ? moment.unix(commit.committerDate / 1000).locale(lang_locales[this.config.lang]).format('MM/DD/YYYY HH:mm:ss') : changedState.currentDate
         changedState.currentCommitHash = commit.sha
         changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
         changedState.currentMsg = commit.msg
@@ -1217,8 +1305,8 @@ class App extends mixin(EventEmitter, Component) {
 
       querySnapshot.forEach(snapshot => {
         let data = snapshot.data()
-        data.dateLong = moment(data.date).format('dddd, MMMM Do YYYY, h:mm:ss a')
-        data.dateShort = moment(data.date).format('MMM Do')
+        data.dateLong = moment(data.date).locale(lang_locales[this.config.lang]).format('dddd, MMMM Do YYYY, h:mm:ss a')
+        data.dateShort = moment(data.date).locale(lang_locales[this.config.lang]).format('MMM Do')
         data.sha = snapshot.id
         data.gravatar = this.getGravatar(data.email, 40)
         this.commitsAboveArr.push(data)
@@ -1233,8 +1321,8 @@ class App extends mixin(EventEmitter, Component) {
         querySnapshot.forEach(snapshot => {
           let data = snapshot.data()
 
-          data.dateLong = moment(data.date).format('ddd, MMM Do YYYY, h:mm:ss a')
-          data.dateShort = moment(data.date).format('MMM Do')
+          data.dateLong = moment(data.date).locale(lang_locales[this.config.lang]).format('ddd, MMM Do YYYY, h:mm:ss a')
+          data.dateShort = moment(data.date).locale(lang_locales[this.config.lang]).format('MMM Do')
           data.sha = snapshot.id
           data.gravatar = this.getGravatar(data.email, 40)
           this.commitsBelowArr.push(data)
@@ -1256,8 +1344,8 @@ class App extends mixin(EventEmitter, Component) {
 
     // current commit
     let data = this.state.currentCommit
-    data.dateLong = moment(data.date).format('ddd, MMM Do YYYY, h:mm:ss a')
-    data.dateShort = moment(data.date).format('MMM Do')
+    data.dateLong = moment(data.date).locale(lang_locales[this.config.lang]).format('ddd, MMM Do YYYY, h:mm:ss a')
+    data.dateShort = moment(data.date).locale(lang_locales[this.config.lang]).format('MMM Do')
     data.gravatar = this.getGravatar(data.email, 40)
     let sidebarCommits = [data]
 
@@ -1550,6 +1638,7 @@ class App extends mixin(EventEmitter, Component) {
             >
               <DatePicker
                 inline
+                locale={this.config.lang}
                 selected={this.state.currentDateObject}
                 onSelect={this.setDate.bind(this)}
                 minDate={moment(this.minDate)}
@@ -1582,6 +1671,7 @@ class App extends mixin(EventEmitter, Component) {
                 <DatePicker
                   customInput={<Calendar />}
                   popperPlacement='bottom-end'
+                  locale={this.config.lang}
                   selected={this.state.currentDateObject}
                   onSelect={this.setDate.bind(this)}
                   minDate={moment(this.minDate)}
@@ -1610,6 +1700,7 @@ class App extends mixin(EventEmitter, Component) {
 
                 <DatePicker
                   customInput={<Calendar />}
+                  locale={this.config.lang}
                   popperPlacement='bottom-end'
                   selected={this.state.currentDateObject}
                   onSelect={this.setDate.bind(this)}

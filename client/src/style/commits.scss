@@ -54,7 +54,7 @@
 }
 
 .App{
-  .medusa-file-info-widget { position: absolute; background: rgba(33, 34, 62, 0.9); border: 1px solid #832dc4; border-radius: 3px; padding: 1em; min-width: 321px; min-height: 86px;z-index: 9999}
+  .medusa-file-info-widget { position: absolute; background: rgba(33, 34, 62, 0.9); border: 1px solid #832dc4; border-radius: 3px; padding: 1em; min-width: 321px; min-height: 86px;z-index: 9999999999}
   .medusa-file-info-widget:hover { cursor: default}
   .medusa-file-info-widget p { margin: 0 0 0.8em}
 
