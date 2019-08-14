@@ -32,11 +32,11 @@ export default class FileInfo extends Component {
               <a className='' href={'https://github.com/' + this.props.config.git.owner + '/' + this.props.config.git.repo + '/blob/' + this.props.selectedFileCommitID + '/' + this.props.selectedFilePath}
                 target='_blank'
                 title='View file on GitHub'
-              >View file</a>&nbsp;|&nbsp;
+              >{this.props.config.widget.commitList.viewfile}</a>&nbsp;|&nbsp;
               <a href={this.props.selectedFileCommitURL}
                 target='_blank'
                 title='View full commit on GitHub'
-              >View commit</a>
+              >{this.props.config.widget.commitList.viewcommit}</a>
             </div>
           </div>
         </div>
