@@ -6,23 +6,23 @@ It uses a GPGPU Force Directed Graph simulation to efficiently maintain it's str
 
 This package comes with a Node JS server for populating Google Firebase Firestore from the Github API and a frontend client for running the visualization.
 
-![medusa visual](https://medusa.iohk.io/static/assets/images/medusa.jpg)
+![medusa visual](https://raw.githubusercontent.com/input-output-hk/medusa/master/static/assets/images/medusa.jpg)
 
 Install server dependencies with:
 
-```
+```bash
 yarn install
 ```
 
 Install client dependencies with:
 
-```
+```bash
 cd client && yarn install
 ```
 
 To start the Node server and the frontend client, run this in the root directory:
 
-```
+```bash
 yarn dev
 ```
 
@@ -52,7 +52,7 @@ In order to run the Node server you will need to download your Firebase Admin SD
 
 Enter the details of the Github Repository you wish to use in ```/config.js``` (these values can also be passed as query strings when running the update script):
 
-```
+```javascript
 const config = {
   GHRepo: 'REPO_NAME',
   GHBranch: 'BRANCH',
@@ -70,7 +70,7 @@ Create a new Github personal access token: https://help.github.com/articles/crea
 
 With all of the above configured you should be able to run:
 
-```
+```bash
 yarn dev
 ```
 
@@ -92,7 +92,7 @@ In order to show details about a file on click you will need to set up a Google 
 
 The following code will create a new medusa instance:
 
-```
+```javascript
 window.onload = function() {
   if (medusa.canRun()) {
     medusa.init(config).on('ready', function() {
@@ -106,7 +106,7 @@ A detailed example implementation can be found in: ```/client/build/index.html``
 
 The following config settings can be passed to the medusa instance. Default values can be found in ```/client/src/Config.js```.
 
-```
+```javascript
 config = {
           git: {
             owner: 'input-output-hk',
