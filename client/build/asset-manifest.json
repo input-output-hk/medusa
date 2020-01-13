@@ -1,5 +1,5 @@
 {
   "main.js": "static/js/medusa.main.js",
   "main.js.map": "static/js/medusa.main.js.map",
-  "static\\media\\UbuntuMono.png": "static/media/medusa.UbuntuMono.png"
+  "static/media/UbuntuMono.png": "static/media/medusa.UbuntuMono.png"
 }

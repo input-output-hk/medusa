@@ -22,7 +22,6 @@ import 'moment/locale/zh-cn'
 import 'moment/locale/ko'
 import 'moment/locale/en-gb'
 
-
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/auth'
@@ -88,7 +87,7 @@ const UIlabels = {
         content: 'Introduction'
       },
       about: {
-        title: 'About',
+        title: 'About'
       },
       commitList: {
         title: 'Commit List',
@@ -100,21 +99,21 @@ const UIlabels = {
         removals: 'Removals',
         changes: 'Changes',
         viewfile: 'View file',
-        viewcommit: 'View commit',
+        viewcommit: 'View commit'
       },
       calendar: {
-        title: 'Calendar',
+        title: 'Calendar'
       }
     },
     legend: {
       committed: {
-        title: 'Committed file',
+        title: 'Committed file'
       },
       updated: {
-        title: 'Updated file',
+        title: 'Updated file'
       },
       cold: {
-        title: 'Cold file',
+        title: 'Cold file'
       }
     }
   },
@@ -126,7 +125,7 @@ const UIlabels = {
         content: ''
       },
       about: {
-        title: '内容',
+        title: '内容'
       },
       commitList: {
         title: 'コミットリスト',
@@ -138,21 +137,21 @@ const UIlabels = {
         removals: '削除',
         changes: '変更点',
         viewfile: 'ファイルを閲覧する',
-        viewcommit: 'コミットを見る',
+        viewcommit: 'コミットを見る'
       },
       calendar: {
-        title: 'カレンダー',
+        title: 'カレンダー'
       }
     },
     legend: {
       committed: {
-        title: 'コミットされたファイル',
+        title: 'コミットされたファイル'
       },
       updated: {
-        title: '更新ファイル',
+        title: '更新ファイル'
       },
       cold: {
-        title: 'コールドファイル',
+        title: 'コールドファイル'
       }
     }
   },
@@ -163,8 +162,8 @@ const UIlabels = {
         subtitle: 'Github 项目活动状态',
         content: ''
       },
-        about: {
-        title: '关于',
+      about: {
+        title: '关于'
       },
       commitList: {
         title: '提交清单',
@@ -176,21 +175,21 @@ const UIlabels = {
         removals: '清除',
         changes: '变化',
         viewfile: '查看文件',
-        viewcommit: '查看提交',
+        viewcommit: '查看提交'
       },
       calendar: {
-        title: '日历',
+        title: '日历'
       }
     },
     legend: {
       committed: {
-        title: '提交文件',
+        title: '提交文件'
       },
       updated: {
-        title: '更新的文件',
+        title: '更新的文件'
       },
       cold: {
-        title: '冷文件',
+        title: '冷文件'
       }
     }
   },
@@ -201,8 +200,8 @@ const UIlabels = {
         subtitle: 'Github 프로젝트 활동 라이브',
         content: ''
       },
-        about: {
-        title: '개요',
+      about: {
+        title: '개요'
       },
       commitList: {
         title: '커밋 목록',
@@ -214,25 +213,24 @@ const UIlabels = {
         removals: '삭제',
         changes: '변경 사항',
         viewfile: '파일보기',
-        viewcommit: '커밋보기',
+        viewcommit: '커밋보기'
       },
       calendar: {
-        title: '달력',
+        title: '달력'
       }
     },
     legend: {
       committed: {
-        title: '커밋된 파일',
+        title: '커밋된 파일'
       },
       updated: {
-        title: '업데이트된 파일',
+        title: '업데이트된 파일'
       },
       cold: {
-        title: '콜드 파일',
+        title: '콜드 파일'
       }
     }
-  }
-  ,
+  },
   ko: {
     widget: {
       head: {
@@ -240,8 +238,8 @@ const UIlabels = {
         subtitle: 'Github 프로젝트 활동 라이브',
         content: ''
       },
-        about: {
-        title: '개요',
+      about: {
+        title: '개요'
       },
       commitList: {
         title: '커밋 목록',
@@ -253,27 +251,27 @@ const UIlabels = {
         removals: '삭제',
         changes: '변경 사항',
         viewfile: '파일보기',
-        viewcommit: '커밋보기',
+        viewcommit: '커밋보기'
       },
       calendar: {
-        title: '달력',
+        title: '달력'
       }
     },
     legend: {
       committed: {
-        title: '커밋된 파일',
+        title: '커밋된 파일'
       },
       updated: {
-        title: '업데이트된 파일',
+        title: '업데이트된 파일'
       },
       cold: {
-        title: '콜드 파일',
+        title: '콜드 파일'
       }
     }
   }
 }
 
-const lang_locales = {
+const langLocales = {
   ja: 'ja',
   cn: 'zh-cn',
   kr: 'ko',
@@ -304,82 +302,83 @@ class App extends mixin(EventEmitter, Component) {
         }
       }
 
+      // set language
+      this.config.lang = 'en' // default to en
+
       if (urlParams.has('lang')) {
-        let value = urlParams.get('lang')
-
-        this.config.lang = value
-        this.config.widget.head.title = UIlabels[value].widget.head.title
-        this.config.widget.head.subtitle = UIlabels[value].widget.head.subtitle
-        this.config.widget.head.content = UIlabels[value].widget.head.content
-
-        this.config.widget.about.title = UIlabels[value].widget.about.title
-        this.config.widget.commitList.title = UIlabels[value].widget.commitList.title
-        this.config.widget.commitList.showing = UIlabels[value].widget.commitList.showing
-        this.config.widget.commitList.addition = UIlabels[value].widget.commitList.addition
-        this.config.widget.commitList.change = UIlabels[value].widget.commitList.change
-        this.config.widget.commitList.removal = UIlabels[value].widget.commitList.removal
-        this.config.widget.commitList.additions = UIlabels[value].widget.commitList.additions
-        this.config.widget.commitList.changes = UIlabels[value].widget.commitList.changes
-        this.config.widget.commitList.removals = UIlabels[value].widget.commitList.removals
-        this.config.widget.commitList.viewfile = UIlabels[value].widget.commitList.viewfile
-        this.config.widget.commitList.viewcommit = UIlabels[value].widget.commitList.viewcommit
-        this.config.widget.calendar.title = UIlabels[value].widget.calendar.title
-        this.config.legend.committed.title = UIlabels[value].legend.committed.title
-        this.config.legend.updated.title = UIlabels[value].legend.updated.title
-        this.config.legend.cold.title = UIlabels[value].legend.cold.title
+        this.config.lang = urlParams.get('lang')
       }
+
+      this.config.widget.head.title = UIlabels[this.config.lang].widget.head.title
+      this.config.widget.head.subtitle = UIlabels[this.config.lang].widget.head.subtitle
+      this.config.widget.head.content = UIlabels[this.config.lang].widget.head.content
+
+      this.config.widget.about.title = UIlabels[this.config.lang].widget.about.title
+      this.config.widget.commitList.title = UIlabels[this.config.lang].widget.commitList.title
+      this.config.widget.commitList.showing = UIlabels[this.config.lang].widget.commitList.showing
+      this.config.widget.commitList.addition = UIlabels[this.config.lang].widget.commitList.addition
+      this.config.widget.commitList.change = UIlabels[this.config.lang].widget.commitList.change
+      this.config.widget.commitList.removal = UIlabels[this.config.lang].widget.commitList.removal
+      this.config.widget.commitList.additions = UIlabels[this.config.lang].widget.commitList.additions
+      this.config.widget.commitList.changes = UIlabels[this.config.lang].widget.commitList.changes
+      this.config.widget.commitList.removals = UIlabels[this.config.lang].widget.commitList.removals
+      this.config.widget.commitList.viewfile = UIlabels[this.config.lang].widget.commitList.viewfile
+      this.config.widget.commitList.viewcommit = UIlabels[this.config.lang].widget.commitList.viewcommit
+      this.config.widget.calendar.title = UIlabels[this.config.lang].widget.calendar.title
+      this.config.legend.committed.title = UIlabels[this.config.lang].legend.committed.title
+      this.config.legend.updated.title = UIlabels[this.config.lang].legend.updated.title
+      this.config.legend.cold.title = UIlabels[this.config.lang].legend.cold.title
 
       if (urlParams.has('title')) {
         let value = urlParams.get('title')
-          this.config.widget.head.title = value
+        this.config.widget.head.title = value
       }
       if (urlParams.has('subtitle')) {
         let value = urlParams.get('subtitle')
-          this.config.widget.head.subtitle = value
+        this.config.widget.head.subtitle = value
       }
       if (urlParams.has('intro')) {
         let value = urlParams.get('intro')
-          this.config.widget.head.content = value
+        this.config.widget.head.content = value
       }
 
       if (urlParams.has('about')) {
         let value = urlParams.get('about')
-          this.config.widget.about.title = value
+        this.config.widget.about.title = value
       }
       if (urlParams.has('content')) {
         let value = urlParams.get('content')
-          this.config.widget.about.content = value
+        this.config.widget.about.content = value
       }
       if (urlParams.has('commits')) {
         let value = urlParams.get('commits')
-          this.config.widget.commitList.title = value
+        this.config.widget.commitList.title = value
       }
       if (urlParams.has('showing')) {
         let value = urlParams.get('showing')
-          this.config.widget.commitList.showing = value
+        this.config.widget.commitList.showing = value
       }
       if (urlParams.has('milestones')) {
         let value = urlParams.get('milestones')
-          this.config.widget.milestones.title = value
+        this.config.widget.milestones.title = value
       }
       if (urlParams.has('calendar')) {
         let value = urlParams.get('calendar')
-          this.config.widget.calendar.title = value
+        this.config.widget.calendar.title = value
       }
 
       if (urlParams.has('committed')) {
         let value = urlParams.get('committed')
-          this.config.legend.committed.title = value
+        this.config.legend.committed.title = value
       }
       if (urlParams.has('updated')) {
         let value = urlParams.get('updated')
-          this.config.legend.updated.title = value
+        this.config.legend.updated.title = value
       }
       if (urlParams.has('cold')) {
         let value = urlParams.get('cold')
-          this.config.legend.cold.title = value
+        this.config.legend.cold.title = value
       }
-
     }
 
     this.initFireBase()
@@ -821,7 +820,7 @@ class App extends mixin(EventEmitter, Component) {
         showFileInfo: true
       })
 
-      let commitDate = moment(this.state.currentCommit.committerDate).locale(lang_locales[this.config.lang]).format()
+      let commitDate = moment(this.state.currentCommit.committerDate).locale(langLocales[this.config.lang]).format()
 
       let uri = 'https://us-central1-webgl-gource-1da99.cloudfunctions.net/github-fileInfo?repo=' + this.config.git.repo +
       '&branch=' + this.config.git.branch +
@@ -849,7 +848,7 @@ class App extends mixin(EventEmitter, Component) {
             selectedFileAuthorImg: fileCommitDetails.author.avatarUrl,
             selectedFileCommitURL: fileCommitDetails.commitUrl,
             selectedFileDate: fileCommitDetails.author.date,
-            selectedFileDateRelative: moment(fileCommitDetails.author.date).locale(lang_locales[this.config.lang]).fromNow(),
+            selectedFileDateRelative: moment(fileCommitDetails.author.date).locale(langLocales[this.config.lang]).fromNow(),
             selectedFileMessage: fileCommitDetails.message,
             selectedFileName: fileName,
             showFileInfo: true,
@@ -1174,9 +1173,9 @@ class App extends mixin(EventEmitter, Component) {
 
         this.timestampToLoad = 0
         changedState.currentCommit = commit
-        changedState.currentDate = moment.unix(commit.date / 1000).locale(lang_locales[this.config.lang]).format('MM/DD/YYYY HH:mm:ss')
+        changedState.currentDate = moment.unix(commit.date / 1000).locale(langLocales[this.config.lang]).format('MM/DD/YYYY HH:mm:ss')
         changedState.currentDateObject = moment(moment.unix(commit.date / 1000))
-        changedState.committerDate = commit.committerDate ? moment.unix(commit.committerDate / 1000).locale(lang_locales[this.config.lang]).format('MM/DD/YYYY HH:mm:ss') : changedState.currentDate
+        changedState.committerDate = commit.committerDate ? moment.unix(commit.committerDate / 1000).locale(langLocales[this.config.lang]).format('MM/DD/YYYY HH:mm:ss') : changedState.currentDate
         changedState.currentCommitHash = commit.sha
         changedState.currentAuthor = commit.author + ' <' + commit.email + '>'
         changedState.currentMsg = commit.msg
@@ -1305,8 +1304,8 @@ class App extends mixin(EventEmitter, Component) {
 
       querySnapshot.forEach(snapshot => {
         let data = snapshot.data()
-        data.dateLong = moment(data.date).locale(lang_locales[this.config.lang]).format('dddd, MMMM Do YYYY, h:mm:ss a')
-        data.dateShort = moment(data.date).locale(lang_locales[this.config.lang]).format('MMM Do')
+        data.dateLong = moment(data.date).locale(langLocales[this.config.lang]).format('dddd, MMMM Do YYYY, h:mm:ss a')
+        data.dateShort = moment(data.date).locale(langLocales[this.config.lang]).format('MMM Do')
         data.sha = snapshot.id
         data.gravatar = this.getGravatar(data.email, 40)
         this.commitsAboveArr.push(data)
@@ -1321,8 +1320,8 @@ class App extends mixin(EventEmitter, Component) {
         querySnapshot.forEach(snapshot => {
           let data = snapshot.data()
 
-          data.dateLong = moment(data.date).locale(lang_locales[this.config.lang]).format('ddd, MMM Do YYYY, h:mm:ss a')
-          data.dateShort = moment(data.date).locale(lang_locales[this.config.lang]).format('MMM Do')
+          data.dateLong = moment(data.date).locale(langLocales[this.config.lang]).format('ddd, MMM Do YYYY, h:mm:ss a')
+          data.dateShort = moment(data.date).locale(langLocales[this.config.lang]).format('MMM Do')
           data.sha = snapshot.id
           data.gravatar = this.getGravatar(data.email, 40)
           this.commitsBelowArr.push(data)
@@ -1344,8 +1343,8 @@ class App extends mixin(EventEmitter, Component) {
 
     // current commit
     let data = this.state.currentCommit
-    data.dateLong = moment(data.date).locale(lang_locales[this.config.lang]).format('ddd, MMM Do YYYY, h:mm:ss a')
-    data.dateShort = moment(data.date).locale(lang_locales[this.config.lang]).format('MMM Do')
+    data.dateLong = moment(data.date).locale(langLocales[this.config.lang]).format('ddd, MMM Do YYYY, h:mm:ss a')
+    data.dateShort = moment(data.date).locale(langLocales[this.config.lang]).format('MMM Do')
     data.gravatar = this.getGravatar(data.email, 40)
     let sidebarCommits = [data]
 
@@ -1519,11 +1518,11 @@ class App extends mixin(EventEmitter, Component) {
   playPauseButton () {
     if (this.state.play) {
       return (
-        <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><SVG src={IconPause}></SVG></button>
+        <button onClick={() => { this.setPlay(false) }} className='playpause border-0 bg-transparent text-primary'><SVG src={IconPause} /></button>
       )
     } else {
       return (
-        <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><SVG src={IconPlay}></SVG></button>
+        <button onClick={() => { this.setPlay(true) }} className='playpause border-0 bg-transparent text-primary'><SVG src={IconPlay} /></button>
       )
     }
   }
@@ -1551,7 +1550,7 @@ class App extends mixin(EventEmitter, Component) {
     this.populateSideBar(this.state.sidebarCurrentCommitIndex)
   }
 
-  mobileTabView (param,e) {
+  mobileTabView (param, e) {
     this.setState({
       mobileTabSelect: param
     })
@@ -1560,7 +1559,6 @@ class App extends mixin(EventEmitter, Component) {
   mobileTabSelectActive (value) {
     return (this.state.mobileTabSelect == value) ? 'active' : ''
   }
-
 
   UI () {
     const medusaUI = (this.config.scene.fullScreen) ? 'medusa-UI fullscreen' : 'medusa-UI'
@@ -1577,18 +1575,14 @@ class App extends mixin(EventEmitter, Component) {
       return (
         <div className={`${medusaUI} ${this.state.mobileTabSelect}`}>
 
-
-
-          <Media query="(max-width: 767px)">
+          <Media query='(max-width: 767px)'>
             <div className='mobile-controls text-center'>
               <span className='text-body text-center d-block'>{this.state.currentDate}</span>
-              <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent text-body m-4 mt-2'><SVG src={IconPrev}></SVG></button>
+              <button onClick={this.state.goToPrev} className='prev border-0 bg-transparent text-body m-4 mt-2'><SVG src={IconPrev} /></button>
               {this.playPauseButton()}
-              <button onClick={this.state.goToNext} className='next border-0 bg-transparent text-body m-4 mt-2'><SVG src={IconNext}></SVG></button>
+              <button onClick={this.state.goToNext} className='next border-0 bg-transparent text-body m-4 mt-2'><SVG src={IconNext} /></button>
             </div>
           </Media>
-
-
 
           <Sidebar
             config={this.config}
@@ -1606,11 +1600,11 @@ class App extends mixin(EventEmitter, Component) {
 
             <About
               config={this.config}
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconInfo}></SVG></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconInfo} /></button>}
             />
 
             <CommitList
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconClock}></SVG></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconClock} /></button>}
               title={this.config.widget.commitList.title}
               slug={this.config.widget.commitList.slug}
               config={this.config}
@@ -1632,7 +1626,7 @@ class App extends mixin(EventEmitter, Component) {
             />
 
             <Widget
-              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconCalendar}></SVG></button>}
+              icon={<button className='bg-transparent border-0 text-primary pt-1 pb-1'><SVG src={IconCalendar} /></button>}
               title={this.config.widget.calendar.title}
               slug={this.config.widget.calendar.slug}
             >
@@ -1646,14 +1640,13 @@ class App extends mixin(EventEmitter, Component) {
               />
             </Widget>
 
-            <Media query="(max-width: 767px)">
+            <Media query='(max-width: 767px)'>
               <div className='mobile-tabs'>
-                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-about")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-about')}`}>About</button>
-                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-commits")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-commits')}`}>Commits</button>
-                <button ref='btn' onClick={this.mobileTabView.bind(this,"viewing-calendar")} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-calendar')}`}>Calendar</button>
+                <button ref='btn' onClick={this.mobileTabView.bind(this, 'viewing-about')} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-about')}`}>About</button>
+                <button ref='btn' onClick={this.mobileTabView.bind(this, 'viewing-commits')} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-commits')}`}>Commits</button>
+                <button ref='btn' onClick={this.mobileTabView.bind(this, 'viewing-calendar')} className={`${`close-info border-0 text-primary p-3 text-uppercase`} ${mobileTabSelectActive('viewing-calendar')}`}>Calendar</button>
               </div>
             </Media>
- 
 
           </Sidebar>
           <Content>
@@ -1666,7 +1659,7 @@ class App extends mixin(EventEmitter, Component) {
               <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
                 {this.slider()}
 
-                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><SVG src={IconNext}></SVG></button>
+                <button onClick={this.state.goToNext} className='next border-0 bg-transparent'><SVG src={IconNext} /></button>
 
                 <DatePicker
                   customInput={<Calendar />}

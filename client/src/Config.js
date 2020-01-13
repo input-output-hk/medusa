@@ -15,7 +15,21 @@ const Config = {
     commitHash: '', // hash of commit to load
     commitDate: '', // date to load
     loadLatest: true, // load latest commit in db
-    supportedRepos: ['cardano-sl', 'plutus', 'ouroboros-network']
+    supportedRepos: [
+      'cardano-sl',
+      'plutus',
+      'ouroboros-network',
+      'jormungandr',
+      'cardano-wallet',
+      'cardano-ledger-specs',
+      'marlowe',
+      'daedalus',
+      'symphony-2',
+      'rust-cardano',
+      'cardano-chain',
+      'cardano-js-sdk',
+      'cardano-shell'
+    ]
   },
   display: {
     showUI: true,
@@ -50,7 +64,7 @@ const Config = {
       changes: 'Changes',
       slug: 'commit-list',
       viewfile: 'View file',
-      viewcommit: 'View commit',
+      viewcommit: 'View commit'
     },
     milestones: {
       title: 'Milestones',
