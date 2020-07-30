@@ -43,7 +43,7 @@ const Config = {
   widget: {
     head: {
       title: 'MEDUSA',
-      subtitle: 'Github project activity',
+      subtitle: 'GitHub project activity',
       slug: 'head',
       content: 'Introduction'
     },

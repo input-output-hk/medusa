@@ -4,7 +4,7 @@ Medusa is a 3D git repository history visualization tool inspired by the famous 
 
 It uses a GPGPU Force Directed Graph simulation to efficiently maintain it's structure.
 
-This package comes with a Node JS server for populating Google Firebase Firestore from the Github API and a frontend client for running the visualization.
+This package comes with a Node JS server for populating Google Firebase Firestore from the GitHub API and a frontend client for running the visualization.
 
 ![medusa visual](https://raw.githubusercontent.com/input-output-hk/medusa/master/static/assets/images/medusa.jpg)
 
@@ -28,7 +28,7 @@ yarn dev
 
 ## Firebase Firestore data storage
 
-Medusa relies on data being copied from the Github API to Google Firebase Firestore. You will need to set up a new Firebase Firestore project through your Google Console.
+Medusa relies on data being copied from the GitHub API to Google Firebase Firestore. You will need to set up a new Firebase Firestore project through your Google Console.
 
 Once this is set up, paste the following into the Firestore Rules:
 
@@ -50,7 +50,7 @@ In order to run the Node server you will need to download your Firebase Admin SD
 
 ## Local server config
 
-Enter the details of the Github Repository you wish to use in ```/config.js``` (these values can also be passed as query strings when running the update script):
+Enter the details of the GitHub Repository you wish to use in ```/config.js``` (these values can also be passed as query strings when running the update script):
 
 ```javascript
 const config = {
@@ -61,9 +61,9 @@ const config = {
 }
 ```
 
-## Github access token
+## GitHub access token
 
-Create a new Github personal access token: https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/ and add this as a Node JS environment variable with the key: ```TOKEN_GITHUB_DOT_COM```
+Create a new GitHub personal access token: https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/ and add this as a Node JS environment variable with the key: ```TOKEN_GITHUB_DOT_COM```
 
 
 ## Populating Firebase Firestore
@@ -86,7 +86,7 @@ It should be noted that each repository branch needs to be added separately.
 
 ## Google Cloud Function for file click interaction
 
-In order to show details about a file on click you will need to set up a Google Cloud Function to pull data from the Github API. There is an example script and ```package.json``` in ```/client/cloud_functions/```
+In order to show details about a file on click you will need to set up a Google Cloud Function to pull data from the GitHub API. There is an example script and ```package.json``` in ```/client/cloud_functions/```
 
 ## Running the Visualization
 
