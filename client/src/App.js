@@ -83,7 +83,7 @@ const UIlabels = {
     widget: {
       head: {
         title: 'MEDUSA',
-        subtitle: 'Github project activity',
+        subtitle: 'GitHub project activity',
         content: 'Introduction'
       },
       about: {
@@ -121,7 +121,7 @@ const UIlabels = {
     widget: {
       head: {
         title: 'MEDUSA',
-        subtitle: 'Github プロジェクトアクティビティ ライブ',
+        subtitle: 'GitHub プロジェクトアクティビティ ライブ',
         content: ''
       },
       about: {
@@ -159,7 +159,7 @@ const UIlabels = {
     widget: {
       head: {
         title: 'Medusa 项目浏览器',
-        subtitle: 'Github 项目活动状态',
+        subtitle: 'GitHub 项目活动状态',
         content: ''
       },
       about: {
@@ -197,7 +197,7 @@ const UIlabels = {
     widget: {
       head: {
         title: 'Medusa 프로젝트 탐색기',
-        subtitle: 'Github 프로젝트 활동 라이브',
+        subtitle: 'GitHub 프로젝트 활동 라이브',
         content: ''
       },
       about: {
@@ -235,7 +235,7 @@ const UIlabels = {
     widget: {
       head: {
         title: 'Medusa 프로젝트 탐색기',
-        subtitle: 'Github 프로젝트 활동 라이브',
+        subtitle: 'GitHub 프로젝트 활동 라이브',
         content: ''
       },
       about: {
