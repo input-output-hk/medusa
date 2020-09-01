@@ -1,5 +1,5 @@
 // 3rd Party
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 
 import {
   Vector2,
@@ -307,6 +307,10 @@ class App extends mixin(EventEmitter, Component) {
 
       if (urlParams.has('lang')) {
         this.config.lang = urlParams.get('lang')
+      }
+
+      if (urlParams.has('inlineControls')) {
+        this.config.scene.inlineControls = urlParams.get('inlineControls')
       }
 
       this.config.widget.head.title = UIlabels[this.config.lang].widget.head.title
@@ -1682,30 +1686,33 @@ class App extends mixin(EventEmitter, Component) {
       )
     }else{
       return (
-        <div className='medusa-UI pagepart'>
-          <Content>
-            <div className='controls top'>
-
-
-              <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
-                {this.slider()}
-
-                <button onClick={this.goToNext.bind(this)} className='next border-0 bg-transparent'><SVG src={IconNext}></SVG></button>
-
-                <DatePicker
-                  customInput={<Calendar />}
-                  locale={this.config.lang}
-                  popperPlacement='bottom-end'
-                  selected={this.state.currentDateObject}
-                  onSelect={this.setDate.bind(this)}
-                  minDate={moment(this.minDate)}
-                  maxDate={moment(this.maxDate)}
-                />
-              </Controls>
-
+        <Fragment>
+          {this.config.scene.inlineControls &&
+            <div className='medusa-UI pagepart'>
+              <Content>
+                <div className='controls top'>
+    
+                  <Controls state={this.state} setPlay={this.setPlay.bind(this)} goToPrev={this.goToPrev.bind(this)} >
+                    {this.slider()}
+    
+                    <button onClick={this.goToNext.bind(this)} className='next border-0 bg-transparent'><SVG src={IconNext}></SVG></button>
+    
+                    <DatePicker
+                      customInput={<Calendar />}
+                      locale={this.config.lang}
+                      popperPlacement='bottom-end'
+                      selected={this.state.currentDateObject}
+                      onSelect={this.setDate.bind(this)}
+                      minDate={moment(this.minDate)}
+                      maxDate={moment(this.maxDate)}
+                    />
+                  </Controls>
+    
+                </div>
+              </Content>
             </div>
-          </Content>
-        </div>
+          }
+        </Fragment>
       )
     }
   }

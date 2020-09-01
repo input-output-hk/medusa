@@ -126,6 +126,7 @@ const Config = {
     width: 800,
     height: 600,
     bgColor: 0x121327,
+    inlineControls: false,
     antialias: false,
     canvasID: 'stage', // ID of wegbl canvas element
     autoRotate: true, // auto rotate camera around target
