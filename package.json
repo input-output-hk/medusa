@@ -16,7 +16,7 @@
     "moment": "^2.22.2",
     "node-fetch": "^2.2.0",
     "nodemon": "^1.18.3",
-    "ws": "^6.0.0"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "bootstrap": "^4.1.3",
