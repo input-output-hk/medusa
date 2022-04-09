@@ -13,7 +13,7 @@
   "dependencies": {
     "express": "^4.16.2",
     "firebase-admin": "6.0.0",
-    "moment": "^2.22.2",
+    "moment": "^2.29.2",
     "node-fetch": "^2.2.0",
     "nodemon": "^1.18.3",
     "ws": "^6.0.0"
