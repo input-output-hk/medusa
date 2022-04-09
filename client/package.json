@@ -38,7 +38,7 @@
     "html-webpack-plugin": "3.2.0",
     "jest": "22.4.3",
     "mixin": "^0.2.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "object-assign": "4.1.1",
     "postcss-flexbugs-fixes": "3.3.0",
     "postcss-loader": "2.1.4",
